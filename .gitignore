@@ -1,0 +1,6 @@
+# macOS clutter
+.DS_Store
+
+# editor noise
+.vscode/
+*.swp
