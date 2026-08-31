@@ -18,6 +18,23 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v2.3 — 2026-08-31
+
+### Changed
+
+- **A budget is now genuinely optional.** The panel starts closed and shows a
+  single line — how much is in your cart, and what the whole list comes to.
+  That answers "what is this going to cost?" without anyone mentioning
+  budgets. Open it only if you want to set one.
+- **The budget field is a proper filled box** instead of a faint underline,
+  and is labelled "Budget (optional)".
+- **Store groups start closed.** Switching to Stores now shows just the store
+  names with their counts and totals; tap the one you're standing in.
+- **Items inside a store are ordered by priority**, so a 1 is never sitting
+  below a 2. Previously they were alphabetical, which buried urgent things.
+
+---
+
 ## v2.2 — 2026-08-31
 
 ### Fixed

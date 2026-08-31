@@ -1,5 +1,5 @@
 /* =================================================================
-   Groceries — v2.2
+   Groceries — v2.3
 
    The idea in one sentence: an item is never deleted when you buy
    it, it just leaves this trip and waits in All items for next week.
@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '2.2';
+const VERSION     = '2.3';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -44,8 +44,9 @@ function newItem(name, extra = {}) {
 
 function seedState() {
   return {
-    schema: 2, budget: 0, mode: 'priority', collapsed: [],
-    budgetCompact: false,
+    schema: 2, budget: 0, mode: 'priority',
+    expanded: [],        // which store groups are open — none, to begin with
+    budgetOpen: false,   // the budget panel stays shut until you open it
     items: [
       newItem('Rice',      { priority: 1 }),
       newItem('Potatoes',  { priority: 1 }),
@@ -65,8 +66,8 @@ function migrateFromV1(old) {
     schema: 2,
     budget: old.budget || 0,
     mode: 'priority',
-    collapsed: [],
-    budgetCompact: false,
+    expanded: [],
+    budgetOpen: false,
     items: (old.items || []).map((i) => ({
       ...newItem(i.name),
       id: i.id,
@@ -88,7 +89,12 @@ function load() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && parsed.schema === 2 && Array.isArray(parsed.items)) return parsed;
+      if (parsed && parsed.schema === 2 && Array.isArray(parsed.items)) {
+        // fill in anything a older save is missing
+        if (!Array.isArray(parsed.expanded)) parsed.expanded = [];
+        if (typeof parsed.budgetOpen !== 'boolean') parsed.budgetOpen = false;
+        return parsed;
+      }
     }
     const old = localStorage.getItem(OLD_KEY);
     if (old) {
@@ -212,18 +218,19 @@ function byStoreHtml(pend) {
 
   let html = '';
   for (const store of stores) {
-    const group = pend.filter((i) => storeOf(i) === store).sort(byName);
-    const isCollapsed = state.collapsed.includes(store);
+    // Inside a store, the most urgent things come first — same order as the
+    // priority view, so a 1 is never buried under a 2.
+    const group = pend.filter((i) => storeOf(i) === store)
+                      .sort((a, b) => a.priority - b.priority || byName(a, b));
+    const isOpen = state.expanded.includes(store);
     const sum = group.reduce((s, i) => s + lineTotal(i), 0);
 
-    html += '<button class="group-head' + (isCollapsed ? ' collapsed' : '') +
+    html += '<button class="group-head' + (isOpen ? '' : ' collapsed') +
             '" data-store="' + esc(store) + '">' +
             '<span><span class="caret">⌄</span>' + esc(store) + ' · ' + group.length + '</span>' +
             (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') + '</button>';
 
-    if (!isCollapsed) {
-      html += '<div class="card">' + group.map(rowHtml).join('') + '</div>';
-    }
+    if (isOpen) html += '<div class="card">' + group.map(rowHtml).join('') + '</div>';
   }
   return html;
 }
@@ -304,14 +311,17 @@ function cartHtml(inCart, cartSum) {
 function renderBudget(cartSum, pend) {
   const anyPrice = tripItems().some((i) => i.price);
   $('#budget').classList.toggle('hidden', !anyPrice);
-  $('#budget').classList.toggle('compact', !!state.budgetCompact);
+  $('#budget').classList.toggle('compact', !state.budgetOpen);
   if (!anyPrice) return;
 
   const budget    = Number(state.budget) || 0;
   const projected = cartSum + pend.reduce((s, i) => s + lineTotal(i), 0);
   const noPrice   = pend.filter((i) => !i.price).length;
 
+  // Closed, it answers the simple question: what is this shop going to cost?
+  // A budget is entirely optional — you only meet it if you open the panel.
   $('#budget-cart').textContent = money(cartSum) + ' in cart';
+  $('#budget-total').textContent = 'of ' + money(projected);
   if (document.activeElement !== $('#budget-input')) $('#budget-input').value = budget || '';
 
   const fill = $('#bar-fill');
@@ -368,9 +378,9 @@ function handleClick(event) {
   if (head) {                                  // collapse / expand a store group
     const store = head.dataset.store;
     update(() => {
-      state.collapsed = state.collapsed.includes(store)
-        ? state.collapsed.filter((s) => s !== store)
-        : [...state.collapsed, store];
+      state.expanded = state.expanded.includes(store)
+        ? state.expanded.filter((s) => s !== store)
+        : [...state.expanded, store];
     });
     return;
   }
@@ -496,7 +506,7 @@ $('#budget-input').addEventListener('input', (e) => {
   renderTrip();
 });
 $('#budget-toggle').addEventListener('click', () => {
-  update(() => { state.budgetCompact = !state.budgetCompact; });
+  update(() => { state.budgetOpen = !state.budgetOpen; });
 });
 
 /* ---------------- view toggle ---------------- */
@@ -532,7 +542,11 @@ $('#finish-trip').addEventListener('click', () => {
 document.querySelectorAll('.tab').forEach((tab) => {
   tab.addEventListener('click', () => {
     commitOpenRow();
-    update(() => { state.mode = tab.dataset.mode; openId = null; });
+    update(() => {
+      state.mode = tab.dataset.mode;
+      openId = null;
+      if (state.mode === 'store') state.expanded = [];   // arrive with all stores shut
+    });
     window.scrollTo(0, 0);
   });
 });

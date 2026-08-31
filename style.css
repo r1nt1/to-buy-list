@@ -77,19 +77,18 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 .budget.compact { padding-bottom: 4px; }
 .budget-row {
-  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  display: flex; align-items: baseline; gap: 8px;
   width: 100%; background: none; border: none; padding: 8px 0; text-align: left;
 }
 .budget-cart { font-size: 20px; font-weight: 600; }
 .budget-caret { color: var(--muted); transition: transform .15s; }
 .budget.compact .budget-caret { transform: rotate(-90deg); }
 .budget.compact #budget-detail { display: none; }
-.budget-set { color: var(--muted); font-size: 14px; display: block; margin-bottom: 4px; }
-.budget-set input {
-  width: 84px; font-family: inherit; font-size: 16px; text-align: right;
-  border: none; border-bottom: 1px solid var(--line);
-  background: transparent; color: var(--text); padding: 2px 0;
-}
+.budget-set { color: var(--muted); font-size: 13px; display: grid; gap: 5px;
+               margin: 4px 0 10px; }
+/* a proper filled box, like the store field — the old underline was too faint */
+.budget-set input { width: 100%; }
+.budget-total { color: var(--muted); font-size: 15px; margin-left: auto; margin-right: 10px; }
 .bar { height: 7px; border-radius: 4px; background: var(--line); margin: 8px 0; overflow: hidden; }
 .bar-fill { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 .bar-fill.over { background: var(--over); }

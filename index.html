@@ -10,7 +10,7 @@
 <!-- The ?v= number is a cache-buster. Browsers hang on to old copies of
      these files; changing the number forces a fresh download. Bump it
      every release, or the phone keeps running the previous version. -->
-<link rel="stylesheet" href="style.css?v=2.2">
+<link rel="stylesheet" href="style.css?v=2.3">
 </head>
 <body>
 
@@ -26,11 +26,13 @@
     <div class="budget hidden" id="budget">
       <button class="budget-row" id="budget-toggle">
         <span class="budget-cart" id="budget-cart"></span>
+        <span class="budget-total" id="budget-total"></span>
         <span class="budget-caret" id="budget-caret">⌄</span>
       </button>
       <div id="budget-detail">
-        <label class="budget-set">budget
-          <input type="number" id="budget-input" min="0" step="1" inputmode="decimal">
+        <label class="budget-set">Budget (optional)
+          <input class="field" type="number" id="budget-input" min="0" step="1"
+                 inputmode="decimal" placeholder="set a budget">
         </label>
         <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
         <p class="budget-note" id="budget-note"></p>
@@ -112,6 +114,6 @@
 
 <datalist id="store-names"></datalist>
 
-<script src="app.js?v=2.2"></script>
+<script src="app.js?v=2.3"></script>
 </body>
 </html>
