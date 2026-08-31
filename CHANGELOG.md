@@ -18,6 +18,39 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v2.6 — 2026-08-31
+
+### Fixed
+
+- **"New trip" did nothing on the iPhone.** It relied on the browser's own
+  confirm() popup, which was silently not appearing there. All the browser
+  popups have been replaced with an in-app panel — the same kind as the
+  details sheet, which was always working.
+- **Opening a row no longer nudges it sideways.** The closed row's name now
+  has exactly the same padding and border width as the input that replaces it,
+  so the text stays put. The 4px jump was the priority stripe: an open row
+  isn't inside the swipe wrapper, so it wasn't getting the same border.
+
+### Changed
+
+- **Renamed to "To buy list"** — it was never only for groceries.
+- **The 1 / 2 / 3 badges are gone from the list.** "Chicken (1)" read like
+  "buy one chicken". Priority is now a colour stripe down the left edge of the
+  row; the numbers survive in the row's edit controls, where they're labelled.
+- **Notes show in the list**, in italics under the item, so reading one costs
+  no taps. Writing still happens in the "i" sheet.
+- **Swiping left deletes**, with a confirmation. It used to send things to Low,
+  which was already two taps away.
+- **Price and budget fields lost their up/down arrows.** Nobody steps a price
+  up from 0.1 to 0.2 — you type the number.
+- **"Remove from this trip" is gone** from the details sheet. With no All items
+  screen it just made things vanish with no way back. Delete is the one real
+  removal, and it's in two places: swipe left, or the sheet.
+- **"Never bought yet" is gone.** It said nothing. The sheet now shows a last
+  bought date only when there is one.
+
+---
+
 ## v2.5 — 2026-08-31
 
 ### Added

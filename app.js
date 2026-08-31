@@ -1,5 +1,5 @@
 /* =================================================================
-   Groceries — v2.5
+   To buy list — v2.6
 
    The idea in one sentence: an item is never deleted when you buy
    it, it just leaves this trip and waits in All items for next week.
@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '2.5';
+const VERSION     = '2.6';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -248,21 +248,23 @@ function rowHtml(item) {
   if (item.qty > 1) bits.push('×' + item.qty);
   if (item.price)   bits.push(money(lineTotal(item)));
   if (item.store.trim() && state.mode !== 'store') bits.push(esc(item.store));
-  if (item.note)    bits.push('📝');
 
   return '' +
     '<div class="swipe-wrap">' +
       '<div class="swipe-bg">' +
         '<span class="sb-l">' + (item.done ? '↩ put back' : '✓ bought') + '</span>' +
-        '<span class="sb-r">' + (item.priority === 3 ? 'already Low' : 'send to Low') + '</span>' +
+        '<span class="sb-r">delete</span>' +
       '</div>' +
-      '<div class="row' + (item.done ? ' done' : '') + '" data-id="' + item.id + '">' +
+      // The priority is a colour stripe down the left edge rather than a
+      // number — a "1" next to Chicken read like "buy one chicken".
+      '<div class="row pri' + item.priority + (item.done ? ' done' : '') +
+        '" data-id="' + item.id + '">' +
         '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
         '<button class="row-main" data-act="open">' +
           '<span class="row-name">' + esc(item.name) + '</span>' +
           (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
+          (item.note ? '<span class="row-note">' + esc(item.note) + '</span>' : '') +
         '</button>' +
-        '<button class="badge p' + item.priority + '" data-act="open">' + item.priority + '</button>' +
       '</div>' +
     '</div>';
 }
@@ -275,7 +277,7 @@ function openRowHtml(item) {
   ).join('');
 
   return '' +
-    '<div class="row open" data-id="' + item.id + '">' +
+    '<div class="row open pri' + item.priority + '" data-id="' + item.id + '">' +
       '<div class="open-head">' +
         '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
         '<input class="name-input" data-field="name" value="' + esc(item.name) + '" ' +
@@ -369,6 +371,39 @@ function render() {
     [...new Set(state.items.map((i) => i.store.trim()).filter(Boolean))].sort()
       .map((s) => '<option value="' + esc(s) + '">').join('');
 }
+
+/* ---------------------------------------------------------------
+   Asking a question
+   The browser's own confirm() box is inconsistent on iPhone — it was
+   silently doing nothing there, which is why "New trip" appeared dead.
+   This is the same kind of panel as the details sheet, which works.
+   --------------------------------------------------------------- */
+
+const askDlg = $('#ask-dialog');
+let askAnswer = null;
+
+function ask(title, body, { yes = 'OK', danger = false, cancel = true } = {}) {
+  return new Promise((resolve) => {
+    $('#ask-title').textContent = title;
+    $('#ask-body').textContent = body;
+    const yesBtn = $('#ask-yes');
+    yesBtn.textContent = yes;
+    yesBtn.classList.toggle('solid-danger', danger);
+    $('#ask-no').classList.toggle('hidden', !cancel);
+    askAnswer = resolve;
+    askDlg.showModal();
+  });
+}
+
+function answer(value) {
+  askDlg.close();
+  if (askAnswer) askAnswer(value);
+  askAnswer = null;
+}
+
+$('#ask-yes').addEventListener('click', () => answer(true));
+$('#ask-no').addEventListener('click', () => answer(false));
+askDlg.addEventListener('cancel', (e) => { e.preventDefault(); answer(false); });
 
 /* ---------------------------------------------------------------
    6. Actions
@@ -517,21 +552,29 @@ $('#budget-toggle').addEventListener('click', () => {
 
 
 /* ---------------- finish trip ---------------- */
-$('#new-trip').addEventListener('click', () => {
+$('#new-trip').addEventListener('click', async () => {
   commitOpenRow();
   const bought = tripItems().filter((i) => i.done);
+
   if (!bought.length) {
-    alert('Nothing is checked off yet, so there is nothing to reset.');
+    await ask('Nothing to reset',
+              'Nothing is checked off yet, so there is nothing to clear.',
+              { yes: 'OK', cancel: false });
     return;
   }
-  if (!confirm('Start a new trip?\n\n' + bought.length + ' item' +
-      (bought.length > 1 ? 's' : '') + ' bought.\n\n' +
-      'Everything stays on your list — it just gets unchecked, ready for next time.')) return;
+
+  const ok = await ask(
+    'Start a new trip?',
+    bought.length + (bought.length > 1 ? ' items get' : ' item gets') +
+    ' marked as bought. Everything stays on your list — it just gets unchecked, ' +
+    'ready for next time.',
+    { yes: 'Start new trip' });
+  if (!ok) return;
 
   const today = todayLocal();
   update(() => {
     for (const item of state.items) {
-      if (item.inTrip && item.done) {
+      if (item.done) {
         item.timesBought = (item.timesBought || 0) + 1;
         item.lastBought = today;
       }
@@ -567,10 +610,9 @@ function openInfo(item) {
   f.store.value = item.store || '';
   f.note.value = item.note || '';
   $('#info-title').textContent = item.name;
-  $('#info-stat').textContent = item.timesBought
-    ? 'Bought ' + item.timesBought + ' time' + (item.timesBought > 1 ? 's' : '') +
-      (item.lastBought ? ', last on ' + item.lastBought : '') + '.'
-    : 'Never bought yet.';
+  // Only worth a line if it actually tells you something.
+  $('#info-stat').textContent = item.lastBought ? 'Last bought ' + item.lastBought : '';
+  $('#info-stat').classList.toggle('hidden', !item.lastBought);
   info.showModal();
 }
 
@@ -589,23 +631,25 @@ $('#info-form').addEventListener('submit', () => {
   });
 });
 
-$('#info-remove').addEventListener('click', () => {
-  const item = findItem(infoId);
-  if (!item) return;
-  update(() => { item.inTrip = false; item.done = false; openId = null; });
-  info.close();
-});
+
+
+async function confirmDelete(item) {
+  const ok = await ask('Delete "' + item.name + '"?',
+                       'It goes for good. This is the only thing in the app that really ' +
+                       'deletes something.',
+                       { yes: 'Delete', danger: true });
+  if (!ok) return;
+  update(() => {
+    state.items = state.items.filter((i) => i.id !== item.id);
+    openId = null;
+  });
+}
 
 $('#info-delete').addEventListener('click', () => {
   const item = findItem(infoId);
   if (!item) return;
-  if (!confirm('Delete "' + item.name + '" for good?\n\n' +
-               'This is the only thing in the app that really deletes something.')) return;
-  update(() => {
-    state.items = state.items.filter((i) => i.id !== infoId);
-    openId = null;
-  });
   info.close();
+  confirmDelete(item);
 });
 
 /* ---------------------------------------------------------------
@@ -671,7 +715,7 @@ function endSwipe() {
     update(() => { item.done = !item.done; });
     maybeCelebrate();
   } else if (dx <= -SWIPE_TRIGGER) {
-    update(() => { item.priority = 3; });   // send it down to Low
+    confirmDelete(item);
   }
 }
 

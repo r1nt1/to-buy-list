@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#111418">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Groceries</title>
+<title>To buy list</title>
 <!-- The ?v= number is a cache-buster. Browsers hang on to old copies of
      these files; changing the number forces a fresh download. Bump it
      every release, or the phone keeps running the previous version. -->
-<link rel="stylesheet" href="style.css?v=2.5">
+<link rel="stylesheet" href="style.css?v=2.6">
 </head>
 <body>
 
@@ -19,7 +19,7 @@
 
     <header class="topbar">
       <!-- placeholder logo — swap this SVG for a real one later -->
-      <div class="logo" id="logo" aria-label="Groceries">
+      <div class="logo" id="logo" aria-label="To buy list">
         <svg viewBox="0 0 24 24" width="30" height="30" fill="none"
              stroke="currentColor" stroke-width="1.6"
              stroke-linecap="round" stroke-linejoin="round">
@@ -28,7 +28,7 @@
           <path d="M4.7 11.8V20h14.6v-8.2"/>
           <path d="M9.6 20v-4.7h4.8V20"/>
         </svg>
-        <span>Groceries</span>
+        <span>To buy list</span>
       </div>
       <button class="ghost" id="new-trip">New trip</button>
     </header>
@@ -98,7 +98,6 @@
     <p class="stat" id="info-stat"></p>
 
     <div class="sheet-actions">
-      <button type="button" class="ghost" id="info-remove">Remove from this trip</button>
       <button type="button" class="danger" id="info-delete">Delete for good</button>
     </div>
 
@@ -110,8 +109,20 @@
   </form>
 </dialog>
 
+<dialog id="ask-dialog">
+  <div class="ask">
+    <h2 id="ask-title"></h2>
+    <p id="ask-body"></p>
+    <menu>
+      <span class="spacer"></span>
+      <button type="button" class="ghost" id="ask-no">Cancel</button>
+      <button type="button" class="primary" id="ask-yes">OK</button>
+    </menu>
+  </div>
+</dialog>
+
 <datalist id="store-names"></datalist>
 
-<script src="app.js?v=2.5"></script>
+<script src="app.js?v=2.6"></script>
 </body>
 </html>
