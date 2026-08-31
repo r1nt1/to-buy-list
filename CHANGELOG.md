@@ -18,6 +18,37 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v2.4 — 2026-08-31
+
+### Added
+
+- **Confetti** when the last item on the list gets checked off. Fires once,
+  on the moment it becomes complete — not every time you tick something.
+
+### Changed
+
+- **"Finish trip" is now "New trip", and it no longer empties your list.**
+  It unchecks everything and leaves it in place, ready for next week. With the
+  All items screen gone, the old behaviour made the whole list vanish with no
+  way to get it back. It still records what you bought.
+- **The "This trip" title is gone.** In its place, a quiet line saying how many
+  items you have and how many are in the cart — information rather than
+  decoration. The bottom bar already says which view you're in.
+- **More room at the top**, and more space between the add box and the list.
+- **The add box is tinted and taller**, so it reads as the main thing you do on
+  this screen rather than another grey rectangle.
+- **The keyboard's blue key says the same thing in every field.** The store and
+  price boxes were showing a plain return key while the name box showed "done".
+- **The bottom bar sits closer to the bottom edge**, reclaiming some of the
+  strip iOS reserves for the home indicator.
+
+### Not fixable
+
+- The small bar above the keyboard with the up/down arrows is Safari's own
+  form-navigation control. A web page cannot hide it.
+
+---
+
 ## v2.3 — 2026-08-31
 
 ### Changed

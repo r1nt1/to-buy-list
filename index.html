@@ -10,7 +10,7 @@
 <!-- The ?v= number is a cache-buster. Browsers hang on to old copies of
      these files; changing the number forces a fresh download. Bump it
      every release, or the phone keeps running the previous version. -->
-<link rel="stylesheet" href="style.css?v=2.3">
+<link rel="stylesheet" href="style.css?v=2.4">
 </head>
 <body>
 
@@ -18,8 +18,8 @@
   <section class="view" id="view-trip">
 
     <header class="topbar">
-      <h1 id="view-title">This trip</h1>
-      <button class="ghost" id="finish-trip">Finish trip</button>
+      <span class="count" id="trip-count"></span>
+      <button class="ghost" id="new-trip">New trip</button>
     </header>
 
     <!-- hidden until at least one item has a price -->
@@ -114,6 +114,6 @@
 
 <datalist id="store-names"></datalist>
 
-<script src="app.js?v=2.3"></script>
+<script src="app.js?v=2.4"></script>
 </body>
 </html>

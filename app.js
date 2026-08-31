@@ -1,5 +1,5 @@
 /* =================================================================
-   Groceries — v2.3
+   Groceries — v2.4
 
    The idea in one sentence: an item is never deleted when you buy
    it, it just leaves this trip and waits in All items for next week.
@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '2.3';
+const VERSION     = '2.4';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -283,10 +283,11 @@ function openRowHtml(item) {
       '<div class="open-controls">' +
         '<div class="pri-group">' + pri + '</div>' +
         '<input class="field field-store" data-field="store" list="store-names" ' +
-          'placeholder="store" value="' + esc(item.store) + '" autocomplete="off">' +
+          'placeholder="store" value="' + esc(item.store) + '" autocomplete="off" ' +
+          'enterkeyhint="done">' +
         '<input class="field field-price" data-field="price" type="number" min="0" ' +
-          'step="0.01" inputmode="decimal" placeholder="' + CURRENCY + '" value="' +
-          (item.price ?? '') + '">' +
+          'step="0.01" inputmode="decimal" enterkeyhint="done" placeholder="' +
+          CURRENCY + '" value="' + (item.price ?? '') + '">' +
       '</div>' +
     '</div>';
 }
@@ -294,7 +295,7 @@ function openRowHtml(item) {
 function emptyHtml(pend, onTrip) {
   if (pend.length) return '';
   return '<p class="empty">' + (onTrip.length
-    ? 'Everything on the list is in the cart. 🎉<br>Tap <b>Finish trip</b> when you check out.'
+    ? 'Everything is in the cart. 🎉<br>Tap <b>New trip</b> to uncheck it all for next time.'
     : 'Nothing on this trip yet.<br>Start typing above — the box remembers everything<br>you have bought before.')
     + '</p>';
 }
@@ -354,7 +355,12 @@ function renderBudget(cartSum, pend) {
 function render() {
   document.querySelectorAll('.tab').forEach((b) =>
     b.classList.toggle('active', b.dataset.mode === state.mode));
-  $('#view-title').textContent = state.mode === 'store' ? 'By store' : 'This trip';
+  const on = tripItems();
+  const inCart = on.filter((i) => i.done).length;
+  $('#trip-count').textContent = on.length
+    ? on.length + (on.length === 1 ? ' item' : ' items') +
+      (inCart ? ' · ' + inCart + ' in cart' : '')
+    : '';
   $('#version').textContent = 'version ' + VERSION;
 
   renderTrip();
@@ -399,6 +405,7 @@ function handleClick(event) {
     case 'toggle-done':
       commitOpenRow();
       update(() => { item.done = !item.done; openId = null; });
+      maybeCelebrate();
       break;
 
     case 'set-priority':
@@ -513,16 +520,16 @@ $('#budget-toggle').addEventListener('click', () => {
 
 
 /* ---------------- finish trip ---------------- */
-$('#finish-trip').addEventListener('click', () => {
+$('#new-trip').addEventListener('click', () => {
   commitOpenRow();
   const bought = tripItems().filter((i) => i.done);
   if (!bought.length) {
-    alert('Nothing is checked off yet, so there is no trip to finish.');
+    alert('Nothing is checked off yet, so there is nothing to reset.');
     return;
   }
-  if (!confirm('Finish this trip?\n\n' + bought.length + ' item' +
+  if (!confirm('Start a new trip?\n\n' + bought.length + ' item' +
       (bought.length > 1 ? 's' : '') + ' bought.\n\n' +
-      'Everything clears off the list but stays in All items, ready for next time.')) return;
+      'Everything stays on your list — it just gets unchecked, ready for next time.')) return;
 
   const today = todayLocal();
   update(() => {
@@ -531,11 +538,11 @@ $('#finish-trip').addEventListener('click', () => {
         item.timesBought = (item.timesBought || 0) + 1;
         item.lastBought = today;
       }
-      item.inTrip = false;
-      item.done = false;
+      item.done = false;      // unchecked, but it stays on the list
     }
     openId = null;
   });
+  wasComplete = false;
 });
 
 /* ---------------- tabs ---------------- */
@@ -663,6 +670,7 @@ function endSwipe() {
 
   if (dx >= SWIPE_TRIGGER) {
     update(() => { item.done = !item.done; });
+    maybeCelebrate();
   } else if (dx <= -SWIPE_TRIGGER) {
     openStorePicker(item);
   }
@@ -718,6 +726,66 @@ $('#store-clear').addEventListener('click', () => {
 });
 
 $('#store-cancel').addEventListener('click', () => storeDlg.close());
+
+/* ---------------------------------------------------------------
+   9. Confetti — fires the moment the last item is checked off
+   --------------------------------------------------------------- */
+
+let wasComplete = tripItems().length > 0 && tripItems().every((i) => i.done);
+
+function maybeCelebrate() {
+  const on = tripItems();
+  const complete = on.length > 0 && on.every((i) => i.done);
+  if (complete && !wasComplete) confetti();
+  wasComplete = complete;
+}
+
+function confetti() {
+  const canvas = document.createElement('canvas');
+  canvas.className = 'confetti';
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.width  = window.innerWidth  * dpr;
+  const H = canvas.height = window.innerHeight * dpr;
+  canvas.style.width  = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+
+  const colours = ['#d7263d', '#f0a83c', '#2f6df6', '#27a266', '#9b59b6', '#ff6b7d'];
+  const bits = [];
+  for (let i = 0; i < 110; i++) {
+    bits.push({
+      x: Math.random() * W,
+      y: -(Math.random() * H * 0.4) - 20 * dpr,
+      vx: (Math.random() - 0.5) * 3 * dpr,
+      vy: (2 + Math.random() * 3.5) * dpr,
+      w: (5 + Math.random() * 6) * dpr,
+      h: (8 + Math.random() * 9) * dpr,
+      rot: Math.random() * Math.PI,
+      vr: (Math.random() - 0.5) * 0.35,
+      colour: colours[i % colours.length]
+    });
+  }
+
+  let frame = 0;
+  (function tick() {
+    ctx.clearRect(0, 0, W, H);
+    for (const b of bits) {
+      b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+      b.vy += 0.045 * dpr;                    // gravity
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.rotate(b.rot);
+      ctx.fillStyle = b.colour;
+      ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+      ctx.restore();
+    }
+    frame++;
+    if (frame < 170) requestAnimationFrame(tick);
+    else canvas.remove();
+  })();
+}
 
 /* ---------------- go ---------------- */
 render();
