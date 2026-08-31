@@ -1,5 +1,5 @@
 /* =================================================================
-   Groceries — v2.1
+   Groceries — v2.2
 
    The idea in one sentence: an item is never deleted when you buy
    it, it just leaves this trip and waits in All items for next week.
@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '2.1';
+const VERSION     = '2.2';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -288,7 +288,7 @@ function emptyHtml(pend, onTrip) {
   if (pend.length) return '';
   return '<p class="empty">' + (onTrip.length
     ? 'Everything on the list is in the cart. 🎉<br>Tap <b>Finish trip</b> when you check out.'
-    : 'Nothing on this trip yet.<br>Add something above, or pull your usuals from All items.')
+    : 'Nothing on this trip yet.<br>Start typing above — the box remembers everything<br>you have bought before.')
     + '</p>';
 }
 
@@ -338,76 +338,16 @@ function renderBudget(cartSum, pend) {
 }
 
 /* ---------------------------------------------------------------
-   4. All items view
-   --------------------------------------------------------------- */
-
-function renderAll() {
-  const query = $('#search').value.trim().toLowerCase();
-  const all = state.items.filter((i) =>
-    !query || i.name.toLowerCase().includes(query) || i.store.toLowerCase().includes(query));
-
-  $('#all-count').textContent =
-    state.items.length + (state.items.length === 1 ? ' item' : ' items');
-  $('#version').textContent = 'version ' + VERSION;
-
-  const usual = [...state.items]
-    .filter((i) => i.timesBought > 0)
-    .sort((a, b) => b.timesBought - a.timesBought || byName(a, b))
-    .slice(0, 8);
-
-  $('#usual').innerHTML = usual.length && !query
-    ? '<div class="group-head"><span>Usual suspects</span></div><div class="pills">' +
-      usual.map((i) => '<button class="pill' + (i.inTrip ? ' on' : '') + '" data-id="' + i.id +
-                       '" data-act="toggle-trip">' + esc(i.name) + '</button>').join('') +
-      '</div>'
-    : '';
-
-  const stores = [...new Set(all.map(storeOf))]
-    .sort((a, b) => (a === NO_STORE) - (b === NO_STORE) || a.localeCompare(b));
-
-  let html = '';
-  for (const store of stores) {
-    const group = all.filter((i) => storeOf(i) === store).sort(byName);
-    html += '<div class="group-head"><span>' + esc(store) + '</span></div><div class="card">';
-    for (const item of group) {
-      const bits = [
-        item.price ? money(item.price) + ' each' : 'no price yet',
-        item.timesBought ? 'bought ' + item.timesBought + '×' : 'never bought yet'
-      ];
-      html +=
-        '<div class="row" data-id="' + item.id + '">' +
-          '<button class="check add-toggle' + (item.inTrip ? ' on' : '') + '" ' +
-            'data-act="toggle-trip" aria-label="' +
-            (item.inTrip ? 'Remove from this trip' : 'Add to this trip') + '">' +
-            (item.inTrip ? '✓' : '+') + '</button>' +
-          '<button class="row-main" data-act="info">' +
-            '<span class="row-name">' + esc(item.name) + '</span>' +
-            '<span class="row-sub">' + bits.join(' · ') + '</span>' +
-          '</button>' +
-          '<button class="badge p' + item.priority + '" data-act="info">' +
-            item.priority + '</button>' +
-        '</div>';
-    }
-    html += '</div>';
-  }
-
-  if (!all.length) {
-    html = '<p class="empty">' +
-      (query ? 'Nothing matches &ldquo;' + esc(query) + '&rdquo;.' : 'No items yet.') + '</p>';
-  }
-  $('#all-list').innerHTML = html;
-}
-
-/* ---------------------------------------------------------------
    5. Render
    --------------------------------------------------------------- */
 
 function render() {
-  document.querySelectorAll('.seg').forEach((b) =>
-    b.classList.toggle('on', b.dataset.mode === state.mode));
+  document.querySelectorAll('.tab').forEach((b) =>
+    b.classList.toggle('active', b.dataset.mode === state.mode));
+  $('#view-title').textContent = state.mode === 'store' ? 'By store' : 'This trip';
+  $('#version').textContent = 'version ' + VERSION;
 
   renderTrip();
-  renderAll();
 
   $('#item-names').innerHTML = [...state.items].sort(byName)
     .map((i) => '<option value="' + esc(i.name) + '">').join('');
@@ -502,10 +442,8 @@ function commitOpenRow() {
   save();
 }
 
-['#trip-list', '#all-list', '#usual'].forEach((sel) => {
-  $(sel).addEventListener('click', handleClick);
-  $(sel).addEventListener('change', handleFieldChange);
-});
+$('#trip-list').addEventListener('click', handleClick);
+$('#trip-list').addEventListener('change', handleFieldChange);
 
 // Enter closes the open row; Escape closes it too.
 $('#trip-list').addEventListener('keydown', (e) => {
@@ -562,14 +500,7 @@ $('#budget-toggle').addEventListener('click', () => {
 });
 
 /* ---------------- view toggle ---------------- */
-$('#view-toggle').addEventListener('click', (e) => {
-  const btn = e.target.closest('.seg');
-  if (!btn) return;
-  commitOpenRow();
-  update(() => { state.mode = btn.dataset.mode; openId = null; });
-});
 
-$('#search').addEventListener('input', renderAll);
 
 /* ---------------- finish trip ---------------- */
 $('#finish-trip').addEventListener('click', () => {
@@ -601,10 +532,7 @@ $('#finish-trip').addEventListener('click', () => {
 document.querySelectorAll('.tab').forEach((tab) => {
   tab.addEventListener('click', () => {
     commitOpenRow();
-    closeRow();
-    document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === tab));
-    $('#view-trip').classList.toggle('hidden', tab.dataset.tab !== 'trip');
-    $('#view-all').classList.toggle('hidden',  tab.dataset.tab !== 'all');
+    update(() => { state.mode = tab.dataset.mode; openId = null; });
     window.scrollTo(0, 0);
   });
 });
@@ -639,6 +567,13 @@ $('#info-form').addEventListener('submit', () => {
     item.price = Number.isFinite(price) && price >= 0 ? price : null;
     item.note = f.note.value.trim();
   });
+});
+
+$('#info-remove').addEventListener('click', () => {
+  const item = findItem(infoId);
+  if (!item) return;
+  update(() => { item.inTrip = false; item.done = false; openId = null; });
+  info.close();
 });
 
 $('#info-delete').addEventListener('click', () => {

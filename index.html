@@ -7,17 +7,18 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Groceries</title>
-<link rel="stylesheet" href="style.css">
+<!-- The ?v= number is a cache-buster. Browsers hang on to old copies of
+     these files; changing the number forces a fresh download. Bump it
+     every release, or the phone keeps running the previous version. -->
+<link rel="stylesheet" href="style.css?v=2.2">
 </head>
 <body>
 
 <main>
-
-  <!-- ============ TRIP ============ -->
   <section class="view" id="view-trip">
 
     <header class="topbar">
-      <h1>This trip</h1>
+      <h1 id="view-title">This trip</h1>
       <button class="ghost" id="finish-trip">Finish trip</button>
     </header>
 
@@ -43,46 +44,22 @@
       <button type="submit">Add</button>
     </form>
 
-    <div class="segmented" id="view-toggle">
-      <button class="seg on"  data-mode="priority">By priority</button>
-      <button class="seg"     data-mode="store">By store</button>
-    </div>
-
     <div id="trip-list"></div>
-  </section>
-
-  <!-- ============ ALL ITEMS ============ -->
-  <section class="view hidden" id="view-all">
-
-    <header class="topbar">
-      <h1>All items</h1>
-      <span class="count" id="all-count"></span>
-    </header>
-
-    <p class="explainer">Everything you ever buy. Checking something off never deletes it —
-       it just leaves this trip and waits here for next time.</p>
-
-    <input class="search" id="search" placeholder="Search…" autocomplete="off" type="search">
-
-    <div id="usual"></div>
-    <div id="all-list"></div>
-
     <p class="version" id="version"></p>
   </section>
-
 </main>
 
-<!-- ============ TABS ============ -->
+<!-- the bottom bar now switches how the list is arranged -->
 <nav class="tabs">
-  <button class="tab active" data-tab="trip">
-    <span class="tab-icon">🛒</span><span>This trip</span>
+  <button class="tab active" data-mode="priority">
+    <span class="tab-icon">🔢</span><span>Priority</span>
   </button>
-  <button class="tab" data-tab="all">
-    <span class="tab-icon">📋</span><span>All items</span>
+  <button class="tab" data-mode="store">
+    <span class="tab-icon">🏪</span><span>Stores</span>
   </button>
 </nav>
 
-<!-- ============ DETAILS SHEET (the "i" button) ============ -->
+<!-- details sheet (the "i" button) -->
 <dialog id="info-dialog">
   <form method="dialog" id="info-form">
     <h2 id="info-title">Details</h2>
@@ -102,8 +79,12 @@
 
     <p class="stat" id="info-stat"></p>
 
+    <div class="sheet-actions">
+      <button type="button" class="ghost" id="info-remove">Remove from this trip</button>
+      <button type="button" class="danger" id="info-delete">Delete for good</button>
+    </div>
+
     <menu>
-      <button type="button" class="danger" id="info-delete">Delete</button>
       <span class="spacer"></span>
       <button type="button" class="ghost" id="info-cancel">Cancel</button>
       <button type="submit" class="primary">Save</button>
@@ -111,13 +92,14 @@
   </form>
 </dialog>
 
+<!-- store picker (opened by swiping a row left) -->
 <dialog id="store-dialog">
   <form method="dialog" id="store-form">
     <h2 id="store-title">Store</h2>
     <div id="store-options" class="pills"></div>
     <label>Or type a new one
-      <input name="newstore" list="store-names" placeholder="e.g. Plaza Vea" autocomplete="off"
-             enterkeyhint="done">
+      <input name="newstore" list="store-names" placeholder="e.g. Plaza Vea"
+             autocomplete="off" enterkeyhint="done">
     </label>
     <menu>
       <button type="button" class="ghost" id="store-clear">No store</button>
@@ -130,6 +112,6 @@
 
 <datalist id="store-names"></datalist>
 
-<script src="app.js"></script>
+<script src="app.js?v=2.2"></script>
 </body>
 </html>

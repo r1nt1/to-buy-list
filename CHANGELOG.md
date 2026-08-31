@@ -18,6 +18,33 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v2.2 — 2026-08-31
+
+### Fixed
+
+- **The app had stopped responding to taps entirely.** The coloured panel that
+  slides out behind a row during a swipe was stretched across the whole row,
+  and being invisible does not stop an element from receiving taps — so it was
+  catching every one of them before the row underneath could. The panel is now
+  marked as untouchable.
+- **The phone was running an old version.** Browsers keep their own copy of
+  `style.css` and `app.js` and reuse it rather than asking the server for a
+  fresh one. The links in `index.html` now carry a `?v=` number which gets
+  bumped every release, forcing a real download. This is why fixes appeared to
+  do nothing on the iPhone.
+
+### Changed
+
+- **The "All items" tab is gone.** It was confusing and largely duplicated the
+  add box, which already completes anything you have bought before.
+- **The bottom bar now switches between Priority and Stores**, so the two
+  arrangements of the list are thumb-reachable while shopping. The toggle that
+  was at the top of the screen has been removed.
+- **"Remove from this trip" added to the "i" sheet** — with All items gone,
+  this is now how something leaves the list without being deleted.
+
+---
+
 ## v2.1 — 2026-08-31
 
 Feedback from actually using v2.0 on the phone.
