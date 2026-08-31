@@ -1,5 +1,5 @@
 /* =================================================================
-   Groceries — v2.4
+   Groceries — v2.5
 
    The idea in one sentence: an item is never deleted when you buy
    it, it just leaves this trip and waits in All items for next week.
@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '2.4';
+const VERSION     = '2.5';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -18,7 +18,9 @@ const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 const CURRENCY = 'S/';
 
 const PRIORITIES = [1, 2, 3];
-const PRI_LABEL  = { 1: 'Must have', 2: 'Should get', 3: 'Nice to have' };
+// 3 (Low) doubles as the parking bay: things you want eventually but are
+// not buying on this trip. Swiping a row left drops it here.
+const PRI_LABEL  = { 1: 'High', 2: 'Medium', 3: 'Low' };
 const NO_STORE   = 'Other';
 
 /* ---------------------------------------------------------------
@@ -252,7 +254,7 @@ function rowHtml(item) {
     '<div class="swipe-wrap">' +
       '<div class="swipe-bg">' +
         '<span class="sb-l">' + (item.done ? '↩ put back' : '✓ bought') + '</span>' +
-        '<span class="sb-r">store ⌂</span>' +
+        '<span class="sb-r">' + (item.priority === 3 ? 'already Low' : 'send to Low') + '</span>' +
       '</div>' +
       '<div class="row' + (item.done ? ' done' : '') + '" data-id="' + item.id + '">' +
         '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
@@ -355,12 +357,6 @@ function renderBudget(cartSum, pend) {
 function render() {
   document.querySelectorAll('.tab').forEach((b) =>
     b.classList.toggle('active', b.dataset.mode === state.mode));
-  const on = tripItems();
-  const inCart = on.filter((i) => i.done).length;
-  $('#trip-count').textContent = on.length
-    ? on.length + (on.length === 1 ? ' item' : ' items') +
-      (inCart ? ' · ' + inCart + ' in cart' : '')
-    : '';
   $('#version').textContent = 'version ' + VERSION;
 
   renderTrip();
@@ -502,8 +498,9 @@ $('#add-form').addEventListener('submit', (e) => {
   });
 
   input.value = '';
-  // A brand-new item opens straight away, ready to be prioritized.
-  if (created) openRow(created.id); else input.focus();
+  // Deliberately does NOT open the new row or scroll to it — you should be
+  // able to type ten items in a row without being dragged down the list.
+  input.focus();
 });
 
 /* ---------------- budget ---------------- */
@@ -567,6 +564,7 @@ function openInfo(item) {
   const f = $('#info-form');
   f.qty.value = item.qty || 1;
   f.price.value = item.price ?? '';
+  f.store.value = item.store || '';
   f.note.value = item.note || '';
   $('#info-title').textContent = item.name;
   $('#info-stat').textContent = item.timesBought
@@ -586,6 +584,7 @@ $('#info-form').addEventListener('submit', () => {
   update(() => {
     item.qty = Math.max(1, parseInt(f.qty.value, 10) || 1);
     item.price = Number.isFinite(price) && price >= 0 ? price : null;
+    item.store = f.store.value.trim();
     item.note = f.note.value.trim();
   });
 });
@@ -672,60 +671,12 @@ function endSwipe() {
     update(() => { item.done = !item.done; });
     maybeCelebrate();
   } else if (dx <= -SWIPE_TRIGGER) {
-    openStorePicker(item);
+    update(() => { item.priority = 3; });   // send it down to Low
   }
 }
 
 window.addEventListener('pointerup', endSwipe);
 window.addEventListener('pointercancel', endSwipe);
-
-/* ---------------------------------------------------------------
-   8. Store picker (opened by a left swipe)
-   --------------------------------------------------------------- */
-
-const storeDlg = $('#store-dialog');
-let storeId = null;
-
-function knownStores() {
-  return [...new Set(state.items.map((i) => i.store.trim()).filter(Boolean))].sort();
-}
-
-function openStorePicker(item) {
-  storeId = item.id;
-  const stores = knownStores();
-  $('#store-title').textContent = item.name;
-  $('#store-options').innerHTML = stores.length
-    ? stores.map((st) => '<button type="button" class="pill' +
-        (item.store.trim() === st ? ' on' : '') + '" data-pick="' + esc(st) + '">' +
-        esc(st) + '</button>').join('')
-    : '<p class="stat">No stores yet — type one below.</p>';
-  $('#store-form').newstore.value = '';
-  storeDlg.showModal();
-}
-
-$('#store-options').addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-pick]');
-  if (!btn) return;
-  const item = findItem(storeId);
-  if (!item) return;
-  update(() => { item.store = btn.dataset.pick; });
-  storeDlg.close();
-});
-
-$('#store-form').addEventListener('submit', () => {
-  const item = findItem(storeId);
-  if (!item) return;
-  const typed = $('#store-form').newstore.value.trim();
-  if (typed) update(() => { item.store = typed; });
-});
-
-$('#store-clear').addEventListener('click', () => {
-  const item = findItem(storeId);
-  if (item) update(() => { item.store = ''; });
-  storeDlg.close();
-});
-
-$('#store-cancel').addEventListener('click', () => storeDlg.close());
 
 /* ---------------------------------------------------------------
    9. Confetti — fires the moment the last item is checked off
@@ -752,14 +703,20 @@ function confetti() {
   canvas.style.width  = window.innerWidth + 'px';
   canvas.style.height = window.innerHeight + 'px';
 
+  // Launched upward from the bottom edge, then gravity brings it back down.
+  // A thing thrown upward reaches a height of v² / 2g, so to peak around the
+  // middle of the screen we need a starting speed of roughly √(g × H).
+  const gravity = 0.7 * dpr;
+  const launch  = Math.sqrt(gravity * H);
+
   const colours = ['#d7263d', '#f0a83c', '#2f6df6', '#27a266', '#9b59b6', '#ff6b7d'];
   const bits = [];
-  for (let i = 0; i < 110; i++) {
+  for (let i = 0; i < 120; i++) {
     bits.push({
       x: Math.random() * W,
-      y: -(Math.random() * H * 0.4) - 20 * dpr,
-      vx: (Math.random() - 0.5) * 3 * dpr,
-      vy: (2 + Math.random() * 3.5) * dpr,
+      y: H + Math.random() * 40 * dpr,
+      vx: (Math.random() - 0.5) * 7 * dpr,
+      vy: -launch * (0.78 + Math.random() * 0.44),   // some go higher than others
       w: (5 + Math.random() * 6) * dpr,
       h: (8 + Math.random() * 9) * dpr,
       rot: Math.random() * Math.PI,
@@ -772,8 +729,11 @@ function confetti() {
   (function tick() {
     ctx.clearRect(0, 0, W, H);
     for (const b of bits) {
-      b.x += b.vx; b.y += b.vy; b.rot += b.vr;
-      b.vy += 0.045 * dpr;                    // gravity
+      b.x += b.vx;
+      b.y += b.vy;
+      b.rot += b.vr;
+      b.vy += gravity;
+      b.vx *= 0.995;                 // a touch of air resistance
       ctx.save();
       ctx.translate(b.x, b.y);
       ctx.rotate(b.rot);
@@ -782,7 +742,8 @@ function confetti() {
       ctx.restore();
     }
     frame++;
-    if (frame < 170) requestAnimationFrame(tick);
+    // stop once everything has fallen back past the bottom
+    if (frame < 220 && bits.some((b) => b.y < H + 60 * dpr)) requestAnimationFrame(tick);
     else canvas.remove();
   })();
 }

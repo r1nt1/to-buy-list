@@ -18,6 +18,31 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v2.5 — 2026-08-31
+
+### Added
+
+- **A logo in the top-left**, currently a placeholder shopfront drawing. The
+  slot is reserved; swap the SVG in `index.html` when there's a real one.
+
+### Changed
+
+- **Priorities are now High / Medium / Low.** Low doubles as the parking bay:
+  things you want eventually but aren't buying this trip.
+- **Swiping a row left sends it to Low** instead of opening a store picker.
+  This is the answer to the list growing forever — park something rather than
+  deleting it. Swipe right still means bought.
+- **The store picker is gone**; the store lives in the row when you tap it, and
+  in the "i" sheet, both with autocomplete.
+- **Adding an item no longer jumps you down the list or opens the new row.**
+  The cursor stays in the add box so you can type ten items in a row.
+- **A checked-off item's priority number fades**, so finished things stop
+  competing for attention.
+- **Confetti is fired upward from the bottom**, peaks around the middle of the
+  screen and falls back down, instead of dropping from the top.
+
+---
+
 ## v2.4 — 2026-08-31
 
 ### Added

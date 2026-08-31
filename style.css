@@ -56,6 +56,11 @@ main {
   padding: calc(26px + env(safe-area-inset-top)) 0 18px;
 }
 .count { color: var(--muted); font-size: 15px; }
+
+/* placeholder logo — replace the SVG in index.html when there's a real one */
+.logo { display: flex; align-items: center; gap: 9px; color: var(--text); }
+.logo svg { color: var(--accent); flex: none; }
+.logo span { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
 .explainer { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
 .version { color: var(--muted); font-size: 12px; text-align: center; margin: 28px 0 0; }
 
@@ -174,6 +179,7 @@ button.group-head { min-height: 34px; }
 .row-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row-sub  { display: block; font-size: 13px; color: var(--muted); }
 .row.done .row-name { text-decoration: line-through; color: var(--muted); }
+.row.done .badge { opacity: .25; }
 
 /* the small number badge on a closed row */
 .badge {

@@ -10,7 +10,7 @@
 <!-- The ?v= number is a cache-buster. Browsers hang on to old copies of
      these files; changing the number forces a fresh download. Bump it
      every release, or the phone keeps running the previous version. -->
-<link rel="stylesheet" href="style.css?v=2.4">
+<link rel="stylesheet" href="style.css?v=2.5">
 </head>
 <body>
 
@@ -18,7 +18,18 @@
   <section class="view" id="view-trip">
 
     <header class="topbar">
-      <span class="count" id="trip-count"></span>
+      <!-- placeholder logo — swap this SVG for a real one later -->
+      <div class="logo" id="logo" aria-label="Groceries">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none"
+             stroke="currentColor" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9.5 4.6 4h14.8L21 9.5"/>
+          <path d="M3 9.5h18a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/>
+          <path d="M4.7 11.8V20h14.6v-8.2"/>
+          <path d="M9.6 20v-4.7h4.8V20"/>
+        </svg>
+        <span>Groceries</span>
+      </div>
       <button class="ghost" id="new-trip">New trip</button>
     </header>
 
@@ -75,6 +86,11 @@
       </label>
     </div>
 
+    <label>Store
+      <input name="store" list="store-names" placeholder="e.g. Metro"
+             autocomplete="off" enterkeyhint="done">
+    </label>
+
     <label>Note
       <textarea name="note" rows="3" placeholder="e.g. the big bag, not the small one"></textarea>
     </label>
@@ -94,26 +110,8 @@
   </form>
 </dialog>
 
-<!-- store picker (opened by swiping a row left) -->
-<dialog id="store-dialog">
-  <form method="dialog" id="store-form">
-    <h2 id="store-title">Store</h2>
-    <div id="store-options" class="pills"></div>
-    <label>Or type a new one
-      <input name="newstore" list="store-names" placeholder="e.g. Plaza Vea"
-             autocomplete="off" enterkeyhint="done">
-    </label>
-    <menu>
-      <button type="button" class="ghost" id="store-clear">No store</button>
-      <span class="spacer"></span>
-      <button type="button" class="ghost" id="store-cancel">Cancel</button>
-      <button type="submit" class="primary">Save</button>
-    </menu>
-  </form>
-</dialog>
-
 <datalist id="store-names"></datalist>
 
-<script src="app.js?v=2.4"></script>
+<script src="app.js?v=2.5"></script>
 </body>
 </html>
