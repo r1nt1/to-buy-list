@@ -111,6 +111,23 @@
   </form>
 </dialog>
 
+<dialog id="store-dialog">
+  <form method="dialog" id="store-form">
+    <h2 id="store-title">Store</h2>
+    <div id="store-options" class="pills"></div>
+    <label>Or type a new one
+      <input name="newstore" list="store-names" placeholder="e.g. Plaza Vea" autocomplete="off"
+             enterkeyhint="done">
+    </label>
+    <menu>
+      <button type="button" class="ghost" id="store-clear">No store</button>
+      <span class="spacer"></span>
+      <button type="button" class="ghost" id="store-cancel">Cancel</button>
+      <button type="submit" class="primary">Save</button>
+    </menu>
+  </form>
+</dialog>
+
 <datalist id="store-names"></datalist>
 
 <script src="app.js"></script>

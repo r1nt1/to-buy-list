@@ -1,5 +1,5 @@
 /* =================================================================
-   Groceries — v2.0
+   Groceries — v2.1
 
    The idea in one sentence: an item is never deleted when you buy
    it, it just leaves this trip and waits in All items for next week.
@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '2.0';
+const VERSION     = '2.1';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -189,7 +189,7 @@ function byPriorityHtml(pend, cartSum) {
     if (idx === cutoffAt && !drawn) { html += cutoffDivider(); drawn = true; }
 
     const sum = group.reduce((s, i) => s + lineTotal(i), 0);
-    html += '<div class="group-head"><span>' + PRI_LABEL[p] + '</span>' +
+    html += '<div class="group-head gh' + p + '"><span>' + PRI_LABEL[p] + '</span>' +
             (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') + '</div>';
     html += '<div class="card">';
     for (const item of group) {
@@ -242,13 +242,19 @@ function rowHtml(item) {
   if (item.note)    bits.push('📝');
 
   return '' +
-    '<div class="row' + (item.done ? ' done' : '') + '" data-id="' + item.id + '">' +
-      '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
-      '<button class="row-main" data-act="open">' +
-        '<span class="row-name">' + esc(item.name) + '</span>' +
-        (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
-      '</button>' +
-      '<button class="badge p' + item.priority + '" data-act="open">' + item.priority + '</button>' +
+    '<div class="swipe-wrap">' +
+      '<div class="swipe-bg">' +
+        '<span class="sb-l">' + (item.done ? '↩ put back' : '✓ bought') + '</span>' +
+        '<span class="sb-r">store ⌂</span>' +
+      '</div>' +
+      '<div class="row' + (item.done ? ' done' : '') + '" data-id="' + item.id + '">' +
+        '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
+        '<button class="row-main" data-act="open">' +
+          '<span class="row-name">' + esc(item.name) + '</span>' +
+          (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
+        '</button>' +
+        '<button class="badge p' + item.priority + '" data-act="open">' + item.priority + '</button>' +
+      '</div>' +
     '</div>';
 }
 
@@ -262,18 +268,13 @@ function openRowHtml(item) {
   return '' +
     '<div class="row open" data-id="' + item.id + '">' +
       '<div class="open-head">' +
-        '<button class="check' + (item.done ? '' : '') + '" data-act="toggle-done" ' +
-          'aria-label="Check off">✓</button>' +
+        '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
         '<input class="name-input" data-field="name" value="' + esc(item.name) + '" ' +
           'enterkeyhint="done" autocomplete="off">' +
-      '</div>' +
-      // Two lines of controls, so the store box has room to breathe.
-      '<div class="open-controls">' +
-        '<div class="pri-group">' + pri + '</div>' +
-        '<span class="spacer"></span>' +
         '<button class="info-btn" data-act="info" aria-label="More details">i</button>' +
       '</div>' +
       '<div class="open-controls">' +
+        '<div class="pri-group">' + pri + '</div>' +
         '<input class="field field-store" data-field="store" list="store-names" ' +
           'placeholder="store" value="' + esc(item.store) + '" autocomplete="off">' +
         '<input class="field field-price" data-field="price" type="number" min="0" ' +
@@ -422,6 +423,7 @@ function render() {
    --------------------------------------------------------------- */
 
 function handleClick(event) {
+  if (justSwiped) { justSwiped = false; return; }
   const head = event.target.closest('[data-store]');
   if (head) {                                  // collapse / expand a store group
     const store = head.dataset.store;
@@ -650,6 +652,123 @@ $('#info-delete').addEventListener('click', () => {
   });
   info.close();
 });
+
+/* ---------------------------------------------------------------
+   7. Swipe
+   Swipe a row right to mark it bought, left to choose its store.
+   Both actions also have ordinary buttons, so a gesture is never
+   the only way to do something.
+   --------------------------------------------------------------- */
+
+const SWIPE_TRIGGER = 70;   // how far you must drag before it counts
+let sw = null;
+let justSwiped = false;
+
+$('#trip-list').addEventListener('pointerdown', (e) => {
+  justSwiped = false;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+  const row = e.target.closest('.row');
+  if (!row || row.classList.contains('open')) return;
+
+  // Starting right at the left edge is iOS's own "go back" gesture. Leave it alone.
+  if (e.clientX < 24) return;
+
+  sw = { row, wrap: row.parentElement, x: e.clientX, y: e.clientY, dx: 0, active: false };
+});
+
+window.addEventListener('pointermove', (e) => {
+  if (!sw) return;
+  const dx = e.clientX - sw.x;
+  const dy = e.clientY - sw.y;
+
+  if (!sw.active) {
+    // Decide once whether this is a sideways swipe or the page being scrolled.
+    if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { sw = null; return; }
+    if (Math.abs(dx) < 12) return;
+    sw.active = true;
+    sw.row.style.transition = 'none';
+  }
+
+  sw.dx = dx;
+  sw.row.style.transform = 'translateX(' + dx + 'px)';
+  sw.wrap.classList.toggle('sw-right', dx > 0);
+  sw.wrap.classList.toggle('sw-left',  dx < 0);
+  sw.wrap.classList.toggle('sw-armed', Math.abs(dx) >= SWIPE_TRIGGER);
+});
+
+function endSwipe() {
+  if (!sw) return;
+  const { row, wrap, dx, active } = sw;
+  sw = null;
+
+  row.style.transition = 'transform .18s';
+  row.style.transform = '';
+  wrap.classList.remove('sw-right', 'sw-left', 'sw-armed');
+
+  if (!active) return;
+  justSwiped = true;                 // stop this becoming a tap as well
+
+  const item = findItem(row.dataset.id);
+  if (!item) return;
+
+  if (dx >= SWIPE_TRIGGER) {
+    update(() => { item.done = !item.done; });
+  } else if (dx <= -SWIPE_TRIGGER) {
+    openStorePicker(item);
+  }
+}
+
+window.addEventListener('pointerup', endSwipe);
+window.addEventListener('pointercancel', endSwipe);
+
+/* ---------------------------------------------------------------
+   8. Store picker (opened by a left swipe)
+   --------------------------------------------------------------- */
+
+const storeDlg = $('#store-dialog');
+let storeId = null;
+
+function knownStores() {
+  return [...new Set(state.items.map((i) => i.store.trim()).filter(Boolean))].sort();
+}
+
+function openStorePicker(item) {
+  storeId = item.id;
+  const stores = knownStores();
+  $('#store-title').textContent = item.name;
+  $('#store-options').innerHTML = stores.length
+    ? stores.map((st) => '<button type="button" class="pill' +
+        (item.store.trim() === st ? ' on' : '') + '" data-pick="' + esc(st) + '">' +
+        esc(st) + '</button>').join('')
+    : '<p class="stat">No stores yet — type one below.</p>';
+  $('#store-form').newstore.value = '';
+  storeDlg.showModal();
+}
+
+$('#store-options').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-pick]');
+  if (!btn) return;
+  const item = findItem(storeId);
+  if (!item) return;
+  update(() => { item.store = btn.dataset.pick; });
+  storeDlg.close();
+});
+
+$('#store-form').addEventListener('submit', () => {
+  const item = findItem(storeId);
+  if (!item) return;
+  const typed = $('#store-form').newstore.value.trim();
+  if (typed) update(() => { item.store = typed; });
+});
+
+$('#store-clear').addEventListener('click', () => {
+  const item = findItem(storeId);
+  if (item) update(() => { item.store = ''; });
+  storeDlg.close();
+});
+
+$('#store-cancel').addEventListener('click', () => storeDlg.close());
 
 /* ---------------- go ---------------- */
 render();

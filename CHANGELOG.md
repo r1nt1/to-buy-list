@@ -18,6 +18,43 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v2.1 — 2026-08-31
+
+Feedback from actually using v2.0 on the phone.
+
+### Added
+
+- **Swipe right on a row to mark it bought.** A green panel slides out behind
+  it saying what will happen; let go past about a third of the width and it
+  fires. Swiping right on something already bought puts it back.
+- **Swipe left to set the store.** Opens a picker listing every store you've
+  typed before, plus a box for a new one and a "No store" button.
+- Both gestures also still have ordinary buttons, so a gesture is never the
+  only way to do something — and everything still works on the laptop.
+
+### Fixed
+
+- **The page no longer zooms in when you tap a field.** iPhone Safari zooms
+  whenever you focus an input whose text is smaller than 16px. Two things
+  were causing it: some fields were set to 15px and 14px, and — the real
+  culprit — several `font:` lines were written in a form the browser rejects
+  outright, so those inputs silently fell back to a 13px default. Every input
+  in the app is now 16px or larger.
+
+### Changed
+
+- **The expanded row is one line of controls, not two.** 1 / 2 / 3, store and
+  price now sit on a single row; the "i" moved up beside the name.
+- **Group headings take their priority's colour** — "Must have" red, "Should
+  get" amber, "Nice to have" grey.
+
+### Still open
+
+- What the **All items** tab is actually for. It's confusing as it stands and
+  is under discussion — see the notes in the conversation.
+
+---
+
 ## v2.0 — 2026-08-31
 
 The first real redesign, after talking through how Apple Reminders actually
