@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#111418">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Groceries</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -11,7 +13,7 @@
 
 <main>
 
-  <!-- ============ TRIP VIEW ============ -->
+  <!-- ============ TRIP ============ -->
   <section class="view" id="view-trip">
 
     <header class="topbar">
@@ -19,99 +21,97 @@
       <button class="ghost" id="finish-trip">Finish trip</button>
     </header>
 
-    <div class="budget">
-      <div class="budget-row">
-        <span class="budget-cart" id="budget-cart">$0.00 in cart</span>
-        <label class="budget-set">
-          budget $
+    <!-- hidden until at least one item has a price -->
+    <div class="budget hidden" id="budget">
+      <button class="budget-row" id="budget-toggle">
+        <span class="budget-cart" id="budget-cart"></span>
+        <span class="budget-caret" id="budget-caret">⌄</span>
+      </button>
+      <div id="budget-detail">
+        <label class="budget-set">budget
           <input type="number" id="budget-input" min="0" step="1" inputmode="decimal">
         </label>
+        <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
+        <p class="budget-note" id="budget-note"></p>
       </div>
-      <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
-      <p class="budget-note" id="budget-note"></p>
     </div>
 
     <form class="add" id="add-form">
       <input id="add-input" placeholder="Add an item…" autocomplete="off"
-             enterkeyhint="done" list="pantry-names">
-      <datalist id="pantry-names"></datalist>
+             enterkeyhint="done" list="item-names">
+      <datalist id="item-names"></datalist>
       <button type="submit">Add</button>
     </form>
+
+    <div class="segmented" id="view-toggle">
+      <button class="seg on"  data-mode="priority">By priority</button>
+      <button class="seg"     data-mode="store">By store</button>
+    </div>
 
     <div id="trip-list"></div>
   </section>
 
-  <!-- ============ PANTRY VIEW ============ -->
-  <section class="view hidden" id="view-pantry">
+  <!-- ============ ALL ITEMS ============ -->
+  <section class="view hidden" id="view-all">
 
     <header class="topbar">
-      <h1>Pantry</h1>
-      <span class="count" id="pantry-count"></span>
+      <h1>All items</h1>
+      <span class="count" id="all-count"></span>
     </header>
 
-    <p class="explainer">Everything you ever buy lives here. Nothing is ever deleted by
-       checking it off — tap an item to put it on this week&rsquo;s trip.</p>
+    <p class="explainer">Everything you ever buy. Checking something off never deletes it —
+       it just leaves this trip and waits here for next time.</p>
 
-    <input class="search" id="pantry-search" placeholder="Search the pantry…"
-           autocomplete="off" type="search">
+    <input class="search" id="search" placeholder="Search…" autocomplete="off" type="search">
 
     <div id="usual"></div>
-    <div id="pantry-list"></div>
+    <div id="all-list"></div>
+
+    <p class="version" id="version"></p>
   </section>
 
 </main>
 
-<!-- ============ BOTTOM TABS ============ -->
+<!-- ============ TABS ============ -->
 <nav class="tabs">
   <button class="tab active" data-tab="trip">
-    <span class="tab-icon">🛒</span><span>Trip</span>
+    <span class="tab-icon">🛒</span><span>This trip</span>
   </button>
-  <button class="tab" data-tab="pantry">
-    <span class="tab-icon">🗄️</span><span>Pantry</span>
+  <button class="tab" data-tab="all">
+    <span class="tab-icon">📋</span><span>All items</span>
   </button>
 </nav>
 
-<!-- ============ EDIT SHEET ============ -->
-<dialog id="edit-dialog">
-  <form method="dialog" id="edit-form">
-    <h2 id="edit-title">Edit item</h2>
-
-    <label>Name
-      <input name="name" required autocomplete="off">
-    </label>
-
-    <label>Category
-      <input name="category" placeholder="e.g. Produce" autocomplete="off" list="category-names">
-      <datalist id="category-names"></datalist>
-    </label>
+<!-- ============ DETAILS SHEET (the "i" button) ============ -->
+<dialog id="info-dialog">
+  <form method="dialog" id="info-form">
+    <h2 id="info-title">Details</h2>
 
     <div class="two-up">
-      <label>Price each
-        <input name="price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="—">
-      </label>
       <label>Quantity
         <input name="qty" type="number" min="1" step="1" inputmode="numeric" value="1">
       </label>
+      <label>Price each
+        <input name="price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="—">
+      </label>
     </div>
 
-    <label>Priority
-      <select name="priority">
-        <option value="must">Must have</option>
-        <option value="should">Should get</option>
-        <option value="maybe">Nice to have</option>
-      </select>
+    <label>Note
+      <textarea name="note" rows="3" placeholder="e.g. the big bag, not the small one"></textarea>
     </label>
 
-    <p class="stat" id="edit-stat"></p>
+    <p class="stat" id="info-stat"></p>
 
     <menu>
-      <button type="button" class="danger" id="edit-delete">Delete</button>
+      <button type="button" class="danger" id="info-delete">Delete</button>
       <span class="spacer"></span>
-      <button type="button" class="ghost" id="edit-cancel">Cancel</button>
+      <button type="button" class="ghost" id="info-cancel">Cancel</button>
       <button type="submit" class="primary">Save</button>
     </menu>
   </form>
 </dialog>
+
+<datalist id="store-names"></datalist>
 
 <script src="app.js"></script>
 </body>

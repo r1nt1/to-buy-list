@@ -1,19 +1,19 @@
 /* ---------------------------------------------------------------
-   Colours live in one place as CSS variables, so changing the look
-   of the whole app means editing this block and nothing else.
+   All colours live here. Change them in this block and they change
+   everywhere in the app.
    --------------------------------------------------------------- */
 :root {
-  --bg:        #f6f7f9;
-  --surface:   #ffffff;
-  --line:      #e3e6ea;
-  --text:      #14181d;
-  --muted:     #6b7280;
-  --accent:    #2f6df6;
-  --must:      #d7263d;
-  --should:    #c77700;
-  --maybe:     #6b7280;
-  --over:      #d7263d;
-  --radius:    14px;
+  --bg:      #f6f7f9;
+  --surface: #ffffff;
+  --line:    #e3e6ea;
+  --text:    #14181d;
+  --muted:   #6b7280;
+  --accent:  #2f6df6;
+  --p1:      #d7263d;   /* priority 1 — red    */
+  --p2:      #b26a00;   /* priority 2 — amber  */
+  --p3:      #7b828d;   /* priority 3 — grey   */
+  --over:    #d7263d;
+  --radius:  14px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,11 +22,11 @@
     --surface: #1b1f25;
     --line:    #2b313a;
     --text:    #eef1f5;
-    --muted:   #939bA6;
+    --muted:   #939ba6;
     --accent:  #6f9bff;
-    --must:    #ff6b7d;
-    --should:  #f0a83c;
-    --maybe:   #939ba6;
+    --p1:      #ff6b7d;
+    --p2:      #f0a83c;
+    --p3:      #8b939f;
     --over:    #ff6b7d;
   }
 }
@@ -39,112 +39,110 @@ body {
   background: var(--bg);
   color: var(--text);
   -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 main {
-  /* leave room for the fixed tab bar, plus the iPhone home-indicator strip */
   padding: 0 16px calc(96px + env(safe-area-inset-bottom));
   max-width: 620px;
   margin: 0 auto;
 }
 
-.hidden { display: none; }
+.hidden { display: none !important; }
 
 /* ---------------- top bar ---------------- */
 .topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: calc(12px + env(safe-area-inset-top)) 0 8px;
 }
 .topbar h1 { font-size: 28px; margin: 0; letter-spacing: -0.02em; }
 .count { color: var(--muted); font-size: 15px; }
-
 .explainer { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+.version { color: var(--muted); font-size: 12px; text-align: center; margin: 28px 0 0; }
 
 /* ---------------- buttons ---------------- */
 button {
-  font: inherit;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  padding: 10px 14px;
-  min-height: 44px;          /* Apple's minimum comfortable tap target */
-  cursor: pointer;
-  background: var(--surface);
-  color: var(--text);
+  font: inherit; border-radius: 10px; border: 1px solid transparent;
+  padding: 10px 14px; min-height: 44px; cursor: pointer;
+  background: var(--surface); color: var(--text);
 }
 button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 button.ghost   { background: transparent; border-color: var(--line); color: var(--muted); }
-button.danger  { background: transparent; border-color: transparent; color: var(--must); }
+button.danger  { background: transparent; border-color: transparent; color: var(--p1); }
 
 /* ---------------- budget ---------------- */
 .budget {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  margin-bottom: 12px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 4px 14px 12px; margin-bottom: 12px;
 }
-.budget-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.budget.compact { padding-bottom: 4px; }
+.budget-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  width: 100%; background: none; border: none; padding: 8px 0; text-align: left;
+}
 .budget-cart { font-size: 20px; font-weight: 600; }
-.budget-set { color: var(--muted); font-size: 14px; }
+.budget-caret { color: var(--muted); transition: transform .15s; }
+.budget.compact .budget-caret { transform: rotate(-90deg); }
+.budget.compact #budget-detail { display: none; }
+.budget-set { color: var(--muted); font-size: 14px; display: block; margin-bottom: 4px; }
 .budget-set input {
-  width: 68px; font: inherit; text-align: right;
+  width: 84px; font: inherit; text-align: right;
   border: none; border-bottom: 1px solid var(--line);
   background: transparent; color: var(--text); padding: 2px 0;
 }
-.bar {
-  height: 7px; border-radius: 4px; background: var(--line);
-  margin: 10px 0 8px; overflow: hidden;
-}
+.bar { height: 7px; border-radius: 4px; background: var(--line); margin: 8px 0; overflow: hidden; }
 .bar-fill { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 .bar-fill.over { background: var(--over); }
 .budget-note { margin: 0; font-size: 14px; color: var(--muted); }
 .budget-note.over { color: var(--over); }
 
 /* ---------------- add box ---------------- */
-.add { display: flex; gap: 8px; margin-bottom: 18px; }
+.add { display: flex; gap: 8px; margin-bottom: 14px; }
 .add input, .search {
-  flex: 1; width: 100%; font: inherit;
-  padding: 12px 14px; min-height: 44px;
+  flex: 1; width: 100%; font: inherit; padding: 12px 14px; min-height: 44px;
   border: 1px solid var(--line); border-radius: 10px;
   background: var(--surface); color: var(--text);
 }
 .search { margin-bottom: 16px; }
 .add button { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-/* ---------------- list groups ---------------- */
+/* ---------------- priority / store toggle ---------------- */
+.segmented {
+  display: flex; gap: 4px; padding: 3px; margin-bottom: 4px;
+  background: var(--line); border-radius: 11px;
+}
+.seg {
+  flex: 1; min-height: 36px; padding: 6px; font-size: 15px;
+  background: transparent; border: none; color: var(--muted); border-radius: 8px;
+}
+.seg.on { background: var(--surface); color: var(--text); font-weight: 600; }
+
+/* ---------------- list ---------------- */
 .group-head {
-  display: flex; justify-content: space-between; align-items: baseline;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
   margin: 20px 2px 8px; font-size: 13px; font-weight: 600;
   text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  width: 100%; background: none; border: none; padding: 0; min-height: 0; text-align: left;
 }
 .group-head .sum { text-transform: none; letter-spacing: 0; font-weight: 400; }
+button.group-head { min-height: 34px; }
+.caret { display: inline-block; transition: transform .15s; margin-right: 6px; }
+.collapsed .caret { transform: rotate(-90deg); }
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
+.card { background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--radius); overflow: hidden; }
 
-.row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px;
-  border-top: 1px solid var(--line);
-}
+.row { display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+       border-top: 1px solid var(--line); }
 .row:first-child { border-top: none; }
+.row.open { display: block; background: var(--bg); }
 
 .check {
-  flex: none; width: 30px; height: 30px; min-height: 30px;
-  border-radius: 50%; border: 2px solid var(--line);
-  background: transparent; padding: 0;
+  flex: none; width: 30px; height: 30px; min-height: 30px; padding: 0;
+  border-radius: 50%; border: 2px solid var(--line); background: transparent;
   font-size: 16px; line-height: 1; color: transparent;
 }
 .row.done .check { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-/* pantry: the +/tick that puts an item on this week's trip */
 .add-toggle { color: var(--muted); font-size: 20px; font-weight: 300; }
 .add-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
@@ -154,74 +152,93 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .row-sub  { display: block; font-size: 13px; color: var(--muted); }
 .row.done .row-name { text-decoration: line-through; color: var(--muted); }
 
-/* the one-tap priority chip */
-.chip {
-  flex: none; min-height: 32px; padding: 4px 10px;
-  font-size: 13px; font-weight: 600; border-radius: 999px;
-  border: 1px solid currentColor; background: transparent;
+/* the small number badge on a closed row */
+.badge {
+  flex: none; width: 26px; height: 26px; min-height: 26px; padding: 0;
+  border-radius: 50%; font-size: 14px; font-weight: 700;
+  border: 1.5px solid currentColor; background: transparent;
 }
-.chip.must   { color: var(--must); }
-.chip.should { color: var(--should); }
-.chip.maybe  { color: var(--maybe); }
+.p1 { color: var(--p1); } .p2 { color: var(--p2); } .p3 { color: var(--p3); }
+
+/* ---------------- expanded row ---------------- */
+.open-head { display: flex; align-items: center; gap: 10px; }
+.name-input {
+  flex: 1; min-width: 0; font: inherit; font-weight: 500;
+  padding: 8px 10px; min-height: 40px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); color: var(--text);
+}
+.open-controls { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.open-controls + .open-controls { margin-top: 8px; }
+.pri-group { display: flex; gap: 6px; flex: none; }
+.pri {
+  width: 40px; min-height: 40px; padding: 0; font-size: 16px; font-weight: 700;
+  border-radius: 9px; border: 1.5px solid var(--line);
+  background: var(--surface); color: var(--muted);
+}
+.pri.on.v1 { background: var(--p1); border-color: var(--p1); color: #fff; }
+.pri.on.v2 { background: var(--p2); border-color: var(--p2); color: #fff; }
+.pri.on.v3 { background: var(--p3); border-color: var(--p3); color: #fff; }
+
+.field {
+  min-width: 0; font: 15px/1.3 inherit; padding: 8px 10px; min-height: 40px;
+  border: 1px solid var(--line); border-radius: 9px;
+  background: var(--surface); color: var(--text);
+}
+.field-store { flex: 1; }
+.field-price { flex: none; width: 84px; text-align: right; }
+.info-btn {
+  flex: none; width: 40px; min-height: 40px; padding: 0;
+  border-radius: 50%; border: 1.5px solid var(--line);
+  color: var(--muted); font-style: italic; font-weight: 700; font-family: Georgia, serif;
+}
 
 /* the budget cutoff divider */
-.cutoff {
-  display: flex; align-items: center; gap: 10px;
-  margin: 14px 2px; color: var(--over); font-size: 13px; font-weight: 600;
-}
+.cutoff { display: flex; align-items: center; gap: 10px; margin: 14px 2px;
+          color: var(--over); font-size: 13px; font-weight: 600; }
 .cutoff::before, .cutoff::after {
   content: ""; flex: 1; height: 1px; background: var(--over); opacity: .4;
 }
 
 .empty { color: var(--muted); text-align: center; padding: 28px 12px; font-size: 15px; }
 
-/* pantry quick-add pills */
 .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
-.pill {
-  min-height: 38px; padding: 6px 12px; border-radius: 999px;
-  border: 1px solid var(--line); font-size: 15px;
-}
+.pill { min-height: 38px; padding: 6px 12px; border-radius: 999px;
+        border: 1px solid var(--line); font-size: 15px; }
 .pill.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-/* ---------------- tab bar ---------------- */
+/* ---------------- tabs ---------------- */
 .tabs {
-  position: fixed; left: 0; right: 0; bottom: 0;
-  display: flex; gap: 4px;
+  position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 4px;
   padding: 6px 12px calc(6px + env(safe-area-inset-bottom));
   background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid var(--line);
+  backdrop-filter: blur(12px); border-top: 1px solid var(--line);
 }
-.tab {
-  flex: 1; background: none; border: none; color: var(--muted);
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  font-size: 11px; padding: 4px;
-}
+.tab { flex: 1; background: none; border: none; color: var(--muted);
+       display: flex; flex-direction: column; align-items: center; gap: 2px;
+       font-size: 11px; padding: 4px; }
 .tab.active { color: var(--accent); }
 .tab-icon { font-size: 20px; line-height: 1; }
 
-/* ---------------- edit sheet ---------------- */
+/* ---------------- details sheet ---------------- */
 dialog {
-  border: none; border-radius: var(--radius); padding: 0;
+  border: none; border-radius: var(--radius); padding: 0; margin: auto;
   background: var(--surface); color: var(--text);
   width: min(420px, calc(100vw - 32px));
-  margin: auto;   /* centre it on screen */
 }
 dialog::backdrop { background: rgba(0,0,0,.45); }
-#edit-form { padding: 18px; display: grid; gap: 14px; }
-#edit-form h2 { margin: 0; font-size: 20px; }
-#edit-form label { display: grid; gap: 5px; font-size: 13px; color: var(--muted); }
-#edit-form input, #edit-form select {
+#info-form { padding: 18px; display: grid; gap: 14px; }
+#info-form h2 { margin: 0; font-size: 20px; }
+#info-form label { display: grid; gap: 5px; font-size: 13px; color: var(--muted); }
+#info-form input, #info-form textarea {
   font: 17px/1.3 inherit; padding: 10px 12px; min-height: 44px;
   border: 1px solid var(--line); border-radius: 10px;
   background: var(--bg); color: var(--text);
-  /* Without these two, an input keeps its default ~20-character width and
-     pushes the whole sheet wider than the screen. */
-  width: 100%;
-  min-width: 0;
+  width: 100%; min-width: 0;   /* stops inputs forcing the sheet wider than the screen */
+  resize: vertical;
 }
-#edit-form label, .two-up > * { min-width: 0; }
+#info-form label, .two-up > * { min-width: 0; }
 .two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .stat { margin: 0; font-size: 13px; color: var(--muted); }
-#edit-form menu { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0; }
+#info-form menu { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0; }
 .spacer { flex: 1; }
