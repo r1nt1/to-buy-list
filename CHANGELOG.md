@@ -18,6 +18,16 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v2.9 — 2026-08-31
+
+### Changed
+
+- **Reverted the coloured H / M / L buttons.** Tried in 2.8, didn't like it —
+  back to plain grey buttons that fill in with the priority colour when chosen.
+  The letters stay.
+
+---
+
 ## v2.8 — 2026-08-31
 
 ### Fixed

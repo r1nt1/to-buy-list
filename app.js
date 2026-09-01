@@ -1,5 +1,5 @@
 /* =================================================================
-   To buy list — v2.8
+   To buy list — v2.9
 
    The idea in one sentence: an item is never deleted when you buy
    it, it just leaves this trip and waits in All items for next week.
@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '2.8';
+const VERSION     = '2.9';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
