@@ -1,5 +1,5 @@
 /* =================================================================
-   To buy list — v2.7
+   To buy list — v2.8
 
    The idea in one sentence: an item is never deleted when you buy
    it, it just leaves this trip and waits in All items for next week.
@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '2.7';
+const VERSION     = '2.8';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -367,9 +367,6 @@ function render() {
 
   renderTrip();
 
-  $('#item-names').innerHTML = [...state.items].sort(byName)
-    .map((i) => '<option value="' + esc(i.name) + '">').join('');
-
   // Autocomplete for the store box — every store you have ever typed.
   $('#store-names').innerHTML =
     [...new Set(state.items.map((i) => i.store.trim()).filter(Boolean))].sort()
@@ -553,9 +550,60 @@ $('#add-form').addEventListener('submit', (e) => {
   });
 
   input.value = '';
+  renderSuggestions();
   // Deliberately does NOT open the new row or scroll to it — you should be
   // able to type ten items in a row without being dragged down the list.
   input.focus();
+});
+
+/* ---------------------------------------------------------------
+   Suggestions under the add box
+   Drawn by us rather than by the browser, so it lines up with the
+   box and looks like the rest of the app.
+   --------------------------------------------------------------- */
+
+const suggestBox = $('#suggest');
+
+function renderSuggestions() {
+  const typed = $('#add-input').value.trim().toLowerCase();
+  const matches = typed
+    ? state.items.filter((i) => i.name.toLowerCase().includes(typed)).sort(byName).slice(0, 6)
+    : [];
+
+  if (!matches.length) {
+    suggestBox.classList.add('hidden');
+    suggestBox.innerHTML = '';
+    return;
+  }
+
+  suggestBox.innerHTML = matches.map((i) =>
+    '<button type="button" class="suggest-row" data-pick-item="' + i.id + '">' +
+      '<span>' + esc(i.name) + '</span>' +
+      '<span class="suggest-hint">' +
+        (i.done ? 'in cart' : 'already on your list') +
+      '</span>' +
+    '</button>').join('');
+  suggestBox.classList.remove('hidden');
+}
+
+suggestBox.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-pick-item]');
+  if (!btn) return;
+  const item = findItem(btn.dataset.pickItem);
+  if (!item) return;
+  // Tapping one means "I need this" — so bring it back out of the cart.
+  update(() => { item.done = false; });
+  $('#add-input').value = '';
+  renderSuggestions();
+  $('#add-input').focus();
+});
+
+$('#add-input').addEventListener('input', renderSuggestions);
+$('#add-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { $('#add-input').value = ''; renderSuggestions(); }
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.add-wrap')) suggestBox.classList.add('hidden');
 });
 
 /* ---------------- budget ---------------- */

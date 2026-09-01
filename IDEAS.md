@@ -33,6 +33,22 @@ server. Deferred until the app has been used for real on the phone for a while
 — see the conversation for the reasoning, especially about offline editing
 being the hard part rather than the login.
 
+## Drag to reorder / drag between priority groups
+
+Discussed and deferred. Dragging is the most expensive interaction on the web
+to make feel right: it needs long-press detection, auto-scrolling when you
+near the edge of the screen, a live preview of where the item will land, and it
+fights the browser's own scrolling. Without haptics there's also no physical
+feedback when an item picks up or drops.
+
+Against that cost, it mostly duplicates something that already takes two taps
+(open the row, tap H/M/L). Worth revisiting only if real use shows constant
+re-prioritising.
+
+The genuinely *new* thing dragging would allow is custom ordering **within** a
+group — items are alphabetical today. If that turns out to matter, a simpler
+sort option is a much cheaper way to get there than drag-and-drop.
+
 ## Settled, not revisiting for now
 
 - **A fourth "none" priority.** Low already means "not this trip", and Medium

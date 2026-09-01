@@ -10,7 +10,7 @@
 <!-- The ?v= number is a cache-buster. Browsers hang on to old copies of
      these files; changing the number forces a fresh download. Bump it
      every release, or the phone keeps running the previous version. -->
-<link rel="stylesheet" href="style.css?v=2.7">
+<link rel="stylesheet" href="style.css?v=2.8">
 </head>
 <body>
 
@@ -50,11 +50,16 @@
       </div>
     </div>
 
-    <form class="add" id="add-form">
-      <input id="add-input" placeholder="Add an item…" autocomplete="off"
-             enterkeyhint="done" list="item-names">
-      <button type="submit">Add</button>
-    </form>
+    <div class="add-wrap">
+      <form class="add" id="add-form">
+        <input id="add-input" placeholder="Add an item…" autocomplete="off"
+               enterkeyhint="done">
+        <button type="submit">Add</button>
+      </form>
+      <!-- our own suggestion list. The browser's built-in one is drawn
+           outside the page, so it can't be positioned or styled. -->
+      <div class="suggest hidden" id="suggest"></div>
+    </div>
 
     <div id="trip-list"></div>
     <p class="version" id="version"></p>
@@ -124,9 +129,8 @@
   </div>
 </dialog>
 
-<datalist id="item-names"></datalist>
 <datalist id="store-names"></datalist>
 
-<script src="app.js?v=2.7"></script>
+<script src="app.js?v=2.8"></script>
 </body>
 </html>

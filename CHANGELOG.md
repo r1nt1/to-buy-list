@@ -18,6 +18,25 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v2.8 — 2026-08-31
+
+### Fixed
+
+- **The Add an item dropdown is ours now.** Moving the list out of the flex row
+  in v2.7 wasn't enough, because the popup is drawn by the *browser*, outside
+  the page — nothing in the app could position or style it. It's now a normal
+  element in the page, so it lines up with the box and matches the app.
+  It also says whether a match is already on your list or sitting in the cart,
+  and tapping one brings it back out of the cart.
+
+### Changed
+
+- **H / M / L each carry their own colour** — red, amber and grey — so the
+  scale reads before you've picked anything. Choosing one fills the button in
+  and turns the letter white.
+
+---
+
 ## v2.7 — 2026-08-31
 
 ### Fixed
