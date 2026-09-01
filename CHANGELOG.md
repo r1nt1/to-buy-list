@@ -18,6 +18,35 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v2.7 — 2026-08-31
+
+### Fixed
+
+- **The Add an item dropdown appeared far to the left.** The list of
+  suggestions was sitting inside the same side-by-side row as the text box and
+  the Add button, and the browser was positioning the popup against that
+  instead of against the box. Moved out to the end of the page.
+
+### Changed
+
+- **Swiping left now demotes before it deletes.** Anything above Low drops to
+  Low; only something already in Low is deleted, and that still asks first. A
+  stray swipe can no longer destroy something you cared about. The panel behind
+  the row is grey for a demotion and red only when it will really delete.
+- **The priority buttons say H / M / L instead of 1 / 2 / 3.** A letter can't
+  be misread as a quantity, and it matches the High / Medium / Low headings.
+- **Confirmation panels have a "Don't ask me again" tick.** It's remembered per
+  question, so silencing the New trip prompt doesn't silence the delete one.
+  It only remembers if you actually go ahead — ticking it and then cancelling
+  doesn't count.
+
+### Added
+
+- `IDEAS.md` — where the parked plans live: the profile/stats menu, sharing,
+  sync, and the things we decided against.
+
+---
+
 ## v2.6 — 2026-08-31
 
 ### Fixed

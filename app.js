@@ -1,5 +1,5 @@
 /* =================================================================
-   To buy list — v2.6
+   To buy list — v2.7
 
    The idea in one sentence: an item is never deleted when you buy
    it, it just leaves this trip and waits in All items for next week.
@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '2.6';
+const VERSION     = '2.7';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -21,6 +21,7 @@ const PRIORITIES = [1, 2, 3];
 // 3 (Low) doubles as the parking bay: things you want eventually but are
 // not buying on this trip. Swiping a row left drops it here.
 const PRI_LABEL  = { 1: 'High', 2: 'Medium', 3: 'Low' };
+const PRI_SHORT  = { 1: 'H', 2: 'M', 3: 'L' };
 const NO_STORE   = 'Other';
 
 /* ---------------------------------------------------------------
@@ -49,6 +50,7 @@ function seedState() {
     schema: 2, budget: 0, mode: 'priority',
     expanded: [],        // which store groups are open — none, to begin with
     budgetOpen: false,   // the budget panel stays shut until you open it
+    skipAsk: {},         // confirmations you've ticked "don't ask me again" on
     items: [
       newItem('Rice',      { priority: 1 }),
       newItem('Potatoes',  { priority: 1 }),
@@ -70,6 +72,7 @@ function migrateFromV1(old) {
     mode: 'priority',
     expanded: [],
     budgetOpen: false,
+    skipAsk: {},
     items: (old.items || []).map((i) => ({
       ...newItem(i.name),
       id: i.id,
@@ -95,6 +98,7 @@ function load() {
         // fill in anything a older save is missing
         if (!Array.isArray(parsed.expanded)) parsed.expanded = [];
         if (typeof parsed.budgetOpen !== 'boolean') parsed.budgetOpen = false;
+        if (!parsed.skipAsk || typeof parsed.skipAsk !== 'object') parsed.skipAsk = {};
         return parsed;
       }
     }
@@ -250,10 +254,10 @@ function rowHtml(item) {
   if (item.store.trim() && state.mode !== 'store') bits.push(esc(item.store));
 
   return '' +
-    '<div class="swipe-wrap">' +
+    '<div class="swipe-wrap' + (item.priority === 3 ? ' will-delete' : '') + '">' +
       '<div class="swipe-bg">' +
         '<span class="sb-l">' + (item.done ? '↩ put back' : '✓ bought') + '</span>' +
-        '<span class="sb-r">delete</span>' +
+        '<span class="sb-r">' + (item.priority === 3 ? 'delete' : 'send to Low') + '</span>' +
       '</div>' +
       // The priority is a colour stripe down the left edge rather than a
       // number — a "1" next to Chicken read like "buy one chicken".
@@ -273,7 +277,7 @@ function rowHtml(item) {
 function openRowHtml(item) {
   const pri = PRIORITIES.map((p) =>
     '<button class="pri v' + p + (item.priority === p ? ' on' : '') +
-    '" data-act="set-priority" data-value="' + p + '">' + p + '</button>'
+    '" data-act="set-priority" data-value="' + p + '">' + PRI_SHORT[p] + '</button>'
   ).join('');
 
   return '' +
@@ -382,7 +386,12 @@ function render() {
 const askDlg = $('#ask-dialog');
 let askAnswer = null;
 
-function ask(title, body, { yes = 'OK', danger = false, cancel = true } = {}) {
+let askRemember = null;
+
+function ask(title, body, { yes = 'OK', danger = false, cancel = true, remember = null } = {}) {
+  // Already told us not to ask? Then don't — just say yes and get on with it.
+  if (remember && state.skipAsk[remember]) return Promise.resolve(true);
+
   return new Promise((resolve) => {
     $('#ask-title').textContent = title;
     $('#ask-body').textContent = body;
@@ -390,12 +399,23 @@ function ask(title, body, { yes = 'OK', danger = false, cancel = true } = {}) {
     yesBtn.textContent = yes;
     yesBtn.classList.toggle('solid-danger', danger);
     $('#ask-no').classList.toggle('hidden', !cancel);
+
+    askRemember = remember;
+    $('#ask-remember').classList.toggle('hidden', !remember);
+    $('#ask-remember-box').checked = false;
+
     askAnswer = resolve;
     askDlg.showModal();
   });
 }
 
 function answer(value) {
+  // Only remember the choice if they actually went ahead with it.
+  if (value && askRemember && $('#ask-remember-box').checked) {
+    state.skipAsk[askRemember] = true;
+    save();
+  }
+  askRemember = null;
   askDlg.close();
   if (askAnswer) askAnswer(value);
   askAnswer = null;
@@ -568,7 +588,7 @@ $('#new-trip').addEventListener('click', async () => {
     bought.length + (bought.length > 1 ? ' items get' : ' item gets') +
     ' marked as bought. Everything stays on your list — it just gets unchecked, ' +
     'ready for next time.',
-    { yes: 'Start new trip' });
+    { yes: 'Start new trip', remember: 'newTrip' });
   if (!ok) return;
 
   const today = todayLocal();
@@ -637,7 +657,7 @@ async function confirmDelete(item) {
   const ok = await ask('Delete "' + item.name + '"?',
                        'It goes for good. This is the only thing in the app that really ' +
                        'deletes something.',
-                       { yes: 'Delete', danger: true });
+                       { yes: 'Delete', danger: true, remember: 'delete' });
   if (!ok) return;
   update(() => {
     state.items = state.items.filter((i) => i.id !== item.id);
@@ -715,7 +735,11 @@ function endSwipe() {
     update(() => { item.done = !item.done; });
     maybeCelebrate();
   } else if (dx <= -SWIPE_TRIGGER) {
-    confirmDelete(item);
+    // Two stages: anything above Low gets demoted to Low. Only something
+    // already sitting in Low is actually deleted — so a stray swipe can
+    // never destroy something you cared about.
+    if (item.priority === 3) confirmDelete(item);
+    else update(() => { item.priority = 3; });
   }
 }
 

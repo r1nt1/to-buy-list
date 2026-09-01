@@ -10,7 +10,7 @@
 <!-- The ?v= number is a cache-buster. Browsers hang on to old copies of
      these files; changing the number forces a fresh download. Bump it
      every release, or the phone keeps running the previous version. -->
-<link rel="stylesheet" href="style.css?v=2.6">
+<link rel="stylesheet" href="style.css?v=2.7">
 </head>
 <body>
 
@@ -53,7 +53,6 @@
     <form class="add" id="add-form">
       <input id="add-input" placeholder="Add an item…" autocomplete="off"
              enterkeyhint="done" list="item-names">
-      <datalist id="item-names"></datalist>
       <button type="submit">Add</button>
     </form>
 
@@ -113,6 +112,10 @@
   <div class="ask">
     <h2 id="ask-title"></h2>
     <p id="ask-body"></p>
+    <label class="ask-remember hidden" id="ask-remember">
+      <input type="checkbox" id="ask-remember-box">
+      <span>Don't ask me again</span>
+    </label>
     <menu>
       <span class="spacer"></span>
       <button type="button" class="ghost" id="ask-no">Cancel</button>
@@ -121,8 +124,9 @@
   </div>
 </dialog>
 
+<datalist id="item-names"></datalist>
 <datalist id="store-names"></datalist>
 
-<script src="app.js?v=2.6"></script>
+<script src="app.js?v=2.7"></script>
 </body>
 </html>

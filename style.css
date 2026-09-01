@@ -164,11 +164,13 @@ button.group-head { min-height: 34px; }
 }
 .sw-right .swipe-bg, .sw-left .swipe-bg { opacity: 1; }
 .sw-right .swipe-bg { background: #1f7a4d; }
-.sw-left  .swipe-bg { background: #a3202f; }
+.sw-left  .swipe-bg { background: #4a5565; }
+.will-delete.sw-left .swipe-bg { background: #a3202f; }
 .sw-right .sb-r, .sw-left .sb-l { visibility: hidden; }
 /* once you've dragged far enough for it to fire, the panel brightens */
 .sw-armed.sw-right .swipe-bg { background: #27a266; }
-.sw-armed.sw-left  .swipe-bg { background: #c62a3b; }
+.sw-armed.sw-left  .swipe-bg { background: #5f6b7c; }
+.will-delete.sw-armed.sw-left .swipe-bg { background: #c62a3b; }
 .row.open { display: block; background: var(--bg); }
 
 .check {
@@ -310,3 +312,8 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .ask p  { margin: 0; font-size: 15px; color: var(--muted); line-height: 1.45; }
 .ask menu { display: flex; align-items: center; gap: 8px; margin: 6px 0 0; padding: 0; }
 .solid-danger { background: var(--p1); border-color: var(--p1); color: #fff; }
+
+/* ---------------- don't ask again ---------------- */
+.ask-remember { display: flex; align-items: center; gap: 9px;
+                font-size: 14px; color: var(--muted); margin-top: 2px; }
+.ask-remember input { width: 20px; height: 20px; accent-color: var(--accent); }
