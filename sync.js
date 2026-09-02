@@ -30,6 +30,8 @@ window.Cloud = (function () {
   let pending = null;    // the newest state waiting to be sent
   let timer = null;      // debounce handle
   let onRestore = null;  // app.js hands us this, to hand data back
+  let getState  = null;  // app.js hands us this, to read the live list
+  let pendingEmail = ''; // the address we sent a code to
   let status = 'off';    // off | ready | saving | saved | error
 
   const ready = () => !!(sb && user);
@@ -46,7 +48,14 @@ window.Cloud = (function () {
         .select('data, updated_at')
         .eq('user_id', user.id)
         .maybeSingle();
-      if (error || !data) return;
+      if (error) return;
+
+      // Nothing up there yet — this is the first sign-in, so send this
+      // phone's list up rather than leaving the backup empty.
+      if (!data) {
+        if (getState) push(getState());
+        return;
+      }
 
       const mine   = localStorage.getItem(STAMP_KEY);
       const mineMs = mine ? Date.parse(mine) : 0;
@@ -105,10 +114,19 @@ window.Cloud = (function () {
     btn.title = label;
   }
 
+  // The signed-out half has two steps: ask for the email, then ask for
+  // the code that lands in it.
+  function showStep(which) {
+    $('cloud-step-email').classList.toggle('hidden', which !== 'email');
+    $('cloud-step-code').classList.toggle('hidden', which !== 'code');
+    if (which === 'code') $('cloud-code').focus();
+  }
+
   function paintDialog() {
     const signedIn = !!user;
     $('cloud-out').classList.toggle('hidden', signedIn);
     $('cloud-in').classList.toggle('hidden', !signedIn);
+    if (!signedIn && !pendingEmail) showStep('email');
     if (signedIn) {
       $('cloud-who').textContent = user.email || 'signed in';
       const at = localStorage.getItem(STAMP_KEY);
@@ -126,6 +144,12 @@ window.Cloud = (function () {
     btn.addEventListener('click', () => { paintDialog(); dlg.showModal(); });
     $('cloud-close').addEventListener('click', () => dlg.close());
 
+    // Step 1 — ask Supabase to email a six-digit code.
+    //
+    // Deliberately NO emailRedirectTo here. A link would open in Safari,
+    // and on iOS a Home Screen app has its own separate storage, so the
+    // session would land in the wrong place and this app would still look
+    // signed out. A code you type stays in whichever app you typed it in.
     $('cloud-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = $('cloud-email').value.trim();
@@ -133,16 +157,49 @@ window.Cloud = (function () {
       const note = $('cloud-note');
       note.textContent = 'Sending…';
       try {
-        const { error } = await sb.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: window.location.href }
-        });
-        note.textContent = error
-          ? 'Could not send: ' + error.message
-          : 'Check your email and tap the link. You can close this.';
+        const { error } = await sb.auth.signInWithOtp({ email });
+        if (error) {
+          note.textContent = 'Could not send: ' + error.message;
+          return;
+        }
+        pendingEmail = email;
+        note.textContent = '';
+        $('cloud-sent-to').textContent = 'Code sent to ' + email;
+        showStep('code');
       } catch (err) {
         note.textContent = 'Could not send. Are you online?';
       }
+    });
+
+    // Step 2 — check the code. This is what actually signs you in.
+    $('cloud-code-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = $('cloud-code').value.replace(/\D/g, '');
+      const note = $('cloud-code-note');
+      if (token.length < 6) { note.textContent = 'That code looks too short.'; return; }
+      note.textContent = 'Checking…';
+      try {
+        const { error } = await sb.auth.verifyOtp({
+          email: pendingEmail, token, type: 'email'
+        });
+        if (error) {
+          note.textContent = 'That code did not work: ' + error.message;
+          return;
+        }
+        note.textContent = '';
+        pendingEmail = '';
+        $('cloud-code').value = '';
+        // onAuthStateChange takes it from here: paints, pulls, backs up.
+      } catch (err) {
+        note.textContent = 'Could not check the code. Are you online?';
+      }
+    });
+
+    $('cloud-back').addEventListener('click', () => {
+      pendingEmail = '';
+      $('cloud-code').value = '';
+      $('cloud-code-note').textContent = '';
+      showStep('email');
     });
 
     $('cloud-signout').addEventListener('click', async () => {
@@ -153,8 +210,9 @@ window.Cloud = (function () {
 
   /* ---------------- startup ---------------- */
 
-  async function start(restoreFn) {
+  async function start(restoreFn, stateFn) {
     onRestore = restoreFn;
+    getState  = stateFn;
     setStatus('off');
 
     // No library (offline, or the CDN is blocked) — stay a local app.

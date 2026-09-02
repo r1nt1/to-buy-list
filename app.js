@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '3.0';
+const VERSION     = '3.1';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -94,6 +94,12 @@ function load() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
+      // A list saved before v3.0 has no backup timestamp. Stamp it now, so
+      // real data on this phone is never mistaken for an empty phone and
+      // overwritten by an older copy from the cloud.
+      if (!localStorage.getItem('groceries.v2.savedAt')) {
+        localStorage.setItem('groceries.v2.savedAt', new Date().toISOString());
+      }
       if (parsed && parsed.schema === 2 && Array.isArray(parsed.items)) {
         // fill in anything a older save is missing
         if (!Array.isArray(parsed.expanded)) parsed.expanded = [];
@@ -894,4 +900,4 @@ function adoptFromCloud(data) {
   render();
 }
 
-if (window.Cloud) Cloud.start(adoptFromCloud);
+if (window.Cloud) Cloud.start(adoptFromCloud, () => state);

@@ -352,3 +352,9 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .cloud-form { display: flex; flex-direction: column; gap: 10px; margin: 14px 0 0; }
 .cloud-form .field { width: 100%; }
 .cloud-note { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+
+/* the six-digit code box — big, spaced, and 16px+ so iOS doesn't zoom */
+.code-field {
+  width: 100%; text-align: center;
+  font-size: 26px; letter-spacing: 8px; font-variant-numeric: tabular-nums;
+}
