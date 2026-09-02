@@ -18,6 +18,38 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v3.0 — 2026-09-02
+
+### Added
+
+- **Backup.** Your list used to live only on this phone. If Safari cleared its
+  data, or the phone was lost, the list went with it — there was no copy
+  anywhere. Now it keeps one, in a database hosted by Supabase.
+
+- **Sign in with a magic link.** Tap the cloud icon in the top bar, type your
+  email, and tap the link that arrives. No password to invent or remember.
+  You do this once; it stays signed in afterwards. Signing in is only there so
+  the backup knows which list is yours.
+
+- **The cloud icon is also a status light.** Grey means backup is off, blue
+  means your list is saved, red means a save failed.
+
+### Changed
+
+- **The phone is still in charge.** The list is read from and written to this
+  phone first, exactly as before, so the app is just as fast and still works
+  with no signal in the shop. The backup is sent quietly afterwards.
+
+- **Whichever copy is newer wins.** Open the app on a phone whose data was
+  wiped, and the cloud copy comes back. Make changes with no signal, and they
+  go up when you're online again. The list being replaced is kept aside rather
+  than thrown away.
+
+- **Nothing here can break the list.** Signed out, offline, or if the backup
+  service is unreachable, the app behaves exactly as v2.9 did.
+
+---
+
 ## v2.9 — 2026-08-31
 
 ### Changed
