@@ -18,6 +18,53 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v3.3 — 2026-09-02
+
+### Added
+
+- **Priority sections collapse.** Tap **High**, **Medium** or **Low** and the
+  section folds away, exactly like the store groups already did. The heading
+  keeps showing the count and the total, so a shut section still tells you
+  what's in it. Which sections are shut is remembered between visits.
+
+  If the budget line falls inside a section you've collapsed, it's drawn
+  straight under that heading — those items still cost money even when you
+  can't see them.
+
+- **The add box follows you down the page.** It used to scroll away, so adding
+  something halfway through a long list meant scrolling back to the top.
+
+- **An optional detail row under the add box.** Tap the small chevron beside
+  **Add** and priority, store and price appear. None of it has to be filled
+  in — typing a name and pressing Add works exactly as before, and anything
+  added that way is still Medium.
+
+  After each add the price clears (a price belongs to one item) but the store
+  stays, since you usually add several things for the same shop in a row.
+  Closing the row empties it, so a value you can no longer see can never act
+  on you.
+
+- **A warning when you type something you already have.** Before, adding a
+  name already on the list quietly un-checked the existing item — which looked
+  like nothing had happened at all if that item was buried down in Low. Now it
+  says where the item is and exactly what will change, and offers to add a
+  second, separate item instead. It has a *don't ask me again* box.
+
+- **A misspelling check.** Type `ricw` when you already have `Rice` and the app
+  asks whether you meant it. It works by counting how many single letters
+  you'd have to change to get from one word to the other — one for short
+  words, two for longer ones. Words under four letters are left alone, so
+  `ice` and `rice` never get confused for each other.
+
+### Changed
+
+- **The confetti is quieter.** A third as many pieces, smaller, in softer
+  colours, peaking about a third of the way up the screen instead of halfway,
+  and fading out rather than vanishing. If the phone has Reduce Motion turned
+  on it doesn't play at all.
+
+---
+
 ## v3.2 — 2026-09-02
 
 ### Changed

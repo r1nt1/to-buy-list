@@ -10,7 +10,7 @@
 <!-- The ?v= number is a cache-buster. Browsers hang on to old copies of
      these files; changing the number forces a fresh download. Bump it
      every release, or the phone keeps running the previous version. -->
-<link rel="stylesheet" href="style.css?v=3.2">
+<link rel="stylesheet" href="style.css?v=3.3">
 </head>
 <body>
 
@@ -64,8 +64,25 @@
       <form class="add" id="add-form">
         <input id="add-input" placeholder="Add an item…" autocomplete="off"
                enterkeyhint="done">
+        <!-- opens the optional detail row. Typing a name and pressing Add
+             still works on its own — none of this has to be filled in. -->
+        <button type="button" class="add-toggle collapsed" id="add-toggle"
+                aria-label="More options" aria-expanded="false">
+          <span class="caret">⌄</span>
+        </button>
         <button type="submit">Add</button>
       </form>
+      <div class="add-more hidden" id="add-more">
+        <div class="pri-group" id="add-pri">
+          <button type="button" class="pri v1" data-add-pri="1">H</button>
+          <button type="button" class="pri v2 on" data-add-pri="2">M</button>
+          <button type="button" class="pri v3" data-add-pri="3">L</button>
+        </div>
+        <input class="field field-store" id="add-store" list="store-names"
+               placeholder="store" autocomplete="off" enterkeyhint="done">
+        <input class="field field-price" id="add-price" type="number" min="0"
+               step="0.01" inputmode="decimal" enterkeyhint="done">
+      </div>
       <!-- our own suggestion list. The browser's built-in one is drawn
            outside the page, so it can't be positioned or styled. -->
       <div class="suggest hidden" id="suggest"></div>
@@ -134,6 +151,7 @@
     <menu>
       <span class="spacer"></span>
       <button type="button" class="ghost" id="ask-no">Cancel</button>
+      <button type="button" class="ghost hidden" id="ask-alt"></button>
       <button type="button" class="primary" id="ask-yes">OK</button>
     </menu>
   </div>
@@ -194,7 +212,7 @@
 <datalist id="store-names"></datalist>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="sync.js?v=3.2"></script>
-<script src="app.js?v=3.2"></script>
+<script src="sync.js?v=3.3"></script>
+<script src="app.js?v=3.3"></script>
 </body>
 </html>

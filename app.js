@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '3.2';
+const VERSION     = '3.3';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -49,6 +49,8 @@ function seedState() {
   return {
     schema: 2, budget: 0, mode: 'priority',
     expanded: [],        // which store groups are open — none, to begin with
+    collapsedPri: [],    // which priority sections are shut — none, to begin with
+    addOpen: false,      // is the optional detail row under the add box showing?
     budgetOpen: false,   // the budget panel stays shut until you open it
     skipAsk: {},         // confirmations you've ticked "don't ask me again" on
     items: [
@@ -71,6 +73,8 @@ function migrateFromV1(old) {
     budget: old.budget || 0,
     mode: 'priority',
     expanded: [],
+    collapsedPri: [],
+    addOpen: false,
     budgetOpen: false,
     skipAsk: {},
     items: (old.items || []).map((i) => ({
@@ -103,6 +107,8 @@ function load() {
       if (parsed && parsed.schema === 2 && Array.isArray(parsed.items)) {
         // fill in anything a older save is missing
         if (!Array.isArray(parsed.expanded)) parsed.expanded = [];
+        if (!Array.isArray(parsed.collapsedPri)) parsed.collapsedPri = [];
+        if (typeof parsed.addOpen !== 'boolean') parsed.addOpen = false;
         if (typeof parsed.budgetOpen !== 'boolean') parsed.budgetOpen = false;
         if (!parsed.skipAsk || typeof parsed.skipAsk !== 'object') parsed.skipAsk = {};
         return parsed;
@@ -211,9 +217,24 @@ function byPriorityHtml(pend, cartSum) {
 
     if (idx === cutoffAt && !drawn) { html += cutoffDivider(); drawn = true; }
 
-    const sum = group.reduce((s, i) => s + lineTotal(i), 0);
-    html += '<div class="group-head gh' + p + '"><span>' + PRI_LABEL[p] + '</span>' +
-            (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') + '</div>';
+    // Same tappable header as the Stores tab, so both tabs behave alike.
+    const sum  = group.reduce((s, i) => s + lineTotal(i), 0);
+    const open = !state.collapsedPri.includes(p);
+    html += '<button class="group-head gh' + p + (open ? '' : ' collapsed') +
+            '" data-pri="' + p + '">' +
+            '<span><span class="caret">⌄</span>' + PRI_LABEL[p] + ' · ' + group.length +
+            '</span>' +
+            (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') + '</button>';
+
+    if (!open) {
+      // The items are still on the list, so they still spend the budget —
+      // they just aren't drawn. If the money runs out inside a section you
+      // can't see, put the line straight under its header.
+      idx += group.length;
+      if (!drawn && cutoffAt > -1 && idx > cutoffAt) { html += cutoffDivider(); drawn = true; }
+      continue;
+    }
+
     html += '<div class="card">';
     for (const item of group) {
       if (idx === cutoffAt && !drawn) {
@@ -396,7 +417,10 @@ let askAnswer = null;
 
 let askRemember = null;
 
-function ask(title, body, { yes = 'OK', danger = false, cancel = true, remember = null } = {}) {
+/* Resolves true for the main button, the string 'alt' for the optional
+   middle one, and false for Cancel. */
+function ask(title, body, { yes = 'OK', alt = null, danger = false,
+                            cancel = true, remember = null } = {}) {
   // Already told us not to ask? Then don't — just say yes and get on with it.
   if (remember && state.skipAsk[remember]) return Promise.resolve(true);
 
@@ -407,6 +431,13 @@ function ask(title, body, { yes = 'OK', danger = false, cancel = true, remember 
     yesBtn.textContent = yes;
     yesBtn.classList.toggle('solid-danger', danger);
     $('#ask-no').classList.toggle('hidden', !cancel);
+
+    const altBtn = $('#ask-alt');
+    altBtn.textContent = alt || '';
+    altBtn.classList.toggle('hidden', !alt);
+    // Three buttons side by side wrap into unreadable stacks of one word on a
+    // phone. With a third option, stack them full-width instead.
+    $('#ask-dialog menu').classList.toggle('stacked', !!alt);
 
     askRemember = remember;
     $('#ask-remember').classList.toggle('hidden', !remember);
@@ -430,6 +461,7 @@ function answer(value) {
 }
 
 $('#ask-yes').addEventListener('click', () => answer(true));
+$('#ask-alt').addEventListener('click', () => answer('alt'));
 $('#ask-no').addEventListener('click', () => answer(false));
 askDlg.addEventListener('cancel', (e) => { e.preventDefault(); answer(false); });
 
@@ -446,6 +478,17 @@ function handleClick(event) {
       state.expanded = state.expanded.includes(store)
         ? state.expanded.filter((s) => s !== store)
         : [...state.expanded, store];
+    });
+    return;
+  }
+
+  const priHead = event.target.closest('[data-pri]');
+  if (priHead) {                               // collapse / expand a priority section
+    const p = Number(priHead.dataset.pri);
+    update(() => {
+      state.collapsedPri = state.collapsedPri.includes(p)
+        ? state.collapsedPri.filter((n) => n !== p)
+        : [...state.collapsedPri, p];
     });
     return;
   }
@@ -541,30 +584,171 @@ document.addEventListener('click', (e) => {
 });
 
 /* ---------------- adding ---------------- */
-$('#add-form').addEventListener('submit', (e) => {
+
+/* How many single-letter changes turn one word into another. "ricw" and
+   "rice" are one apart; "rice" and "beans" are miles apart. This is the
+   whole misspelling check — no dictionary, just your own list. */
+function editDistance(a, b) {
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > 2) return 9;      // too different to bother
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1,
+                        prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[b.length];
+}
+
+/* The closest thing already on the list, if it is close enough to be a
+   typo rather than a different thing. Short words allow one change only —
+   otherwise "ice" would keep asking whether you meant "rice". Anything
+   under four letters is left alone entirely. */
+function nearMatch(name) {
+  const n = name.toLowerCase();
+  if (n.length < 4) return null;
+  const limit = n.length <= 5 ? 1 : 2;
+  let best = null, bestD = 99;
+  for (const item of state.items) {
+    const d = editDistance(n, item.name.toLowerCase());
+    if (d > 0 && d <= limit && d < bestD) { best = item; bestD = d; }
+  }
+  return best;
+}
+
+/* What the optional detail row is currently set to. When the row is shut
+   it contributes nothing at all — priority comes back null, which means
+   "leave it alone" rather than "make it Medium". Closing the row clears
+   the boxes, so there is never a value acting on you that you can't see. */
+function addFields() {
+  if (!state.addOpen) return { pri: null, store: '', price: null };
+  const on = $('#add-pri .on');
+  const price = parseFloat($('#add-price').value);
+  return {
+    pri: on ? Number(on.dataset.addPri) : 2,
+    store: $('#add-store').value.trim(),
+    price: Number.isFinite(price) && price >= 0 ? price : null
+  };
+}
+
+function clearAddBox() {
+  $('#add-input').value = '';
+  $('#add-price').value = '';       // a price belongs to one item, never the next
+  setAddPri(2);                     // priority goes back to the default
+  renderSuggestions();
+  $('#add-input').focus();
+}
+
+function setAddPri(p) {
+  document.querySelectorAll('#add-pri .pri').forEach((b) =>
+    b.classList.toggle('on', Number(b.dataset.addPri) === p));
+}
+
+// Bring an item that already exists back onto this trip.
+function reviveExisting(item, f) {
+  update(() => {
+    item.inTrip = true;
+    item.done = false;
+    if (f.pri !== null)  item.priority = f.pri;
+    if (f.store)         item.store = f.store;
+    if (f.price !== null) item.price = f.price;
+  });
+}
+
+/* Exactly what tapping the main button would do to an item you already
+   have. Anything that isn't listed here doesn't happen — no silent edits. */
+function changeList(item, f) {
+  const bits = [];
+  if (f.pri !== null && f.pri !== item.priority) bits.push('move it to ' + PRI_LABEL[f.pri]);
+  if (f.store && f.store !== item.store)         bits.push('set its store to ' + f.store);
+  if (f.price !== null && f.price !== item.price) bits.push('set its price to ' + money(f.price));
+  if (item.done)                                  bits.push('uncheck it');
+  return bits;
+}
+
+function sentence(bits) {
+  if (bits.length < 2) return bits[0] || '';
+  return bits.slice(0, -1).join(', ') + ' and ' + bits[bits.length - 1];
+}
+
+function whereItIs(item) {
+  return item.done ? 'in your cart' : 'in ' + PRI_LABEL[item.priority];
+}
+
+$('#add-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const input = $('#add-input');
-  const name = input.value.trim();
+  const name = $('#add-input').value.trim();
   if (!name) return;
 
-  const existing = state.items.find((i) => i.name.toLowerCase() === name.toLowerCase());
-  let created = null;
+  const f = addFields();
+  const exact = state.items.find((i) => i.name.toLowerCase() === name.toLowerCase());
+  const near  = exact ? null : nearMatch(name);
+  const hit   = exact || near;
+
+  if (hit) {
+    // It used to be added silently, which looked like nothing had happened
+    // when the item was buried down in Low.
+    const changes = changeList(hit, f);
+    const title = exact ? '"' + hit.name + '" is already on your list'
+                        : 'Did you mean "' + hit.name + '"?';
+    const lead  = exact ? 'It is ' + whereItIs(hit) + '.'
+                        : 'You typed "' + name + '", and "' + hit.name +
+                          '" is already on your list, ' + whereItIs(hit) + '.';
+    const body  = changes.length
+      ? lead + ' Using it will ' + sentence(changes) + '.'
+      : lead + ' Nothing to change.';
+
+    const answer = await ask(title, body, {
+      yes: changes.length ? (exact ? 'Use it' : 'Use "' + hit.name + '"') : 'Leave it there',
+      alt: 'Add "' + name + '" separately',
+      remember: exact ? 'duplicate' : null
+    });
+
+    if (answer === false) return;
+    if (answer !== 'alt') {
+      if (changes.length) reviveExisting(hit, f);
+      clearAddBox();
+      return;
+    }
+    // 'alt' means they really do want a second, separate item.
+  }
 
   update(() => {
-    if (existing) {
-      existing.inTrip = true;
-      existing.done = false;
-    } else {
-      created = newItem(name);
-      state.items.push(created);
-    }
+    state.items.push(newItem(name, {
+      priority: f.pri ?? 2,
+      store: f.store,
+      price: f.price
+    }));
   });
-
-  input.value = '';
-  renderSuggestions();
   // Deliberately does NOT open the new row or scroll to it — you should be
   // able to type ten items in a row without being dragged down the list.
-  input.focus();
+  clearAddBox();
+});
+
+/* ---------------- the optional detail row ---------------- */
+$('#add-price').placeholder = CURRENCY;
+
+function renderAddMore() {
+  $('#add-more').classList.toggle('hidden', !state.addOpen);
+  $('#add-toggle').classList.toggle('collapsed', !state.addOpen);
+  $('#add-toggle').setAttribute('aria-expanded', String(state.addOpen));
+}
+
+$('#add-toggle').addEventListener('click', () => {
+  state.addOpen = !state.addOpen;
+  // Shutting it empties it, so nothing can be set on an item from a box
+  // you can no longer see.
+  if (!state.addOpen) { $('#add-store').value = ''; $('#add-price').value = ''; setAddPri(2); }
+  save();
+  renderAddMore();
+});
+
+$('#add-pri').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-add-pri]');
+  if (btn) setAddPri(Number(btn.dataset.addPri));
 });
 
 /* ---------------------------------------------------------------
@@ -819,6 +1003,11 @@ function maybeCelebrate() {
 }
 
 function confetti() {
+  // If the phone is set to reduce motion (iOS: Settings → Accessibility →
+  // Motion → Reduce Motion) skip it entirely rather than showing a smaller
+  // version — someone who turned that on doesn't want a shrunken one either.
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
   const canvas = document.createElement('canvas');
   canvas.className = 'confetti';
   document.body.appendChild(canvas);
@@ -831,30 +1020,37 @@ function confetti() {
   canvas.style.height = window.innerHeight + 'px';
 
   // Launched upward from the bottom edge, then gravity brings it back down.
-  // A thing thrown upward reaches a height of v² / 2g, so to peak around the
-  // middle of the screen we need a starting speed of roughly √(g × H).
-  const gravity = 0.7 * dpr;
-  const launch  = Math.sqrt(gravity * H);
+  // A thing thrown upward reaches a height of v² / 2g, so to peak about a
+  // third of the way up we need a starting speed of √(2g × 0.34H). It used
+  // to peak at half the screen with three times as many pieces — this is
+  // the same idea, said more quietly.
+  const gravity = 0.5 * dpr;
+  const launch  = Math.sqrt(2 * gravity * H * 0.34);
 
-  const colours = ['#d7263d', '#f0a83c', '#2f6df6', '#27a266', '#9b59b6', '#ff6b7d'];
+  // Softened versions of the priority colours — the old set was fully
+  // saturated, which is what made it shout.
+  const colours = ['#e0798a', '#e8b96b', '#7fa3e8', '#6fbd92', '#b08fc7'];
   const bits = [];
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 42; i++) {
     bits.push({
-      x: Math.random() * W,
-      y: H + Math.random() * 40 * dpr,
-      vx: (Math.random() - 0.5) * 7 * dpr,
-      vy: -launch * (0.78 + Math.random() * 0.44),   // some go higher than others
-      w: (5 + Math.random() * 6) * dpr,
-      h: (8 + Math.random() * 9) * dpr,
+      x: W * (0.08 + Math.random() * 0.84),
+      y: H + Math.random() * 30 * dpr,
+      vx: (Math.random() - 0.5) * 4.5 * dpr,
+      vy: -launch * (0.8 + Math.random() * 0.4),     // some go higher than others
+      w: (3.5 + Math.random() * 3) * dpr,
+      h: (5 + Math.random() * 4) * dpr,
       rot: Math.random() * Math.PI,
-      vr: (Math.random() - 0.5) * 0.35,
+      vr: (Math.random() - 0.5) * 0.22,
       colour: colours[i % colours.length]
     });
   }
 
+  const LIFE = 150;
   let frame = 0;
   (function tick() {
     ctx.clearRect(0, 0, W, H);
+    // Fade over the last third so it dissolves rather than snapping away.
+    ctx.globalAlpha = Math.max(0, Math.min(1, (LIFE - frame) / 45));
     for (const b of bits) {
       b.x += b.vx;
       b.y += b.vy;
@@ -869,13 +1065,14 @@ function confetti() {
       ctx.restore();
     }
     frame++;
-    // stop once everything has fallen back past the bottom
-    if (frame < 220 && bits.some((b) => b.y < H + 60 * dpr)) requestAnimationFrame(tick);
+    // stop once it has faded out, or once everything has fallen past the bottom
+    if (frame < LIFE && bits.some((b) => b.y < H + 60 * dpr)) requestAnimationFrame(tick);
     else canvas.remove();
   })();
 }
 
 /* ---------------- go ---------------- */
+renderAddMore();
 render();
 
 /* Cloud backup — see sync.js. Called once the page is already drawn, so
@@ -892,6 +1089,8 @@ function adoptFromCloud(data) {
   state = data;
   // An older save may predate some fields, exactly as load() guards for.
   if (!Array.isArray(state.expanded))  state.expanded  = [];
+  if (!Array.isArray(state.collapsedPri)) state.collapsedPri = [];
+  if (typeof state.addOpen !== 'boolean') state.addOpen = false;
   if (typeof state.budgetOpen !== 'boolean') state.budgetOpen = false;
   if (!state.skipAsk || typeof state.skipAsk !== 'object') state.skipAsk = {};
 
