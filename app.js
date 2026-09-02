@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '3.3';
+const VERSION     = '4.0';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -32,7 +32,7 @@ function newItem(name, extra = {}) {
   return {
     id: Math.random().toString(36).slice(2, 9),
     name,
-    store: '',          // free text — '' means "haven't said"
+    stores: [],         // free text, and more than one — rice is sold in both
     priority: 2,
     price: null,        // null means "haven't said what it costs"
     qty: 1,
@@ -43,6 +43,20 @@ function newItem(name, extra = {}) {
     lastBought: null,
     ...extra
   };
+}
+
+/* Everything that turns an item saved by an older version into one this
+   version understands. Called on load, on a v1 migration, and on anything
+   arriving from the cloud — so there is one place to change when the shape
+   moves again, rather than three. */
+function normaliseItem(i) {
+  if (!Array.isArray(i.stores)) {
+    // Up to v3.3 an item had a single `store`, as plain text.
+    i.stores = i.store && String(i.store).trim() ? [String(i.store).trim()] : [];
+  }
+  i.stores = i.stores.map((s) => String(s).trim()).filter(Boolean);
+  delete i.store;
+  return i;
 }
 
 function seedState() {
@@ -77,10 +91,10 @@ function migrateFromV1(old) {
     addOpen: false,
     budgetOpen: false,
     skipAsk: {},
-    items: (old.items || []).map((i) => ({
+    items: (old.items || []).map((i) => normaliseItem({
       ...newItem(i.name),
       id: i.id,
-      store: '',
+      stores: [],
       priority: map[i.priority] || 2,
       price: i.price ?? null,
       qty: i.qty || 1,
@@ -111,6 +125,7 @@ function load() {
         if (typeof parsed.addOpen !== 'boolean') parsed.addOpen = false;
         if (typeof parsed.budgetOpen !== 'boolean') parsed.budgetOpen = false;
         if (!parsed.skipAsk || typeof parsed.skipAsk !== 'object') parsed.skipAsk = {};
+        parsed.items.forEach(normaliseItem);
         return parsed;
       }
     }
@@ -162,7 +177,19 @@ const lineTotal = (item) => (item.price || 0) * (item.qty || 1);
 const byName    = (a, b) => a.name.localeCompare(b.name);
 const findItem  = (id) => state.items.find((i) => i.id === id);
 const tripItems = () => state.items.filter((i) => i.inTrip);
-const storeOf   = (item) => item.store.trim() || NO_STORE;
+// Which store headings an item belongs under. Something with no store at
+// all still has to appear somewhere, so it lands in "Other".
+const storesOf  = (item) => (item.stores.length ? item.stores : [NO_STORE]);
+
+/* Adds a store to an item, ignoring blanks and ones it already has.
+   Matching ignores case, so "metro" can't become a second Metro. */
+function addStore(item, raw) {
+  const name = String(raw || '').trim();
+  if (!name) return false;
+  if (item.stores.some((s) => s.toLowerCase() === name.toLowerCase())) return false;
+  item.stores.push(name);
+  return true;
+}
 
 function update(fn) { fn(); save(); render(); }
 
@@ -251,14 +278,17 @@ function byPriorityHtml(pend, cartSum) {
 
 function byStoreHtml(pend) {
   // Real stores alphabetically, "Other" always last.
-  const stores = [...new Set(pend.map(storeOf))]
+  const stores = [...new Set(pend.flatMap(storesOf))]
     .sort((a, b) => (a === NO_STORE) - (b === NO_STORE) || a.localeCompare(b));
 
   let html = '';
   for (const store of stores) {
     // Inside a store, the most urgent things come first — same order as the
     // priority view, so a 1 is never buried under a 2.
-    const group = pend.filter((i) => storeOf(i) === store)
+    // An item tagged with two shops appears under both. Each heading's
+    // total therefore answers "if I buy everything here, what does it cost" —
+    // the figure at the top of the screen still counts each item once.
+    const group = pend.filter((i) => storesOf(i).includes(store))
                       .sort((a, b) => a.priority - b.priority || byName(a, b));
     const isOpen = state.expanded.includes(store);
     const sum = group.reduce((s, i) => s + lineTotal(i), 0);
@@ -283,7 +313,11 @@ function rowHtml(item) {
   const bits = [];
   if (item.qty > 1) bits.push('×' + item.qty);
   if (item.price)   bits.push(money(lineTotal(item)));
-  if (item.store.trim() && state.mode !== 'store') bits.push(esc(item.store));
+  // Two shops on one line gets long, so show the first and count the rest.
+  if (item.stores.length && state.mode !== 'store') {
+    bits.push(esc(item.stores[0]) +
+              (item.stores.length > 1 ? ' +' + (item.stores.length - 1) : ''));
+  }
 
   return '' +
     '<div class="swipe-wrap' + (item.priority === 3 ? ' will-delete' : '') + '">' +
@@ -322,14 +356,32 @@ function openRowHtml(item) {
       '</div>' +
       '<div class="open-controls">' +
         '<div class="pri-group">' + pri + '</div>' +
-        '<input class="field field-store" data-field="store" list="store-names" ' +
-          'placeholder="store" value="' + esc(item.store) + '" autocomplete="off" ' +
-          'enterkeyhint="done">' +
+        '<span class="ctrl-spacer"></span>' +
         '<input class="field field-price" data-field="price" type="number" min="0" ' +
           'step="0.01" inputmode="decimal" enterkeyhint="done" placeholder="' +
           CURRENCY + '" value="' + (item.price ?? '') + '">' +
       '</div>' +
+      chipsHtml(item.stores, 'store-add') +
     '</div>';
+}
+
+/* A store chip: the name, and a × that takes it off. */
+function chipHtml(name) {
+  return '<span class="chip">' + esc(name) +
+         '<button type="button" class="chip-x" data-act="chip-remove" ' +
+         'data-value="' + esc(name) + '" aria-label="Remove ' + esc(name) + '">×</button></span>';
+}
+
+/* The whole box: the chips already on, then a text box for the next one.
+   Enter or a comma turns what you have typed into a chip; so does tapping
+   away. The chip is inserted straight into the page rather than through a
+   redraw, so the keyboard never closes between two stores. */
+function chipsHtml(stores, field, id) {
+  return '<div class="chips"' + (id ? ' id="' + id + '"' : '') + '>' +
+    stores.map(chipHtml).join('') +
+    '<input class="chip-input" data-field="' + field + '" list="store-names" ' +
+    'placeholder="' + (stores.length ? '+ store' : 'store') + '" ' +
+    'autocomplete="off" autocapitalize="words" enterkeyhint="done"></div>';
 }
 
 function emptyHtml(pend, onTrip) {
@@ -401,7 +453,7 @@ function render() {
 
   // Autocomplete for the store box — every store you have ever typed.
   $('#store-names').innerHTML =
-    [...new Set(state.items.map((i) => i.store.trim()).filter(Boolean))].sort()
+    [...new Set(state.items.flatMap((i) => i.stores))].sort()
       .map((s) => '<option value="' + esc(s) + '">').join('');
 }
 
@@ -525,6 +577,18 @@ function handleClick(event) {
       });
       break;
 
+    case 'chip-remove': {
+      const gone = btn.dataset.value.toLowerCase();
+      // Take the name out first so a half-typed one in the box isn't
+      // committed by commitOpenRow and immediately re-added.
+      item.stores = item.stores.filter((s) => s.toLowerCase() !== gone);
+      const box = btn.closest('.chips') && btn.closest('.chips').querySelector('.chip-input');
+      if (box) box.value = '';
+      commitOpenRow();
+      update(() => {});
+      break;
+    }
+
     case 'info':
       commitOpenRow();
       openInfo(item);
@@ -545,7 +609,14 @@ function handleFieldChange(event) {
 function applyField(item, input) {
   const v = input.value;
   if (input.dataset.field === 'name')  item.name  = v.trim() || item.name;
-  if (input.dataset.field === 'store') item.store = v.trim();
+  // A chip box appends rather than replaces, and empties itself.
+  if (input.dataset.field === 'store-add') {
+    if (addStore(item, v)) {
+      input.insertAdjacentHTML('beforebegin', chipHtml(item.stores[item.stores.length - 1]));
+      input.placeholder = '+ store';
+    }
+    input.value = '';
+  }
   if (input.dataset.field === 'price') {
     const n = parseFloat(v);
     item.price = Number.isFinite(n) && n >= 0 ? n : null;
@@ -566,6 +637,16 @@ $('#trip-list').addEventListener('change', handleFieldChange);
 
 // Enter closes the open row; Escape closes it too.
 $('#trip-list').addEventListener('keydown', (e) => {
+  // In a chip box, Enter and comma mean "that's one store, ready for the
+  // next" rather than "I'm finished with this row".
+  const chip = e.target.closest('.chip-input');
+  if (chip && (e.key === 'Enter' || e.key === ',') && chip.value.trim()) {
+    e.preventDefault();
+    const item = findItem(chip.closest('[data-id]').dataset.id);
+    if (item) { applyField(item, chip); save(); }
+    return;
+  }
+
   if (e.key === 'Enter' || e.key === 'Escape') {
     e.preventDefault();
     e.target.blur();          // fires change, which saves
@@ -653,7 +734,7 @@ function reviveExisting(item, f) {
     item.inTrip = true;
     item.done = false;
     if (f.pri !== null)  item.priority = f.pri;
-    if (f.store)         item.store = f.store;
+    if (f.store)         addStore(item, f.store);
     if (f.price !== null) item.price = f.price;
   });
 }
@@ -663,7 +744,9 @@ function reviveExisting(item, f) {
 function changeList(item, f) {
   const bits = [];
   if (f.pri !== null && f.pri !== item.priority) bits.push('move it to ' + PRI_LABEL[f.pri]);
-  if (f.store && f.store !== item.store)         bits.push('set its store to ' + f.store);
+  if (f.store && !item.stores.some((x) => x.toLowerCase() === f.store.toLowerCase())) {
+    bits.push('add ' + f.store + ' to its stores');
+  }
   if (f.price !== null && f.price !== item.price) bits.push('set its price to ' + money(f.price));
   if (item.done)                                  bits.push('uncheck it');
   return bits;
@@ -719,7 +802,7 @@ $('#add-form').addEventListener('submit', async (e) => {
   update(() => {
     state.items.push(newItem(name, {
       priority: f.pri ?? 2,
-      store: f.store,
+      stores: f.store ? [f.store] : [],
       price: f.price
     }));
   });
@@ -864,13 +947,37 @@ document.querySelectorAll('.tab').forEach((tab) => {
 /* ---------------- details sheet ---------------- */
 const info = $('#info-dialog');
 let infoId = null;
+/* The sheet edits a copy, so pressing Cancel really does cancel. */
+let infoStores = [];
+
+function renderInfoChips() {
+  $('#info-chips').outerHTML = chipsHtml(infoStores, 'info-store', 'info-chips');
+}
+
+$('#info-form').addEventListener('click', (e) => {
+  const x = e.target.closest('[data-act="chip-remove"]');
+  if (!x) return;
+  const gone = x.dataset.value.toLowerCase();
+  infoStores = infoStores.filter((s) => s.toLowerCase() !== gone);
+  renderInfoChips();
+});
+
+$('#info-form').addEventListener('keydown', (e) => {
+  const chip = e.target.closest('.chip-input');
+  if (!chip || (e.key !== 'Enter' && e.key !== ',') || !chip.value.trim()) return;
+  e.preventDefault();
+  addStore({ stores: infoStores }, chip.value);   // pushes onto infoStores itself
+  renderInfoChips();
+  $('#info-chips .chip-input').focus();
+});
 
 function openInfo(item) {
   infoId = item.id;
   const f = $('#info-form');
   f.qty.value = item.qty || 1;
   f.price.value = item.price ?? '';
-  f.store.value = item.store || '';
+  infoStores = [...item.stores];
+  renderInfoChips();
   f.note.value = item.note || '';
   $('#info-title').textContent = item.name;
   // Only worth a line if it actually tells you something.
@@ -889,7 +996,8 @@ $('#info-form').addEventListener('submit', () => {
   update(() => {
     item.qty = Math.max(1, parseInt(f.qty.value, 10) || 1);
     item.price = Number.isFinite(price) && price >= 0 ? price : null;
-    item.store = f.store.value.trim();
+    addStore({ stores: infoStores }, $('#info-chips .chip-input').value);
+    item.stores = infoStores;
     item.note = f.note.value.trim();
   });
 });
@@ -1093,6 +1201,7 @@ function adoptFromCloud(data) {
   if (typeof state.addOpen !== 'boolean') state.addOpen = false;
   if (typeof state.budgetOpen !== 'boolean') state.budgetOpen = false;
   if (!state.skipAsk || typeof state.skipAsk !== 'object') state.skipAsk = {};
+  state.items.forEach(normaliseItem);
 
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   catch (err) { console.warn('Could not save the restored list.', err); }

@@ -18,6 +18,34 @@ so you can always tell which one is on your phone.
 
 ---
 
+## v4.0 — 2026-09-02
+
+The big number changed because the shape of your saved data changed: an item
+used to have *a* store, and now it has a list of them. Existing items are
+carried over automatically the first time this version loads — `Metro`
+becomes a one-item list — so nothing you typed is lost.
+
+### Added
+
+- **An item can be sold in more than one shop.** Rice at both Metro and Plaza
+  Vea is one item tagged with both, not two items. The store box is now a row
+  of chips: type a name and press Enter or comma, or just tap away, and it
+  becomes a chip with an × to take it off again. The same box is in the
+  expanded row and in the details sheet.
+
+  In the **Stores** tab that item appears under *both* headings. Each heading's
+  total therefore answers "if I buy everything here, what does it cost" — so
+  something tagged twice is counted in two headings. The figure at the top of
+  the screen still counts every item exactly once, so your budget is unaffected.
+
+  On a closed row, two shops read as `Metro +1` — the first one, and how many
+  others there are.
+
+- The details sheet edits a **copy** of the store list, so **Cancel** really
+  does cancel.
+
+---
+
 ## v3.3 — 2026-09-02
 
 ### Added
