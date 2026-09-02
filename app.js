@@ -10,7 +10,7 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '2.9';
+const VERSION     = '3.0';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
@@ -116,6 +116,11 @@ function load() {
 function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   catch (err) { console.warn('Could not save.', err); }
+  // Then send a copy to the cloud, if backup is switched on. This runs
+  // after the local save and is wrapped separately on purpose: a backup
+  // problem must never stop the list saving on the phone.
+  try { if (window.Cloud) Cloud.push(state); }
+  catch (err) { console.warn('Could not queue the backup.', err); }
 }
 
 let state = load();
@@ -866,3 +871,27 @@ function confetti() {
 
 /* ---------------- go ---------------- */
 render();
+
+/* Cloud backup — see sync.js. Called once the page is already drawn, so
+   a slow network never delays the list appearing.
+
+   adoptFromCloud runs only when the cloud copy is NEWER than this
+   phone's: a wiped Safari, or a new phone. The list being replaced is
+   stashed under its own key first, so nothing is ever truly gone. */
+function adoptFromCloud(data) {
+  if (!data || !Array.isArray(data.items)) return;
+  try { localStorage.setItem('groceries.v2.replaced', JSON.stringify(state)); }
+  catch (err) { /* the stash is a nicety, not a requirement */ }
+
+  state = data;
+  // An older save may predate some fields, exactly as load() guards for.
+  if (!Array.isArray(state.expanded))  state.expanded  = [];
+  if (typeof state.budgetOpen !== 'boolean') state.budgetOpen = false;
+  if (!state.skipAsk || typeof state.skipAsk !== 'object') state.skipAsk = {};
+
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (err) { console.warn('Could not save the restored list.', err); }
+  render();
+}
+
+if (window.Cloud) Cloud.start(adoptFromCloud);

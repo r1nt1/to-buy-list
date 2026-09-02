@@ -333,3 +333,22 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .ask-remember { display: flex; align-items: center; gap: 9px;
                 font-size: 14px; color: var(--muted); margin-top: 2px; }
 .ask-remember input { width: 20px; height: 20px; accent-color: var(--accent); }
+
+/* ---------------- cloud backup ---------------- */
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+/* The cloud icon doubles as the status light: grey when backup is off,
+   accent when it's on, red if a save failed. */
+.cloud-btn {
+  flex: none; width: 38px; min-height: 38px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--muted);
+}
+.cloud-btn[data-state="ready"],
+.cloud-btn[data-state="saved"]  { color: var(--accent); }
+.cloud-btn[data-state="saving"] { color: var(--accent); opacity: .55; }
+.cloud-btn[data-state="error"]  { color: var(--over); }
+
+.cloud-form { display: flex; flex-direction: column; gap: 10px; margin: 14px 0 0; }
+.cloud-form .field { width: 100%; }
+.cloud-note { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
