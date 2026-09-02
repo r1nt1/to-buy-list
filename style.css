@@ -291,6 +291,26 @@ button.group-head { min-height: 34px; }
 
 .empty { color: var(--muted); text-align: center; padding: 28px 12px; font-size: 15px; }
 
+/* ---------------- group by aisle ---------------- */
+.list-tools { display: flex; justify-content: flex-end; margin: -14px 2px 4px; }
+.tool {
+  min-height: 34px; padding: 5px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent;
+  font-size: 13px; color: var(--muted);
+}
+.tool.on {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  color: var(--accent);
+}
+/* aisle headings inside an open shop — quieter than a top-level heading,
+   because the shop above them is the thing you're really looking at */
+.sub-head {
+  margin: 14px 4px 6px; font-size: 12px; font-weight: 600;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
+}
+.sub-head:first-child { margin-top: 4px; }
+
 /* ---------------- repeat reminders ----------------
    A marker, never a mover: nothing on this list rearranges itself. */
 .row-due {
@@ -372,7 +392,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 #info-form, #store-form { padding: 18px; display: grid; gap: 14px; }
 #info-form h2, #store-form h2 { margin: 0; font-size: 20px; }
 #info-form label, #store-form label { display: grid; gap: 5px; font-size: 13px; color: var(--muted); }
-#info-form input, #info-form textarea,
+#info-form input, #info-form textarea, #info-form select,
 #store-form input {
   font-size: 17px; line-height: 1.3; font-family: inherit;
   padding: 10px 12px; min-height: 44px;

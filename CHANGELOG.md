@@ -58,6 +58,38 @@ becomes a one-item list — so nothing you typed is lost.
   It can't buzz your phone. A real notification needs a background service
   and a push server; this is a marker you see when you open the app.
 
+- **Group by aisle.** Every item now also knows *what kind of thing it is* —
+  Produce, Meat, Frozen, Auto, Office, Furniture, and 27 more. A button above
+  the list turns aisle grouping on, and it behaves differently in each tab so
+  you can compare them:
+
+  - in **Stores**, aisles appear *inside* each shop, which is the useful one:
+    you're standing in Metro and the list is in the order you walk it;
+  - in **Priority**, the whole list regroups by aisle.
+
+  The budget cutoff line is not drawn while grouping by aisle. That line means
+  "given this order, your money runs out here", which only answers *what do I
+  cut* when the list is ordered by priority. In aisle order it would mark an
+  arbitrary spot, so it's left out rather than shown misleadingly. The totals
+  at the top are unaffected.
+
+  **Where the categories come from.** `aisles.js` — a dictionary of about
+  1,600 words in Spanish and English, written into the app. No AI call, on
+  purpose: it works with no signal in a supermarket basement, costs nothing,
+  answers instantly, and needs no secret key — which matters because this
+  repository is public, so anything in it is readable by anyone.
+
+  A store is *where* you buy something; an aisle is *what it is*. Rice is
+  Grains wherever you buy it, so the app never has to know what any
+  particular shop stocks. A bed is Home & Furniture whether or not your
+  supermarket sells beds — if it doesn't, you never tagged that shop on it,
+  so it never appears there.
+
+  Anything the dictionary doesn't recognise lands in **Other**, and you can
+  set the aisle yourself in the **i** sheet. Whatever you set always wins:
+  correcting a spelling re-guesses the aisle only when the app never worked
+  one out in the first place.
+
 ---
 
 ## v3.3 — 2026-09-02

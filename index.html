@@ -88,6 +88,13 @@
       <div class="suggest hidden" id="suggest"></div>
     </div>
 
+    <!-- Off by default. Grouping by aisle is only useful once you are
+         standing in a shop, so it is something you switch on, not the
+         way the list normally looks. -->
+    <div class="list-tools">
+      <button class="tool" id="aisle-toggle" aria-pressed="false">Group by aisle</button>
+    </div>
+
     <div id="trip-list"></div>
     <p class="version" id="version"></p>
   </section>
@@ -121,6 +128,10 @@
          chips rather than a single box. Filled in by renderInfoChips(). -->
     <label>Stores
       <div class="chips" id="info-chips"></div>
+    </label>
+
+    <label>Aisle
+      <select name="aisle" id="info-aisle"></select>
     </label>
 
     <label>Note
@@ -231,6 +242,7 @@
 <datalist id="store-names"></datalist>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="aisles.js?v=4.0"></script>
 <script src="sync.js?v=4.0"></script>
 <script src="app.js?v=4.0"></script>
 </body>

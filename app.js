@@ -42,6 +42,7 @@ function newItem(name, extra = {}) {
     timesBought: 0,
     lastBought: null,
     repeatDays: null,   // null means "don't remind me"; otherwise a number of days
+    aisle: guessAisle(name) || NO_AISLE,   // what kind of thing it is — see aisles.js
     ...extra
   };
 }
@@ -58,6 +59,11 @@ function normaliseItem(i) {
   i.stores = i.stores.map((s) => String(s).trim()).filter(Boolean);
   delete i.store;
   if (typeof i.repeatDays !== 'number' || !(i.repeatDays > 0)) i.repeatDays = null;
+  // Guessed once, then stored — so whatever you set by hand is never
+  // silently overwritten by the dictionary later on.
+  if (typeof i.aisle !== 'string' || !AISLES.includes(i.aisle)) {
+    i.aisle = guessAisle(i.name) || NO_AISLE;
+  }
   return i;
 }
 
@@ -66,6 +72,8 @@ function seedState() {
     schema: 2, budget: 0, mode: 'priority',
     expanded: [],        // which store groups are open — none, to begin with
     collapsedPri: [],    // which priority sections are shut — none, to begin with
+    collapsedAisles: [], // the same, for the aisle headings
+    byAisle: false,      // group by aisle? off unless you switch it on
     addOpen: false,      // is the optional detail row under the add box showing?
     budgetOpen: false,   // the budget panel stays shut until you open it
     skipAsk: {},         // confirmations you've ticked "don't ask me again" on
@@ -90,6 +98,8 @@ function migrateFromV1(old) {
     mode: 'priority',
     expanded: [],
     collapsedPri: [],
+    collapsedAisles: [],
+    byAisle: false,
     addOpen: false,
     budgetOpen: false,
     skipAsk: {},
@@ -124,6 +134,8 @@ function load() {
         // fill in anything a older save is missing
         if (!Array.isArray(parsed.expanded)) parsed.expanded = [];
         if (!Array.isArray(parsed.collapsedPri)) parsed.collapsedPri = [];
+        if (!Array.isArray(parsed.collapsedAisles)) parsed.collapsedAisles = [];
+        if (typeof parsed.byAisle !== 'boolean') parsed.byAisle = false;
         if (typeof parsed.addOpen !== 'boolean') parsed.addOpen = false;
         if (typeof parsed.budgetOpen !== 'boolean') parsed.budgetOpen = false;
         if (!parsed.skipAsk || typeof parsed.skipAsk !== 'object') parsed.skipAsk = {};
@@ -210,6 +222,7 @@ const tripItems = () => state.items.filter((i) => i.inTrip);
 // Which store headings an item belongs under. Something with no store at
 // all still has to appear somewhere, so it lands in "Other".
 const storesOf  = (item) => (item.stores.length ? item.stores : [NO_STORE]);
+const aisleOf   = (item) => (AISLES.includes(item.aisle) ? item.aisle : NO_AISLE);
 
 /* Adds a store to an item, ignoring blanks and ones it already has.
    Matching ignores case, so "metro" can't become a second Metro. */
@@ -245,7 +258,9 @@ function renderTrip() {
 
   $('#trip-list').innerHTML =
     dueHtml(pend) +
-    (state.mode === 'store' ? byStoreHtml(pend) : byPriorityHtml(pend, cartSum)) +
+    (state.mode === 'store' ? byStoreHtml(pend)
+      : state.byAisle          ? byAisleHtml(pend)
+      : byPriorityHtml(pend, cartSum)) +
     emptyHtml(pend, onTrip) +
     cartHtml(inCart, cartSum);
 
@@ -316,6 +331,46 @@ function byPriorityHtml(pend, cartSum) {
   return html;
 }
 
+/* The whole list grouped by aisle, most urgent first inside each one —
+   the same ordering rule the Stores tab uses inside a shop.
+
+   There is deliberately no budget cutoff line here. That line means "given
+   the order of this list, your money runs out at this point", and it is only
+   an answer to "what do I cut?" while the list is ordered by priority. In
+   aisle order it would mark an arbitrary spot. The totals at the top of the
+   screen are unaffected. */
+function byAisleHtml(pend) {
+  let html = '';
+  for (const aisle of AISLES) {
+    const group = pend.filter((i) => aisleOf(i) === aisle)
+                      .sort((a, b) => a.priority - b.priority || byName(a, b));
+    if (!group.length) continue;
+
+    const sum  = group.reduce((s, i) => s + lineTotal(i), 0);
+    const open = !state.collapsedAisles.includes(aisle);
+    html += '<button class="group-head' + (open ? '' : ' collapsed') +
+            '" data-aisle="' + esc(aisle) + '">' +
+            '<span><span class="caret">⌄</span>' + esc(aisle) + ' · ' + group.length +
+            '</span>' +
+            (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') + '</button>';
+    if (open) html += '<div class="card">' + group.map(rowHtml).join('') + '</div>';
+  }
+  return html;
+}
+
+/* Aisles inside one shop. These headings don't collapse — the store above
+   them already does, and two levels of folding is one too many. */
+function aisleSubHtml(group) {
+  let html = '';
+  for (const aisle of AISLES) {
+    const sub = group.filter((i) => aisleOf(i) === aisle);
+    if (!sub.length) continue;
+    html += '<div class="sub-head">' + esc(aisle) + '</div>' +
+            '<div class="card">' + sub.map(rowHtml).join('') + '</div>';
+  }
+  return html;
+}
+
 function byStoreHtml(pend) {
   // Real stores alphabetically, "Other" always last.
   const stores = [...new Set(pend.flatMap(storesOf))]
@@ -338,7 +393,10 @@ function byStoreHtml(pend) {
             '<span><span class="caret">⌄</span>' + esc(store) + ' · ' + group.length + '</span>' +
             (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') + '</button>';
 
-    if (isOpen) html += '<div class="card">' + group.map(rowHtml).join('') + '</div>';
+    if (isOpen) {
+      html += state.byAisle ? aisleSubHtml(group)
+                            : '<div class="card">' + group.map(rowHtml).join('') + '</div>';
+    }
   }
   return html;
 }
@@ -490,6 +548,11 @@ function renderBudget(cartSum, pend) {
 function render() {
   document.querySelectorAll('.tab').forEach((b) =>
     b.classList.toggle('active', b.dataset.mode === state.mode));
+  $('#aisle-toggle').classList.toggle('on', state.byAisle);
+  $('#aisle-toggle').setAttribute('aria-pressed', String(state.byAisle));
+  $('#aisle-toggle').textContent = state.mode === 'store'
+    ? (state.byAisle ? 'Aisles within each shop' : 'Group by aisle')
+    : (state.byAisle ? 'Grouped by aisle' : 'Group by aisle');
   $('#version').textContent = 'version ' + VERSION;
 
   renderTrip();
@@ -577,6 +640,17 @@ function handleClick(event) {
     return;
   }
 
+  const aisleHead = event.target.closest('[data-aisle]');
+  if (aisleHead) {                             // collapse / expand an aisle
+    const a = aisleHead.dataset.aisle;
+    update(() => {
+      state.collapsedAisles = state.collapsedAisles.includes(a)
+        ? state.collapsedAisles.filter((x) => x !== a)
+        : [...state.collapsedAisles, a];
+    });
+    return;
+  }
+
   const priHead = event.target.closest('[data-pri]');
   if (priHead) {                               // collapse / expand a priority section
     const p = Number(priHead.dataset.pri);
@@ -651,7 +725,12 @@ function handleFieldChange(event) {
 
 function applyField(item, input) {
   const v = input.value;
-  if (input.dataset.field === 'name')  item.name  = v.trim() || item.name;
+  if (input.dataset.field === 'name') {
+    item.name = v.trim() || item.name;
+    // Correcting a typo should fix the aisle too — but only when the app
+    // never managed to work one out. An aisle you chose is never overruled.
+    if (item.aisle === NO_AISLE) item.aisle = guessAisle(item.name) || NO_AISLE;
+  }
   // A chip box appends rather than replaces, and empties itself.
   if (input.dataset.field === 'store-add') {
     if (addStore(item, v)) {
@@ -927,6 +1006,13 @@ document.addEventListener('click', (e) => {
   if (!e.target.closest('.add-wrap')) suggestBox.classList.add('hidden');
 });
 
+/* ---------------- group by aisle ---------------- */
+$('#aisle-toggle').addEventListener('click', () => {
+  commitOpenRow();
+  update(() => { state.byAisle = !state.byAisle; openId = null; });
+  window.scrollTo(0, 0);
+});
+
 /* ---------------- budget ---------------- */
 $('#budget-input').addEventListener('input', (e) => {
   state.budget = Number(e.target.value) || 0;
@@ -1021,6 +1107,7 @@ function openInfo(item) {
   f.price.value = item.price ?? '';
   infoStores = [...item.stores];
   renderInfoChips();
+  f.aisle.value = aisleOf(item);
   f.repeatDays.value = item.repeatDays || '';
   markRepeatPill();
   f.note.value = item.note || '';
@@ -1072,6 +1159,7 @@ $('#info-form').addEventListener('submit', () => {
     addStore({ stores: infoStores }, $('#info-chips .chip-input').value);
     item.stores = infoStores;
     item.note = f.note.value.trim();
+    item.aisle = f.aisle.value;
     const rep = parseInt(f.repeatDays.value, 10);
     item.repeatDays = Number.isFinite(rep) && rep > 0 ? rep : null;
   });
@@ -1255,6 +1343,8 @@ function confetti() {
 }
 
 /* ---------------- go ---------------- */
+$('#info-aisle').innerHTML =
+  AISLES.map((a) => '<option value="' + esc(a) + '">' + esc(a) + '</option>').join('');
 renderAddMore();
 render();
 
@@ -1273,6 +1363,8 @@ function adoptFromCloud(data) {
   // An older save may predate some fields, exactly as load() guards for.
   if (!Array.isArray(state.expanded))  state.expanded  = [];
   if (!Array.isArray(state.collapsedPri)) state.collapsedPri = [];
+  if (!Array.isArray(state.collapsedAisles)) state.collapsedAisles = [];
+  if (typeof state.byAisle !== 'boolean') state.byAisle = false;
   if (typeof state.addOpen !== 'boolean') state.addOpen = false;
   if (typeof state.budgetOpen !== 'boolean') state.budgetOpen = false;
   if (!state.skipAsk || typeof state.skipAsk !== 'object') state.skipAsk = {};
