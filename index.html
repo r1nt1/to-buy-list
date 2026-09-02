@@ -10,7 +10,7 @@
 <!-- The ?v= number is a cache-buster. Browsers hang on to old copies of
      these files; changing the number forces a fresh download. Bump it
      every release, or the phone keeps running the previous version. -->
-<link rel="stylesheet" href="style.css?v=3.1">
+<link rel="stylesheet" href="style.css?v=3.2">
 </head>
 <body>
 
@@ -152,20 +152,25 @@
           <input class="field" type="email" id="cloud-email" required
                  placeholder="you@example.com" autocomplete="email"
                  enterkeyhint="send">
-          <button type="submit" class="primary">Email me a code</button>
+          <button type="submit" class="primary">Email me a sign-in link</button>
         </form>
         <p class="cloud-note" id="cloud-note"></p>
       </div>
 
-      <!-- step 2: the code from that email. Typed here, so the sign-in
-           stays in this app rather than jumping to Safari. -->
+      <!-- step 2: paste the link back in here, rather than tapping it.
+           Tapping opens Safari, which is a different app with different
+           storage, so the sign-in would land where this app can't see it. -->
       <div id="cloud-step-code" class="hidden">
         <p id="cloud-sent-to"></p>
+        <p class="cloud-note"><strong>Don't tap the link.</strong> In the email,
+           press and hold it, choose <em>Copy Link</em>, then paste it below.
+           The link only works once, so tapping it first uses it up.</p>
         <form id="cloud-code-form" class="cloud-form">
-          <input class="field code-field" id="cloud-code" required
-                 inputmode="numeric" pattern="[0-9]*" maxlength="6"
-                 autocomplete="one-time-code" placeholder="000000"
-                 enterkeyhint="go" aria-label="Six-digit code">
+          <input class="field" type="text" id="cloud-code" required
+                 placeholder="Paste the link here"
+                 autocomplete="off" autocapitalize="off" autocorrect="off"
+                 spellcheck="false" enterkeyhint="go"
+                 aria-label="Paste your sign-in link">
           <button type="submit" class="primary">Sign in</button>
         </form>
         <p class="cloud-note" id="cloud-code-note"></p>
@@ -189,7 +194,7 @@
 <datalist id="store-names"></datalist>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="sync.js?v=3.1"></script>
-<script src="app.js?v=3.1"></script>
+<script src="sync.js?v=3.2"></script>
+<script src="app.js?v=3.2"></script>
 </body>
 </html>

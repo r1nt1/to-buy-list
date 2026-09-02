@@ -18,22 +18,26 @@ so you can always tell which one is on your phone.
 
 ---
 
-## v3.1 — 2026-09-02
+## v3.2 — 2026-09-02
 
 ### Changed
 
-- **Sign in with a six-digit code instead of a link.** The link in v3.0 didn't
-  work on the phone. Tapping it opened Safari, and on iOS an app added to the
-  Home Screen keeps its own separate storage — so the sign-in landed in Safari
-  and the Home Screen app still showed as signed out. A code you type stays in
-  whichever app you type it into, so there's nothing to go wrong.
+- **Sign in by pasting the link instead of tapping it.** The v3.0 sign-in
+  couldn't work on the phone. Tapping the emailed link opens Safari, and an
+  app added to the Home Screen keeps its own separate storage — so the sign-in
+  landed in Safari while the Home Screen app still showed as signed out.
+
+  Now the app asks you to press and hold the link in the email, copy it, and
+  paste it back in. The whole sign-in then happens inside the app, where it
+  belongs. The link is single use, so copy it rather than tapping it.
+
+  (A six-digit code would be nicer, but that needs a custom email provider —
+  Supabase locked template editing on the free plan in June 2026.)
 
 ### Fixed
 
-- **Signing in now backs up straight away.** Before, the first backup only
-  happened the next time the list changed, so the cloud sat empty after
-  signing in. If there's nothing up there yet, this phone's list is sent
-  immediately.
+- **Signing in now backs up straight away.** Before, the first backup waited
+  for the next change, so the cloud sat empty right after signing in.
 
 - **A list saved before v3.0 is stamped as current when it loads.** Without a
   timestamp, a phone holding a real list could be mistaken for an empty one

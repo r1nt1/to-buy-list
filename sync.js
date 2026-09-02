@@ -144,12 +144,13 @@ window.Cloud = (function () {
     btn.addEventListener('click', () => { paintDialog(); dlg.showModal(); });
     $('cloud-close').addEventListener('click', () => dlg.close());
 
-    // Step 1 — ask Supabase to email a six-digit code.
+    // Step 1 — ask Supabase to email a sign-in link.
     //
-    // Deliberately NO emailRedirectTo here. A link would open in Safari,
-    // and on iOS a Home Screen app has its own separate storage, so the
-    // session would land in the wrong place and this app would still look
-    // signed out. A code you type stays in whichever app you typed it in.
+    // On iOS, Mail opens links in Safari. An app added to the Home Screen
+    // has its own separate storage, so a link tapped from Mail signs in
+    // somewhere this app cannot see, and it stays looking signed out.
+    // So we don't ask you to tap it — we ask you to paste it back here,
+    // which keeps the whole sign-in inside this app.
     $('cloud-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = $('cloud-email').value.trim();
@@ -164,26 +165,56 @@ window.Cloud = (function () {
         }
         pendingEmail = email;
         note.textContent = '';
-        $('cloud-sent-to').textContent = 'Code sent to ' + email;
+        $('cloud-sent-to').textContent = 'Link sent to ' + email;
         showStep('code');
       } catch (err) {
         note.textContent = 'Could not send. Are you online?';
       }
     });
 
-    // Step 2 — check the code. This is what actually signs you in.
+    // Pull the useful part out of whatever got pasted. The emailed link
+    // carries the one-time token as a query parameter; if the link was
+    // already opened somewhere, what you copy instead has the finished
+    // session sitting in the part after the '#'. Handle both.
+    function readPastedLink(text) {
+      let url;
+      try { url = new URL(text.trim()); }
+      catch (err) { return { kind: 'bad' }; }
+
+      const q = url.searchParams;
+      const token = q.get('token_hash') || q.get('token');
+      if (token) return { kind: 'token', token, type: q.get('type') || 'magiclink' };
+
+      const hash = new URLSearchParams((url.hash || '').replace(/^#/, ''));
+      const access = hash.get('access_token');
+      const refresh = hash.get('refresh_token');
+      if (access && refresh) return { kind: 'session', access, refresh };
+
+      return { kind: 'bad' };
+    }
+
+    // Step 2 — the pasted link is what actually signs you in.
     $('cloud-code-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const token = $('cloud-code').value.replace(/\D/g, '');
       const note = $('cloud-code-note');
-      if (token.length < 6) { note.textContent = 'That code looks too short.'; return; }
+      const parsed = readPastedLink($('cloud-code').value);
+
+      if (parsed.kind === 'bad') {
+        note.textContent = "That doesn't look like the sign-in link. Copy the whole thing from the email.";
+        return;
+      }
+
       note.textContent = 'Checking…';
       try {
-        const { error } = await sb.auth.verifyOtp({
-          email: pendingEmail, token, type: 'email'
-        });
+        const { error } = parsed.kind === 'token'
+          ? await sb.auth.verifyOtp({ token_hash: parsed.token, type: parsed.type })
+          : await sb.auth.setSession({ access_token: parsed.access, refresh_token: parsed.refresh });
+
         if (error) {
-          note.textContent = 'That code did not work: ' + error.message;
+          // Much the most likely cause: the link was tapped before it was
+          // copied. These are single use.
+          note.textContent = 'That link did not work: ' + error.message
+            + ' If you tapped it before copying, send a new one.';
           return;
         }
         note.textContent = '';
@@ -191,7 +222,12 @@ window.Cloud = (function () {
         $('cloud-code').value = '';
         // onAuthStateChange takes it from here: paints, pulls, backs up.
       } catch (err) {
-        note.textContent = 'Could not check the code. Are you online?';
+        // A malformed link throws rather than returning an error, so don't
+        // blame the network unless the network is actually the problem.
+        console.warn('Sign-in from a pasted link failed.', err);
+        note.textContent = navigator.onLine
+          ? 'That link could not be used. Send a new one and copy it without tapping it.'
+          : 'You appear to be offline. Try again when you have signal.';
       }
     });
 
