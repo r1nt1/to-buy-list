@@ -41,6 +41,7 @@ function newItem(name, extra = {}) {
     done: false,
     timesBought: 0,
     lastBought: null,
+    repeatDays: null,   // null means "don't remind me"; otherwise a number of days
     ...extra
   };
 }
@@ -56,6 +57,7 @@ function normaliseItem(i) {
   }
   i.stores = i.stores.map((s) => String(s).trim()).filter(Boolean);
   delete i.store;
+  if (typeof i.repeatDays !== 'number' || !(i.repeatDays > 0)) i.repeatDays = null;
   return i;
 }
 
@@ -173,6 +175,34 @@ function todayLocal() {
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 }
 
+/* Whole days between a 'YYYY-MM-DD' stamp and today, counted in your own
+   timezone — the same way todayLocal() writes them. */
+function daysSince(stamp) {
+  if (!stamp) return null;
+  const [y, m, d] = String(stamp).split('-').map(Number);
+  if (!y || !m || !d) return null;
+  const then = new Date(y, m - 1, d);
+  const now  = new Date();
+  now.setHours(0, 0, 0, 0);
+  return Math.round((now - then) / 86400000);
+}
+
+function addDays(stamp, n) {
+  const [y, m, d] = String(stamp).split('-').map(Number);
+  const dt = new Date(y, m - 1, d + n);
+  const pad = (x) => String(x).padStart(2, '0');
+  return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate());
+}
+
+/* Something you asked to be reminded about, that you last bought long
+   enough ago. Nothing you have never bought is ever "due" — there is no
+   date to count from — and nothing already in the cart is either. */
+function isDue(item) {
+  if (!item.repeatDays || !item.lastBought || item.done) return false;
+  const since = daysSince(item.lastBought);
+  return since !== null && since >= item.repeatDays;
+}
+
 const lineTotal = (item) => (item.price || 0) * (item.qty || 1);
 const byName    = (a, b) => a.name.localeCompare(b.name);
 const findItem  = (id) => state.items.find((i) => i.id === id);
@@ -214,6 +244,7 @@ function renderTrip() {
   renderBudget(cartSum, pend);
 
   $('#trip-list').innerHTML =
+    dueHtml(pend) +
     (state.mode === 'store' ? byStoreHtml(pend) : byPriorityHtml(pend, cartSum)) +
     emptyHtml(pend, onTrip) +
     cartHtml(inCart, cartSum);
@@ -223,6 +254,15 @@ function renderTrip() {
     if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
   }
   focusPending = false;
+}
+
+function dueHtml(pend) {
+  const due = pend.filter(isDue);
+  if (!due.length) return '';
+  return '<div class="due-banner">' + due.length +
+    (due.length > 1 ? ' things are' : ' thing is') + ' due again: ' +
+    due.map((i) => esc(i.name)).sort().join(', ') +
+    '</div>';
 }
 
 function byPriorityHtml(pend, cartSum) {
@@ -334,6 +374,9 @@ function rowHtml(item) {
           '<span class="row-name">' + esc(item.name) + '</span>' +
           (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
           (item.note ? '<span class="row-note">' + esc(item.note) + '</span>' : '') +
+          // A marker only. Deciding it is worth buying stays your job.
+          (isDue(item) ? '<span class="row-due">Due again · last bought ' +
+                         esc(item.lastBought) + '</span>' : '') +
         '</button>' +
       '</div>' +
     '</div>';
@@ -978,13 +1021,43 @@ function openInfo(item) {
   f.price.value = item.price ?? '';
   infoStores = [...item.stores];
   renderInfoChips();
+  f.repeatDays.value = item.repeatDays || '';
+  markRepeatPill();
   f.note.value = item.note || '';
   $('#info-title').textContent = item.name;
   // Only worth a line if it actually tells you something.
-  $('#info-stat').textContent = item.lastBought ? 'Last bought ' + item.lastBought : '';
-  $('#info-stat').classList.toggle('hidden', !item.lastBought);
+  const lines = [];
+  if (item.lastBought) lines.push('Last bought ' + item.lastBought);
+  if (item.repeatDays && item.lastBought) {
+    lines.push(isDue(item)
+      ? 'Due again now.'
+      : 'Due again on ' + addDays(item.lastBought, item.repeatDays) + '.');
+  } else if (item.repeatDays) {
+    lines.push('The countdown starts the first time you buy it.');
+  }
+  $('#info-stat').textContent = lines.join(' · ');
+  $('#info-stat').classList.toggle('hidden', !lines.length);
   info.showModal();
 }
+
+/* The number box is the real setting; the buttons are shortcuts that fill
+   it in. So "every 45 days" is typed, and nothing is highlighted — which is
+   itself accurate, because no preset is what's set. */
+function markRepeatPill() {
+  const days = parseInt($('#info-form').repeatDays.value, 10) || 0;
+  document.querySelectorAll('#repeat-pills .pill').forEach((b) =>
+    b.classList.toggle('on', Number(b.dataset.days) === days));
+}
+
+$('#repeat-pills').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-days]');
+  if (!btn) return;
+  const days = Number(btn.dataset.days);
+  $('#info-form').repeatDays.value = days > 0 ? days : '';
+  markRepeatPill();
+});
+
+$('#info-form').repeatDays.addEventListener('input', markRepeatPill);
 
 $('#info-cancel').addEventListener('click', () => info.close());
 
@@ -999,6 +1072,8 @@ $('#info-form').addEventListener('submit', () => {
     addStore({ stores: infoStores }, $('#info-chips .chip-input').value);
     item.stores = infoStores;
     item.note = f.note.value.trim();
+    const rep = parseInt(f.repeatDays.value, 10);
+    item.repeatDays = Number.isFinite(rep) && rep > 0 ? rep : null;
   });
 });
 

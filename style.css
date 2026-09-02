@@ -291,6 +291,27 @@ button.group-head { min-height: 34px; }
 
 .empty { color: var(--muted); text-align: center; padding: 28px 12px; font-size: 15px; }
 
+/* ---------------- repeat reminders ----------------
+   A marker, never a mover: nothing on this list rearranges itself. */
+.row-due {
+  display: block; font-size: 13px; font-weight: 600; margin-top: 3px;
+  color: var(--p2);
+}
+.due-banner {
+  margin: 4px 2px 0; padding: 10px 13px; border-radius: 10px;
+  font-size: 14px; line-height: 1.4; color: var(--p2);
+  background: color-mix(in srgb, var(--p2) 11%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--p2) 30%, var(--line));
+}
+.pills { display: flex; flex-wrap: wrap; gap: 7px; }
+.pill {
+  min-height: 38px; padding: 6px 13px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--bg);
+  font-size: 15px; color: var(--muted);
+}
+.pill.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.repeat-days input { max-width: 140px; }
+
 /* ---------------- store chips ----------------
    One item can be sold in several shops, so the store field is a row of
    chips with a text box on the end. The box grows to fill whatever space

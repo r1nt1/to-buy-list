@@ -44,6 +44,20 @@ becomes a one-item list — so nothing you typed is lost.
 - The details sheet edits a **copy** of the store list, so **Cancel** really
   does cancel.
 
+- **Buy it again every…** In the **i** sheet, set a repeat: one week, two
+  weeks, one month, three months, six months, a year, or any number of days
+  you type. The app already knew when you last bought each thing — this just
+  starts using it.
+
+  When enough time has passed, the item gets a **Due again** line, and a
+  single line at the top of the list says what's due. **That is all it does.**
+  Nothing moves itself up your list, nothing changes priority on its own —
+  the app tells you, you decide. Something you've never bought is never due,
+  because there's no date to count from.
+
+  It can't buzz your phone. A real notification needs a background service
+  and a push server; this is a marker you see when you open the app.
+
 ---
 
 ## v3.3 — 2026-09-02
