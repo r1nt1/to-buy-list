@@ -38,8 +38,8 @@ becomes a one-item list — so nothing you typed is lost.
   something tagged twice is counted in two headings. The figure at the top of
   the screen still counts every item exactly once, so your budget is unaffected.
 
-  On a closed row, two shops read as `Metro +1` — the first one, and how many
-  others there are.
+  On a closed row every shop is listed. To make room, the price moved up to
+  the item's own line, hard right, directly under the section total.
 
 - The details sheet edits a **copy** of the store list, so **Cancel** really
   does cancel.
@@ -58,6 +58,11 @@ becomes a one-item list — so nothing you typed is lost.
 
   It can't buzz your phone. A real notification needs a background service
   and a push server; this is a marker you see when you open the app.
+
+  To try it without waiting a month, open the app as `…/?today=2026-06-01`
+  (any date). It then behaves as if that were the date — buy something and
+  start a new trip on a pretend day, then open it again on a later one.
+  A line at the top says when it's pretending. Nothing about this is saved.
 
 - **Group by aisle, in the Stores tab.** Every item now also knows *what kind
   of thing it is* — Produce, Meat, Frozen, Auto, Office, Furniture, and 27
@@ -114,8 +119,9 @@ becomes a one-item list — so nothing you typed is lost.
 - **The add box follows you down the page.** It used to scroll away, so adding
   something halfway through a long list meant scrolling back to the top.
 
-- **A detail row under the add box, always visible.** Priority, store and
-  price sit under **Add an item…** the whole time. None of it has to be
+- **A detail row under the add box.** Tap into **Add an item…** and
+  priority, store and price appear beneath it; tap away with the box empty
+  and they go again, so the home screen stays clean. None of it has to be
   filled in — typing a name and pressing Add works exactly as before — but
   when you want something to go straight to High, it's already in front of
   you instead of something you set afterwards by finding the item again.
@@ -139,6 +145,17 @@ becomes a one-item list — so nothing you typed is lost.
   you'd have to change to get from one word to the other — one for short
   words, two for longer ones. Words under four letters are left alone, so
   `ice` and `rice` never get confused for each other.
+
+### Fixed
+
+- **The budget bar sat empty until you checked something off.** It measured
+  the cart against the budget, so a freshly set budget looked like it had
+  done nothing. It now shows the whole planned list as a pale bar with the
+  cart as the solid part on top. Pressing Enter (the keyboard's *Done*) now
+  puts the keyboard away — the number was already applied as you typed, but
+  on the phone the result was hidden behind the keys.
+- **`of S/…` on the budget row only shows once the panel is open.** Closed,
+  the row just says what's in the cart.
 
 ### Changed
 

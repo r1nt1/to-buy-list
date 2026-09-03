@@ -173,10 +173,23 @@ function esc(str) {
   ));
 }
 
+/* Open the app as  ?today=2026-12-01  and it behaves as if that were the
+   date — for trying the reminders without waiting weeks. Buy something and
+   start a new trip on one pretend day, then open it again on a later one.
+   Nothing about this is saved; drop the ?today and it's really today. */
+const FAKE_TODAY = new URLSearchParams(location.search).get('today');
+function now() {
+  if (FAKE_TODAY) {
+    const [y, m, d] = FAKE_TODAY.split('-').map(Number);
+    if (y && m && d) return new Date(y, m - 1, d);
+  }
+  return new Date();
+}
+
 // Today in YOUR timezone. toISOString() gives UTC, which in the evening
 // is already tomorrow — that would stamp items with the wrong day.
 function todayLocal() {
-  const d = new Date();
+  const d = now();
   const pad = (n) => String(n).padStart(2, '0');
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 }
@@ -187,10 +200,10 @@ function daysSince(stamp) {
   if (!stamp) return null;
   const [y, m, d] = String(stamp).split('-').map(Number);
   if (!y || !m || !d) return null;
-  const then = new Date(y, m - 1, d);
-  const now  = new Date();
-  now.setHours(0, 0, 0, 0);
-  return Math.round((now - then) / 86400000);
+  const then  = new Date(y, m - 1, d);
+  const today = now();
+  today.setHours(0, 0, 0, 0);
+  return Math.round((today - then) / 86400000);
 }
 
 function addDays(stamp, n) {
@@ -279,9 +292,11 @@ function groupHeadHtml({ attr, key, label, count, sum, open, tone }) {
 }
 
 function dueHtml(pend) {
+  const fake = FAKE_TODAY
+    ? '<div class="fake-today">Pretending today is ' + esc(FAKE_TODAY) + '</div>' : '';
   const due = pend.filter(isDue);
-  if (!due.length) return '';
-  return '<div class="due-banner">' + due.length +
+  if (!due.length) return fake;
+  return fake + '<div class="due-banner">' + due.length +
     (due.length > 1 ? ' things are' : ' thing is') + ' due again: ' +
     due.map((i) => esc(i.name)).sort().join(', ') +
     '</div>';
@@ -390,14 +405,11 @@ function cutoffDivider() {
 function rowHtml(item) {
   if (item.id === openId) return openRowHtml(item);
 
+  // The price sits on the name's line, hard right under the section total.
+  // That leaves the whole second line for the stores, so all of them fit.
   const bits = [];
   if (item.qty > 1) bits.push('×' + item.qty);
-  if (item.price)   bits.push(money(lineTotal(item)));
-  // Two shops on one line gets long, so show the first and count the rest.
-  if (item.stores.length && state.mode !== 'store') {
-    bits.push(esc(item.stores[0]) +
-              (item.stores.length > 1 ? ' +' + (item.stores.length - 1) : ''));
-  }
+  if (item.stores.length && state.mode !== 'store') bits.push(...item.stores.map(esc));
 
   return '' +
     '<div class="swipe-wrap' + (item.priority === 3 ? ' will-delete' : '') + '">' +
@@ -411,7 +423,10 @@ function rowHtml(item) {
         '" data-id="' + item.id + '">' +
         '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
         '<button class="row-main" data-act="open">' +
-          '<span class="row-name">' + esc(item.name) + '</span>' +
+          '<span class="row-line">' +
+            '<span class="row-name">' + esc(item.name) + '</span>' +
+            (item.price ? '<span class="row-price">' + money(lineTotal(item)) + '</span>' : '') +
+          '</span>' +
           (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
           (item.note ? '<span class="row-note">' + esc(item.note) + '</span>' : '') +
           // A marker only. Deciding it is worth buying stays your job.
@@ -507,9 +522,14 @@ function renderBudget(cartSum, pend) {
   $('#budget-total').textContent = 'of ' + money(projected);
   if (document.activeElement !== $('#budget-input')) $('#budget-input').value = budget || '';
 
-  const fill = $('#bar-fill');
-  fill.style.width = (budget > 0 ? Math.min(100, (cartSum / budget) * 100) : 0) + '%';
-  fill.classList.toggle('over', budget > 0 && cartSum > budget);
+  // Pale layer: the whole planned list. Solid layer on top: the cart so far.
+  // Without the pale layer the bar sat empty until you checked something off,
+  // which made a freshly set budget look like it had done nothing.
+  const pct = (n) => (budget > 0 ? Math.min(100, (n / budget) * 100) : 0) + '%';
+  $('#bar-fill').style.width = pct(projected);
+  $('#bar-cart').style.width = pct(cartSum);
+  $('#bar-fill').classList.toggle('over', budget > 0 && projected > budget);
+  $('#bar-cart').classList.toggle('over', budget > 0 && cartSum > budget);
 
   let note, over = false;
   if (!budget) {
@@ -543,7 +563,8 @@ function render() {
   $('#aisle-toggle').classList.toggle('on', state.byAisle);
   $('#aisle-toggle').setAttribute('aria-pressed', String(state.byAisle));
   $('#aisle-toggle').textContent = state.byAisle ? 'Grouped by aisle' : 'Group by aisle';
-  $('#version').textContent = 'version ' + VERSION;
+  $('#version').textContent = 'version ' + VERSION +
+    (FAKE_TODAY ? ' · pretending today is ' + FAKE_TODAY : '');
 
   renderTrip();
 
@@ -913,8 +934,31 @@ $('#add-form').addEventListener('submit', async (e) => {
   clearAddBox();
 });
 
-/* ---------------- the optional detail row ---------------- */
+/* ---------------- the detail row ---------------- */
 $('#add-price').placeholder = CURRENCY;
+
+/* Shown while you're in the add box — the box has focus, or there's text in
+   it, or you're on one of its own controls. When you leave with the box
+   empty it goes away and empties itself, so nothing you can no longer see
+   can be applied to the next thing you add. */
+function syncAddMore() {
+  if (document.querySelector('dialog[open]')) return;   // a question is up; hold still
+  const wrap  = $('.add-wrap');
+  const input = $('#add-input');
+  const show  = wrap.contains(document.activeElement) || input.value.trim() !== '';
+  const more  = $('#add-more');
+  if (!show && !more.classList.contains('hidden')) {
+    setAddPri(null);
+    $('#add-store').value = '';
+    $('#add-price').value = '';
+  }
+  more.classList.toggle('hidden', !show);
+}
+// focusout fires before the next element takes focus, so wait a tick.
+$('.add-wrap').addEventListener('focusin',  () => setTimeout(syncAddMore, 0));
+$('.add-wrap').addEventListener('focusout', () => setTimeout(syncAddMore, 0));
+$('.add-wrap').addEventListener('click',    () => setTimeout(syncAddMore, 0));
+$('#add-input').addEventListener('input',   syncAddMore);
 
 $('#add-pri').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-add-pri]');
@@ -986,6 +1030,11 @@ $('#budget-input').addEventListener('input', (e) => {
   state.budget = Number(e.target.value) || 0;
   save();
   renderTrip();
+});
+// Enter (the keyboard's Done) puts the keyboard away. The number was already
+// applied as you typed — on the phone it just wasn't visible behind the keys.
+$('#budget-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
 });
 $('#budget-toggle').addEventListener('click', () => {
   update(() => { state.budgetOpen = !state.budgetOpen; });

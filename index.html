@@ -15,7 +15,7 @@
      files change, including while testing a version that hasn't shipped
      yet. Leaving it still during a testing session means the phone keeps
      showing the fix you just made as if it never happened. -->
-<link rel="stylesheet" href="style.css?v=20260903010453">
+<link rel="stylesheet" href="style.css?v=20260903093752">
 </head>
 <body>
 
@@ -60,7 +60,12 @@
           <input class="field" type="number" id="budget-input" min="0" step="1"
                  inputmode="decimal" placeholder="set a budget">
         </label>
-        <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
+        <!-- two layers: the pale one is the whole planned list against
+             the budget, the solid one on top is what's in the cart so far -->
+        <div class="bar">
+          <div class="bar-fill" id="bar-fill"></div>
+          <div class="bar-cart" id="bar-cart"></div>
+        </div>
         <p class="budget-note" id="budget-note"></p>
       </div>
     </div>
@@ -74,7 +79,10 @@
       <!-- Always visible. None of it has to be filled in — typing a name and
            pressing Add still works on its own — but when you do want an item
            to go straight to High, it's already in front of you. -->
-      <div class="add-more" id="add-more">
+      <!-- Hidden until you tap into the box, so the home screen stays
+           clean. It stays while you're typing, and goes again once the box
+           is empty and you've tapped elsewhere. -->
+      <div class="add-more hidden" id="add-more">
         <div class="pri-group" id="add-pri">
           <button type="button" class="pri v1" data-add-pri="1">H</button>
           <button type="button" class="pri v2" data-add-pri="2">M</button>
@@ -246,8 +254,8 @@
 <datalist id="store-names"></datalist>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="aisles.js?v=20260903010453"></script>
-<script src="sync.js?v=20260903010453"></script>
-<script src="app.js?v=20260903010453"></script>
+<script src="aisles.js?v=20260903093752"></script>
+<script src="sync.js?v=20260903093752"></script>
+<script src="app.js?v=20260903093752"></script>
 </body>
 </html>
