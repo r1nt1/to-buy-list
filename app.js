@@ -73,7 +73,6 @@ function seedState() {
     expanded: [],        // which store groups are open — none, to begin with
     collapsedPri: [],    // which priority sections are shut — none, to begin with
     byAisle: false,      // group by aisle? off unless you switch it on
-    addOpen: false,      // is the optional detail row under the add box showing?
     budgetOpen: false,   // the budget panel stays shut until you open it
     skipAsk: {},         // confirmations you've ticked "don't ask me again" on
     items: [
@@ -98,7 +97,6 @@ function migrateFromV1(old) {
     expanded: [],
     collapsedPri: [],
     byAisle: false,
-    addOpen: false,
     budgetOpen: false,
     skipAsk: {},
     items: (old.items || []).map((i) => normaliseItem({
@@ -133,7 +131,6 @@ function load() {
         if (!Array.isArray(parsed.expanded)) parsed.expanded = [];
         if (!Array.isArray(parsed.collapsedPri)) parsed.collapsedPri = [];
         if (typeof parsed.byAisle !== 'boolean') parsed.byAisle = false;
-        if (typeof parsed.addOpen !== 'boolean') parsed.addOpen = false;
         if (typeof parsed.budgetOpen !== 'boolean') parsed.budgetOpen = false;
         if (!parsed.skipAsk || typeof parsed.skipAsk !== 'object') parsed.skipAsk = {};
         parsed.items.forEach(normaliseItem);
@@ -266,6 +263,21 @@ function renderTrip() {
   focusPending = false;
 }
 
+/* A section heading with exactly two tap targets: the label on the left and
+   the chevron on the far right. The space between them is deliberately dead,
+   because that gap is how you dismiss an open row — if the whole heading were
+   one button, tapping the blank part would collapse the section instead. */
+function groupHeadHtml({ attr, key, label, count, sum, open, tone }) {
+  return '<div class="group-head' + (open ? '' : ' collapsed') +
+           (tone ? ' ' + tone : '') + '">' +
+    '<button class="gh-label" ' + attr + '="' + esc(key) + '">' +
+      esc(label) + ' · ' + count + '</button>' +
+    (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') +
+    '<button class="gh-caret" ' + attr + '="' + esc(key) + '" aria-label="' +
+      (open ? 'Collapse ' : 'Expand ') + esc(label) + '"><span class="caret">⌄</span></button>' +
+  '</div>';
+}
+
 function dueHtml(pend) {
   const due = pend.filter(isDue);
   if (!due.length) return '';
@@ -297,11 +309,8 @@ function byPriorityHtml(pend, cartSum) {
     // Same tappable header as the Stores tab, so both tabs behave alike.
     const sum  = group.reduce((s, i) => s + lineTotal(i), 0);
     const open = !state.collapsedPri.includes(p);
-    html += '<button class="group-head gh' + p + (open ? '' : ' collapsed') +
-            '" data-pri="' + p + '">' +
-            '<span><span class="caret">⌄</span>' + PRI_LABEL[p] + ' · ' + group.length +
-            '</span>' +
-            (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') + '</button>';
+    html += groupHeadHtml({ attr: 'data-pri', key: p, label: PRI_LABEL[p],
+                            count: group.length, sum, open, tone: 'gh' + p });
 
     if (!open) {
       // The items are still on the list, so they still spend the budget —
@@ -363,10 +372,8 @@ function byStoreHtml(pend) {
     const isOpen = state.expanded.includes(store);
     const sum = group.reduce((s, i) => s + lineTotal(i), 0);
 
-    html += '<button class="group-head' + (isOpen ? '' : ' collapsed') +
-            '" data-store="' + esc(store) + '">' +
-            '<span><span class="caret">⌄</span>' + esc(store) + ' · ' + group.length + '</span>' +
-            (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') + '</button>';
+    html += groupHeadHtml({ attr: 'data-store', key: store, label: store,
+                            count: group.length, sum, open: isOpen });
 
     if (isOpen) {
       html += state.byAisle ? aisleSubHtml(group)
@@ -430,14 +437,15 @@ function openRowHtml(item) {
           'enterkeyhint="done" autocomplete="off">' +
         '<button class="info-btn" data-act="info" aria-label="More details">i</button>' +
       '</div>' +
+      // One line, the way it was before stores could be plural. The chip box
+      // only grows when you actually put a second shop in it.
       '<div class="open-controls">' +
         '<div class="pri-group">' + pri + '</div>' +
-        '<span class="ctrl-spacer"></span>' +
+        chipsHtml(item.stores, 'store-add') +
         '<input class="field field-price" data-field="price" type="number" min="0" ' +
           'step="0.01" inputmode="decimal" enterkeyhint="done" placeholder="' +
           CURRENCY + '" value="' + (item.price ?? '') + '">' +
       '</div>' +
-      chipsHtml(item.stores, 'store-add') +
     '</div>';
 }
 
@@ -453,7 +461,12 @@ function chipHtml(name) {
    away. The chip is inserted straight into the page rather than through a
    redraw, so the keyboard never closes between two stores. */
 function chipsHtml(stores, field, id) {
-  return '<div class="chips"' + (id ? ' id="' + id + '"' : '') + '>' +
+  // One shop, or none, sits on the same line as the priority buttons and the
+  // price — exactly the layout from before stores could be plural. Only a
+  // second shop takes a line of its own, and then the chips lay out sideways
+  // across it instead of stacking three deep in a narrow column.
+  return '<div class="chips' + (stores.length > 1 ? ' wide' : '') + '"' +
+    (id ? ' id="' + id + '"' : '') + '>' +
     stores.map(chipHtml).join('') +
     '<input class="chip-input" data-field="' + field + '" list="store-names" ' +
     'placeholder="' + (stores.length ? '+ store' : 'store') + '" ' +
@@ -470,7 +483,8 @@ function emptyHtml(pend, onTrip) {
 
 function cartHtml(inCart, cartSum) {
   if (!inCart.length) return '';
-  return '<div class="group-head"><span>In cart · ' + inCart.length + '</span>' +
+  return '<div class="group-head"><span class="gh-label plain">In cart · ' +
+         inCart.length + '</span>' +
          (cartSum > 0 ? '<span class="sum">' + money(cartSum) + '</span>' : '') + '</div>' +
          '<div class="card">' + inCart.map(rowHtml).join('') + '</div>';
 }
@@ -787,16 +801,17 @@ function nearMatch(name) {
   return best;
 }
 
-/* What the optional detail row is currently set to. When the row is shut
-   it contributes nothing at all — priority comes back null, which means
-   "leave it alone" rather than "make it Medium". Closing the row clears
-   the boxes, so there is never a value acting on you that you can't see. */
+/* What the detail row is currently set to.
+
+   No priority is lit until you tap one, and that unlit state is the honest
+   one: it means "I haven't said". A new item then comes out Medium, and an
+   item you already have keeps whatever priority it was on. Lighting H makes
+   it High in both cases. */
 function addFields() {
-  if (!state.addOpen) return { pri: null, store: '', price: null };
   const on = $('#add-pri .on');
   const price = parseFloat($('#add-price').value);
   return {
-    pri: on ? Number(on.dataset.addPri) : 2,
+    pri: on ? Number(on.dataset.addPri) : null,
     store: $('#add-store').value.trim(),
     price: Number.isFinite(price) && price >= 0 ? price : null
   };
@@ -805,14 +820,14 @@ function addFields() {
 function clearAddBox() {
   $('#add-input').value = '';
   $('#add-price').value = '';       // a price belongs to one item, never the next
-  setAddPri(2);                     // priority goes back to the default
+  setAddPri(null);                  // back to "haven't said"
   renderSuggestions();
   $('#add-input').focus();
 }
 
 function setAddPri(p) {
   document.querySelectorAll('#add-pri .pri').forEach((b) =>
-    b.classList.toggle('on', Number(b.dataset.addPri) === p));
+    b.classList.toggle('on', p !== null && Number(b.dataset.addPri) === p));
 }
 
 // Bring an item that already exists back onto this trip.
@@ -901,24 +916,12 @@ $('#add-form').addEventListener('submit', async (e) => {
 /* ---------------- the optional detail row ---------------- */
 $('#add-price').placeholder = CURRENCY;
 
-function renderAddMore() {
-  $('#add-more').classList.toggle('hidden', !state.addOpen);
-  $('#add-toggle').classList.toggle('collapsed', !state.addOpen);
-  $('#add-toggle').setAttribute('aria-expanded', String(state.addOpen));
-}
-
-$('#add-toggle').addEventListener('click', () => {
-  state.addOpen = !state.addOpen;
-  // Shutting it empties it, so nothing can be set on an item from a box
-  // you can no longer see.
-  if (!state.addOpen) { $('#add-store').value = ''; $('#add-price').value = ''; setAddPri(2); }
-  save();
-  renderAddMore();
-});
-
 $('#add-pri').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-add-pri]');
-  if (btn) setAddPri(Number(btn.dataset.addPri));
+  if (!btn) return;
+  // Tapping the lit one turns it off again, so a mis-tap is undoable
+  // without having to add the item first.
+  setAddPri(btn.classList.contains('on') ? null : Number(btn.dataset.addPri));
 });
 
 /* ---------------------------------------------------------------
@@ -1072,9 +1075,12 @@ function openInfo(item) {
   f.price.value = item.price ?? '';
   infoStores = [...item.stores];
   renderInfoChips();
+  // Aisles are automatic. The picker is only for the handful the dictionary
+  // doesn't know, so it stays out of the way the rest of the time.
+  const unknownAisle = aisleOf(item) === NO_AISLE;
+  $('#aisle-row').classList.toggle('hidden', !unknownAisle);
   f.aisle.value = aisleOf(item);
-  f.repeatDays.value = item.repeatDays || '';
-  markRepeatPill();
+  showRepeat(item.repeatDays);
   f.note.value = item.note || '';
   $('#info-title').textContent = item.name;
   // Only worth a line if it actually tells you something.
@@ -1092,24 +1098,31 @@ function openInfo(item) {
   info.showModal();
 }
 
-/* The number box is the real setting; the buttons are shortcuts that fill
-   it in. So "every 45 days" is typed, and nothing is highlighted — which is
-   itself accurate, because no preset is what's set. */
-function markRepeatPill() {
-  const days = parseInt($('#info-form').repeatDays.value, 10) || 0;
-  document.querySelectorAll('#repeat-pills .pill').forEach((b) =>
-    b.classList.toggle('on', Number(b.dataset.days) === days));
+/* One list, the way a phone normally asks this. The extra box only appears
+   if you pick "every so many days", so the common cases are a single tap. */
+const REPEAT_PRESETS = [0, 7, 14, 30, 90, 180, 365];
+
+function showRepeat(days) {
+  const f = $('#info-form');
+  const n = days || 0;
+  const isPreset = REPEAT_PRESETS.includes(n);
+  f.repeat.value = isPreset ? String(n) : 'custom';
+  f.repeatDays.value = isPreset ? '' : n;
+  $('#repeat-custom').classList.toggle('hidden', isPreset);
 }
 
-$('#repeat-pills').addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-days]');
-  if (!btn) return;
-  const days = Number(btn.dataset.days);
-  $('#info-form').repeatDays.value = days > 0 ? days : '';
-  markRepeatPill();
-});
+function repeatValue() {
+  const f = $('#info-form');
+  if (f.repeat.value !== 'custom') return Number(f.repeat.value) || null;
+  const n = parseInt(f.repeatDays.value, 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
 
-$('#info-form').repeatDays.addEventListener('input', markRepeatPill);
+$('#info-repeat').addEventListener('change', () => {
+  const custom = $('#info-form').repeat.value === 'custom';
+  $('#repeat-custom').classList.toggle('hidden', !custom);
+  if (custom) $('#info-form').repeatDays.focus();
+});
 
 $('#info-cancel').addEventListener('click', () => info.close());
 
@@ -1125,8 +1138,7 @@ $('#info-form').addEventListener('submit', () => {
     item.stores = infoStores;
     item.note = f.note.value.trim();
     item.aisle = f.aisle.value;
-    const rep = parseInt(f.repeatDays.value, 10);
-    item.repeatDays = Number.isFinite(rep) && rep > 0 ? rep : null;
+    item.repeatDays = repeatValue();
   });
 });
 
@@ -1310,7 +1322,6 @@ function confetti() {
 /* ---------------- go ---------------- */
 $('#info-aisle').innerHTML =
   AISLES.map((a) => '<option value="' + esc(a) + '">' + esc(a) + '</option>').join('');
-renderAddMore();
 render();
 
 /* Cloud backup — see sync.js. Called once the page is already drawn, so
@@ -1329,7 +1340,6 @@ function adoptFromCloud(data) {
   if (!Array.isArray(state.expanded))  state.expanded  = [];
   if (!Array.isArray(state.collapsedPri)) state.collapsedPri = [];
   if (typeof state.byAisle !== 'boolean') state.byAisle = false;
-  if (typeof state.addOpen !== 'boolean') state.addOpen = false;
   if (typeof state.budgetOpen !== 'boolean') state.budgetOpen = false;
   if (!state.skipAsk || typeof state.skipAsk !== 'object') state.skipAsk = {};
   state.items.forEach(normaliseItem);

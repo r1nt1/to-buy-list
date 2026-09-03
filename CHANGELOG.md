@@ -44,10 +44,11 @@ becomes a one-item list — so nothing you typed is lost.
 - The details sheet edits a **copy** of the store list, so **Cancel** really
   does cancel.
 
-- **Buy it again every…** In the **i** sheet, set a repeat: one week, two
-  weeks, one month, three months, six months, a year, or any number of days
-  you type. The app already knew when you last bought each thing — this just
-  starts using it.
+- **Buy it again.** One picker in the **i** sheet — Never, every week, 2
+  weeks, month, 3 months, 6 months, year — which opens as the usual iPhone
+  wheel, so it's a single tap. A number box appears only if you pick *every
+  so many days*. The app already knew when you last bought each thing; this
+  just starts using it.
 
   When enough time has passed, the item gets a **Due again** line, and a
   single line at the top of the list says what's due. **That is all it does.**
@@ -84,10 +85,11 @@ becomes a one-item list — so nothing you typed is lost.
   supermarket sells beds — if it doesn't, you never tagged that shop on it,
   so it never appears there.
 
-  Anything the dictionary doesn't recognise lands in **Other**, and you can
-  set the aisle yourself in the **i** sheet. Whatever you set always wins:
-  correcting a spelling re-guesses the aisle only when the app never worked
-  one out in the first place.
+  It's meant to be automatic, so there is no aisle setting to fill in. The
+  picker appears in the **i** sheet **only** for the few things the
+  dictionary doesn't recognise — those land in **Other** and you can name
+  them once. Whatever you set always wins: correcting a spelling re-guesses
+  the aisle only when the app never worked one out in the first place.
 
 ---
 
@@ -95,10 +97,15 @@ becomes a one-item list — so nothing you typed is lost.
 
 ### Added
 
-- **Priority sections collapse.** Tap **High**, **Medium** or **Low** and the
-  section folds away, exactly like the store groups already did. The heading
-  keeps showing the count and the total, so a shut section still tells you
-  what's in it. Which sections are shut is remembered between visits.
+- **Priority sections collapse.** Tap the words **High**, **Medium** or
+  **Low**, or the chevron on the far right, and the section folds away. Store
+  headings work the same way. The heading keeps showing the count and the
+  total, so a shut section still tells you what's in it, and which sections
+  are shut is remembered between visits.
+
+  The **blank space in the middle of a heading is deliberately not a button**.
+  That gap is how you dismiss a row you're editing — if the whole heading were
+  tappable, reaching for empty space would fold the section instead.
 
   If the budget line falls inside a section you've collapsed, it's drawn
   straight under that heading — those items still cost money even when you
@@ -107,15 +114,19 @@ becomes a one-item list — so nothing you typed is lost.
 - **The add box follows you down the page.** It used to scroll away, so adding
   something halfway through a long list meant scrolling back to the top.
 
-- **An optional detail row under the add box.** Tap the small chevron beside
-  **Add** and priority, store and price appear. None of it has to be filled
-  in — typing a name and pressing Add works exactly as before, and anything
-  added that way is still Medium.
+- **A detail row under the add box, always visible.** Priority, store and
+  price sit under **Add an item…** the whole time. None of it has to be
+  filled in — typing a name and pressing Add works exactly as before — but
+  when you want something to go straight to High, it's already in front of
+  you instead of something you set afterwards by finding the item again.
+
+  No priority is lit until you tap one, and that unlit state is the honest
+  one: it means *I haven't said*. A new item then comes out Medium, and
+  something already on your list keeps the priority it had. Tapping the lit
+  one turns it off again.
 
   After each add the price clears (a price belongs to one item) but the store
   stays, since you usually add several things for the same shop in a row.
-  Closing the row empties it, so a value you can no longer see can never act
-  on you.
 
 - **A warning when you type something you already have.** Before, adding a
   name already on the list quietly un-checked the existing item — which looked

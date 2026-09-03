@@ -9,8 +9,13 @@
 <title>To buy list</title>
 <!-- The ?v= number is a cache-buster. Browsers hang on to old copies of
      these files; changing the number forces a fresh download. Bump it
-     every release, or the phone keeps running the previous version. -->
-<link rel="stylesheet" href="style.css?v=4.0">
+     every release, or the phone keeps running the previous version.
+
+     It is just a token, not the version number — bump it whenever the
+     files change, including while testing a version that hasn't shipped
+     yet. Leaving it still during a testing session means the phone keeps
+     showing the fix you just made as if it never happened. -->
+<link rel="stylesheet" href="style.css?v=20260903010453">
 </head>
 <body>
 
@@ -64,18 +69,15 @@
       <form class="add" id="add-form">
         <input id="add-input" placeholder="Add an item…" autocomplete="off"
                enterkeyhint="done">
-        <!-- opens the optional detail row. Typing a name and pressing Add
-             still works on its own — none of this has to be filled in. -->
-        <button type="button" class="add-toggle collapsed" id="add-toggle"
-                aria-label="More options" aria-expanded="false">
-          <span class="caret">⌄</span>
-        </button>
         <button type="submit">Add</button>
       </form>
-      <div class="add-more hidden" id="add-more">
+      <!-- Always visible. None of it has to be filled in — typing a name and
+           pressing Add still works on its own — but when you do want an item
+           to go straight to High, it's already in front of you. -->
+      <div class="add-more" id="add-more">
         <div class="pri-group" id="add-pri">
           <button type="button" class="pri v1" data-add-pri="1">H</button>
-          <button type="button" class="pri v2 on" data-add-pri="2">M</button>
+          <button type="button" class="pri v2" data-add-pri="2">M</button>
           <button type="button" class="pri v3" data-add-pri="3">L</button>
         </div>
         <input class="field field-store" id="add-store" list="store-names"
@@ -130,7 +132,9 @@
       <div class="chips" id="info-chips"></div>
     </label>
 
-    <label>Aisle
+    <!-- Aisles are worked out automatically from the item's name. This only
+         appears for the few the dictionary doesn't recognise. -->
+    <label id="aisle-row" class="hidden">Aisle — this one wasn't recognised
       <select name="aisle" id="info-aisle"></select>
     </label>
 
@@ -140,20 +144,20 @@
 
     <!-- Buying it again. This only ever puts a "due again" marker on the row —
          it never moves anything up your list on its own. -->
-    <label>Buy it again every
-      <div class="pills" id="repeat-pills">
-        <button type="button" class="pill" data-days="0">Off</button>
-        <button type="button" class="pill" data-days="7">1 week</button>
-        <button type="button" class="pill" data-days="14">2 weeks</button>
-        <button type="button" class="pill" data-days="30">1 month</button>
-        <button type="button" class="pill" data-days="90">3 months</button>
-        <button type="button" class="pill" data-days="180">6 months</button>
-        <button type="button" class="pill" data-days="365">1 year</button>
-      </div>
+    <label>Buy it again
+      <select name="repeat" id="info-repeat">
+        <option value="0">Never</option>
+        <option value="7">Every week</option>
+        <option value="14">Every 2 weeks</option>
+        <option value="30">Every month</option>
+        <option value="90">Every 3 months</option>
+        <option value="180">Every 6 months</option>
+        <option value="365">Every year</option>
+        <option value="custom">Every so many days…</option>
+      </select>
     </label>
-    <label class="repeat-days">…or every this many days
-      <input name="repeatDays" type="number" min="1" step="1" inputmode="numeric"
-             placeholder="off">
+    <label class="repeat-days hidden" id="repeat-custom">Every this many days
+      <input name="repeatDays" type="number" min="1" step="1" inputmode="numeric">
     </label>
 
     <p class="stat" id="info-stat"></p>
@@ -242,8 +246,8 @@
 <datalist id="store-names"></datalist>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="aisles.js?v=4.0"></script>
-<script src="sync.js?v=4.0"></script>
-<script src="app.js?v=4.0"></script>
+<script src="aisles.js?v=20260903010453"></script>
+<script src="sync.js?v=20260903010453"></script>
+<script src="app.js?v=20260903010453"></script>
 </body>
 </html>
