@@ -58,20 +58,19 @@ becomes a one-item list — so nothing you typed is lost.
   It can't buzz your phone. A real notification needs a background service
   and a push server; this is a marker you see when you open the app.
 
-- **Group by aisle.** Every item now also knows *what kind of thing it is* —
-  Produce, Meat, Frozen, Auto, Office, Furniture, and 27 more. A button above
-  the list turns aisle grouping on, and it behaves differently in each tab so
-  you can compare them:
+- **Group by aisle, in the Stores tab.** Every item now also knows *what kind
+  of thing it is* — Produce, Meat, Frozen, Auto, Office, Furniture, and 27
+  more. A button above the store list turns it on, and each open shop breaks
+  into its aisles, so you're walking Metro in roughly the order Metro is laid
+  out.
 
-  - in **Stores**, aisles appear *inside* each shop, which is the useful one:
-    you're standing in Metro and the list is in the order you walk it;
-  - in **Priority**, the whole list regroups by aisle.
-
-  The budget cutoff line is not drawn while grouping by aisle. That line means
-  "given this order, your money runs out here", which only answers *what do I
-  cut* when the list is ordered by priority. In aisle order it would mark an
-  arbitrary spot, so it's left out rather than shown misleadingly. The totals
-  at the top are unaffected.
+  **It is deliberately not in the Priority tab.** It was built there too, and
+  taken out after trying it: a real list fell into a dozen groups of one item
+  each, and it cost the budget cutoff line — that line means "given this
+  order, your money runs out here", which only answers *what do I cut* while
+  the list is sorted by priority. In aisle order it would mark an arbitrary
+  spot. Aisles only mean something once you're standing in a shop, so that's
+  the only place the switch exists.
 
   **Where the categories come from.** `aisles.js` — a dictionary of about
   1,600 words in Spanish and English, written into the app. No AI call, on

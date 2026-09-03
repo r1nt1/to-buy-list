@@ -72,7 +72,6 @@ function seedState() {
     schema: 2, budget: 0, mode: 'priority',
     expanded: [],        // which store groups are open — none, to begin with
     collapsedPri: [],    // which priority sections are shut — none, to begin with
-    collapsedAisles: [], // the same, for the aisle headings
     byAisle: false,      // group by aisle? off unless you switch it on
     addOpen: false,      // is the optional detail row under the add box showing?
     budgetOpen: false,   // the budget panel stays shut until you open it
@@ -98,7 +97,6 @@ function migrateFromV1(old) {
     mode: 'priority',
     expanded: [],
     collapsedPri: [],
-    collapsedAisles: [],
     byAisle: false,
     addOpen: false,
     budgetOpen: false,
@@ -134,7 +132,6 @@ function load() {
         // fill in anything a older save is missing
         if (!Array.isArray(parsed.expanded)) parsed.expanded = [];
         if (!Array.isArray(parsed.collapsedPri)) parsed.collapsedPri = [];
-        if (!Array.isArray(parsed.collapsedAisles)) parsed.collapsedAisles = [];
         if (typeof parsed.byAisle !== 'boolean') parsed.byAisle = false;
         if (typeof parsed.addOpen !== 'boolean') parsed.addOpen = false;
         if (typeof parsed.budgetOpen !== 'boolean') parsed.budgetOpen = false;
@@ -258,9 +255,7 @@ function renderTrip() {
 
   $('#trip-list').innerHTML =
     dueHtml(pend) +
-    (state.mode === 'store' ? byStoreHtml(pend)
-      : state.byAisle          ? byAisleHtml(pend)
-      : byPriorityHtml(pend, cartSum)) +
+    (state.mode === 'store' ? byStoreHtml(pend) : byPriorityHtml(pend, cartSum)) +
     emptyHtml(pend, onTrip) +
     cartHtml(inCart, cartSum);
 
@@ -331,35 +326,15 @@ function byPriorityHtml(pend, cartSum) {
   return html;
 }
 
-/* The whole list grouped by aisle, most urgent first inside each one —
-   the same ordering rule the Stores tab uses inside a shop.
+/* Aisles inside one shop — the only place aisles group anything.
 
-   There is deliberately no budget cutoff line here. That line means "given
-   the order of this list, your money runs out at this point", and it is only
-   an answer to "what do I cut?" while the list is ordered by priority. In
-   aisle order it would mark an arbitrary spot. The totals at the top of the
-   screen are unaffected. */
-function byAisleHtml(pend) {
-  let html = '';
-  for (const aisle of AISLES) {
-    const group = pend.filter((i) => aisleOf(i) === aisle)
-                      .sort((a, b) => a.priority - b.priority || byName(a, b));
-    if (!group.length) continue;
+   Grouping the *priority* list by aisle was built and then taken out: with a
+   real list it fell into a dozen groups of one, and it cost the budget cutoff
+   line, which only means something while the list is ordered by priority.
+   Walking order only matters once you are standing in a shop anyway.
 
-    const sum  = group.reduce((s, i) => s + lineTotal(i), 0);
-    const open = !state.collapsedAisles.includes(aisle);
-    html += '<button class="group-head' + (open ? '' : ' collapsed') +
-            '" data-aisle="' + esc(aisle) + '">' +
-            '<span><span class="caret">⌄</span>' + esc(aisle) + ' · ' + group.length +
-            '</span>' +
-            (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') + '</button>';
-    if (open) html += '<div class="card">' + group.map(rowHtml).join('') + '</div>';
-  }
-  return html;
-}
-
-/* Aisles inside one shop. These headings don't collapse — the store above
-   them already does, and two levels of folding is one too many. */
+   These headings don't collapse — the store above them already does, and two
+   levels of folding is one too many. */
 function aisleSubHtml(group) {
   let html = '';
   for (const aisle of AISLES) {
@@ -548,11 +523,12 @@ function renderBudget(cartSum, pend) {
 function render() {
   document.querySelectorAll('.tab').forEach((b) =>
     b.classList.toggle('active', b.dataset.mode === state.mode));
+  // Aisles only mean something inside one shop, so the switch only exists
+  // in the tab where shops do.
+  $('.list-tools').classList.toggle('hidden', state.mode !== 'store');
   $('#aisle-toggle').classList.toggle('on', state.byAisle);
   $('#aisle-toggle').setAttribute('aria-pressed', String(state.byAisle));
-  $('#aisle-toggle').textContent = state.mode === 'store'
-    ? (state.byAisle ? 'Aisles within each shop' : 'Group by aisle')
-    : (state.byAisle ? 'Grouped by aisle' : 'Group by aisle');
+  $('#aisle-toggle').textContent = state.byAisle ? 'Grouped by aisle' : 'Group by aisle';
   $('#version').textContent = 'version ' + VERSION;
 
   renderTrip();
@@ -636,17 +612,6 @@ function handleClick(event) {
       state.expanded = state.expanded.includes(store)
         ? state.expanded.filter((s) => s !== store)
         : [...state.expanded, store];
-    });
-    return;
-  }
-
-  const aisleHead = event.target.closest('[data-aisle]');
-  if (aisleHead) {                             // collapse / expand an aisle
-    const a = aisleHead.dataset.aisle;
-    update(() => {
-      state.collapsedAisles = state.collapsedAisles.includes(a)
-        ? state.collapsedAisles.filter((x) => x !== a)
-        : [...state.collapsedAisles, a];
     });
     return;
   }
@@ -1363,7 +1328,6 @@ function adoptFromCloud(data) {
   // An older save may predate some fields, exactly as load() guards for.
   if (!Array.isArray(state.expanded))  state.expanded  = [];
   if (!Array.isArray(state.collapsedPri)) state.collapsedPri = [];
-  if (!Array.isArray(state.collapsedAisles)) state.collapsedAisles = [];
   if (typeof state.byAisle !== 'boolean') state.byAisle = false;
   if (typeof state.addOpen !== 'boolean') state.addOpen = false;
   if (typeof state.budgetOpen !== 'boolean') state.budgetOpen = false;

@@ -49,6 +49,26 @@ The genuinely *new* thing dragging would allow is custom ordering **within** a
 group — items are alphabetical today. If that turns out to matter, a simpler
 sort option is a much cheaper way to get there than drag-and-drop.
 
+## Aisle grouping in the priority list
+
+Built, tried, and taken out on 2026-09-02 — kept only inside the Stores tab.
+
+Two reasons, both found by looking at it rather than by arguing about it:
+
+- With a real list it collapsed into a dozen headings of one item each. The
+  priority view's job is "what do I buy first", and a dozen single-item
+  groups answer nothing.
+- It cost the budget cutoff line. That line only means something while the
+  list is ordered by priority — in aisle order it marks an arbitrary spot,
+  so it had to be suppressed, which removed the priority view's best feature
+  to add a worse one.
+
+The underlying insight stands and is worth not re-deriving: a **store** is
+where you buy something and you tag it; an **aisle** is what the thing *is*
+and the dictionary knows it. They're independent, which is why the app never
+needs to know what any shop stocks. Walking order only matters once you are
+standing in a shop, so the Stores tab is its natural and only home.
+
 ## Settled, not revisiting for now
 
 - **A fourth "none" priority.** Low already means "not this trip", and Medium
