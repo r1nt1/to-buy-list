@@ -24,6 +24,12 @@ everything else. The running version shows at the bottom of the list.
   (A hairline under it was tried and hated.)
 - **Stores clear after Add**, like the price. (v3.3 kept them; in practice
   it put the wrong shop on the next item.)
+- **Tap a section's total to collapse or expand it**, on both tabs — the
+  label and the chevron still work; the gap between stays dead.
+- The **In cart** total lines up with the store totals above it (it was
+  sitting further right, where the missing chevron would be).
+- A little air between *Group by aisle* and the due line.
+- *Trying:* the add box in the page colour rather than a darker strip.
 - **Rows 10 px shorter** (5 less top and bottom) — more list per screen —
   and a smaller check circle (24 px, like Reminders).
 - **Editing gets room:** no check circle while a row is open, 15 px above

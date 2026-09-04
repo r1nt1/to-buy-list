@@ -4,7 +4,7 @@
    --------------------------------------------------------------- */
 :root {
   --bg:      #f6f7f9;
-  --bar:     #e9ecf0;   /* the sticky add box: a shade apart from the page */
+  --bar:     #f6f7f9;   /* the sticky add box — same as the page (trying it, 2026-09-04) */
   --surface: #ffffff;
   --line:    #e3e6ea;
   --text:    #14181d;
@@ -25,7 +25,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg:      #111418;
-    --bar:     #0a0c0f;
+    --bar:     #111418;
     --surface: #1b1f25;
     --line:    #2b313a;
     --text:    #eef1f5;
@@ -195,9 +195,14 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
 }
 .group-head .sum {
-  text-transform: none; letter-spacing: 0; font-weight: 400;
+  text-transform: none; letter-spacing: 0; font-weight: 400; font-size: inherit;
+  font-family: inherit; color: inherit; background: none; border: none;
+  padding: 6px 4px; min-height: 34px; border-radius: 8px;
   margin-left: auto; white-space: nowrap;
 }
+.group-head .gh-caret-space { flex: none; width: 34px; }
+.group-head .sum + .gh-caret-space { margin-left: 0; }
+.group-head .gh-caret-space:first-child, .group-head .gh-label + .gh-caret-space { margin-left: auto; }
 /* with no total to show, the chevron still belongs on the far right */
 .group-head .gh-caret { margin-left: auto; }
 .group-head .sum + .gh-caret { margin-left: 0; }
@@ -389,6 +394,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 
 /* ---------------- group by aisle ---------------- */
 .list-tools { display: flex; justify-content: flex-end; margin: -14px 2px 4px; }
+.list-tools { margin-bottom: 14px; }   /* air between the switch and the due line */
 .tool {
   min-height: 34px; padding: 5px 12px; border-radius: 999px;
   border: 1px solid var(--line); background: transparent;

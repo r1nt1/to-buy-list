@@ -336,8 +336,8 @@ function renderTrip() {
   focusPending = false;
 }
 
-/* A section heading with exactly two tap targets: the label on the left and
-   the chevron on the far right. The space between them is deliberately dead,
+/* A section heading with three tap targets: the label on the left, the
+   total and the chevron on the right. The space between is deliberately dead,
    because that gap is how you dismiss an open row — if the whole heading were
    one button, tapping the blank part would collapse the section instead. */
 function groupHeadHtml({ attr, key, label, count, sum, open, tone }) {
@@ -345,7 +345,7 @@ function groupHeadHtml({ attr, key, label, count, sum, open, tone }) {
            (tone ? ' ' + tone : '') + '">' +
     '<button class="gh-label" ' + attr + '="' + esc(key) + '">' +
       esc(label) + ' · ' + count + '</button>' +
-    (sum > 0 ? '<span class="sum">' + money(sum) + '</span>' : '') +
+    (sum > 0 ? '<button class="sum" ' + attr + '="' + esc(key) + '">' + money(sum) + '</button>' : '') +
     '<button class="gh-caret" ' + attr + '="' + esc(key) + '" aria-label="' +
       (open ? 'Collapse ' : 'Expand ') + esc(label) + '"><span class="caret">⌄</span></button>' +
   '</div>';
@@ -540,7 +540,10 @@ function cartHtml(inCart, cartSum) {
   if (!inCart.length) return '';
   return '<div class="group-head"><span class="gh-label plain">In cart · ' +
          inCart.length + '</span>' +
-         (cartSum > 0 ? '<span class="sum">' + money(cartSum) + '</span>' : '') + '</div>' +
+         (cartSum > 0 ? '<span class="sum">' + money(cartSum) + '</span>' : '') +
+         // no chevron here, but keep its width so the total lines up with
+         // the totals of the sections above it
+         '<span class="gh-caret-space"></span></div>' +
          '<div class="card">' + inCart.map(rowHtml).join('') + '</div>';
 }
 
