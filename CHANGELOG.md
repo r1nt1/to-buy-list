@@ -31,7 +31,10 @@ everything else. The running version shows at the bottom of the list.
   them — the question there is "what did I get where, and for how much".
   The Priority tab keeps its In cart section (its total now lines up with
   the sections above it).
-- **Smaller budget headline** — you type it once; the bar is what you watch.
+- **Budget box is one line and a bar:** `BUDGET S/250` on the left in the
+  label's small grey type, `S/100 in cart` on the right in white, lined up
+  with the row prices below; the bar underneath. About 30 px shorter than
+  before — you type the budget once; the bar is what you watch.
 - A little air (12 px) between *Group by aisle* and the due line, and the
   gap under the add box now equals the gap above it (27 px both).
 - *Trying:* the add box in the page colour rather than a darker strip.
