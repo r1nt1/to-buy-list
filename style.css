@@ -197,6 +197,9 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   margin: 22px 2px 8px; font-size: 13px; font-weight: 600;
   text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
 }
+/* With nothing due, the first heading sits right under the add box: same
+   27px as everywhere else (20 of bar + 7), not its usual 22px section gap. */
+#trip-list > .group-head:first-child { margin-top: 7px; }
 .group-head .sum {
   text-transform: none; letter-spacing: 0; font-weight: 400; font-size: inherit;
   font-family: inherit; color: inherit; background: none; border: none;
