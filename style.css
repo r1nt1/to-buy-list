@@ -80,35 +80,29 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
 button.ghost   { background: transparent; border-color: var(--line); color: var(--muted); }
 button.danger  { background: transparent; border-color: transparent; color: var(--p1); }
 
-/* ---------------- budget ---------------- */
+/* ---------------- budget ----------------
+   Two lines. The budget is typed straight into the headline — it IS the
+   headline — and the bar underneath fills as things go into the cart. */
 .budget {
   background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 4px 14px 12px; margin-bottom: 12px;
+  border-radius: var(--radius); padding: 10px 14px 12px; margin-bottom: 12px;
 }
-.budget.compact { padding-bottom: 4px; }
-.budget-row {
-  display: flex; align-items: baseline; gap: 8px;
-  width: 100%; background: none; border: none; padding: 8px 0; text-align: left;
+.budget-row { display: flex; align-items: baseline; gap: 6px; }
+.budget-label { color: var(--muted); font-size: 13px; font-weight: 600;
+                text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
+.budget-cur { font-size: 20px; font-weight: 600; color: var(--muted); }
+.budget-input {
+  flex: 1; min-width: 0; font: inherit; font-size: 22px; font-weight: 600;
+  padding: 2px 0; border: none; border-bottom: 1px solid transparent;
+  background: transparent; color: var(--text); outline: none;
 }
-.budget-cart { font-size: 20px; font-weight: 600; }
-.budget-caret { color: var(--muted); transition: transform .15s; }
-.budget.compact .budget-caret { transform: rotate(-90deg); }
-.budget.compact #budget-detail { display: none; }
-.budget-set { color: var(--muted); font-size: 13px; display: grid; gap: 5px;
-               margin: 4px 0 10px; }
-/* a proper filled box, like the store field — the old underline was too faint */
-.budget-set input { width: 100%; }
-.budget-total { color: var(--muted); font-size: 15px; margin-left: auto; margin-right: 10px; }
-.budget.compact .budget-total { display: none; }
-.budget.compact .budget-caret { margin-left: auto; }
+.budget-input:focus { border-bottom-color: var(--accent); }
+.budget-input::placeholder { font-weight: 400; color: var(--muted); }
 .bar { position: relative; height: 7px; border-radius: 4px; background: var(--line);
-       margin: 8px 0; overflow: hidden; }
-.bar-fill, .bar-cart {
-  position: absolute; left: 0; top: 0; height: 100%; width: 0; transition: width .2s;
-}
-.bar-fill { background: color-mix(in srgb, var(--accent) 35%, var(--line)); }   /* planned */
-.bar-cart { background: var(--accent); }                                        /* in cart */
-.bar-fill.over { background: color-mix(in srgb, var(--over) 35%, var(--line)); }
+       margin: 10px 0 8px; overflow: hidden; }
+.bar.idle { opacity: .45; }               /* no budget yet: nothing to fill against */
+.bar-cart { position: absolute; left: 0; top: 0; height: 100%; width: 0;
+            background: var(--accent); transition: width .2s; }
 .bar-cart.over { background: var(--over); }
 .budget-note { margin: 0; font-size: 14px; color: var(--muted); }
 .budget-note.over { color: var(--over); }
@@ -248,6 +242,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* 21px of right padding lines the price up under the section total, which
    sits to the left of the heading's chevron */
 .row-price { flex: none; font-size: 15px; color: var(--muted); padding-right: 21px; }
+.row-qty { font-size: 14px; color: var(--muted); font-weight: 500; }
 .row.done .row-price { text-decoration: line-through; }
 .row-sub  { display: block; font-size: 13px; color: var(--muted); }
 .row-note { display: block; font-size: 13px; color: var(--muted);
@@ -295,6 +290,13 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* order, not markup order: the price stays beside the priority buttons even
    when the store chips drop to their own line below them */
 .open-controls .pri-group { order: 0; }
+.qty-step {
+  order: 0; display: inline-flex; align-items: center; flex: none;
+  border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden;
+}
+.qty-btn { width: 34px; min-height: 38px; padding: 0; border: none; border-radius: 0;
+           background: transparent; color: var(--muted); font-size: 18px; }
+.qty-val { min-width: 24px; text-align: center; font-weight: 600; font-size: 15px; }
 /* margin-left:auto keeps the price hard right on its line, whether or not
    the store chips are sharing that line with it */
 .open-controls .field-price { order: 1; margin-left: auto; }
@@ -335,12 +337,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   color: var(--muted); font-style: italic; font-weight: 700; font-family: Georgia, serif;
 }
 
-/* the budget cutoff divider */
-.cutoff { display: flex; align-items: center; gap: 10px; margin: 14px 2px;
-          color: var(--over); font-size: 13px; font-weight: 600; }
-.cutoff::before, .cutoff::after {
-  content: ""; flex: 1; height: 1px; background: var(--over); opacity: .4;
-}
 
 .empty { color: var(--muted); text-align: center; padding: 28px 12px; font-size: 15px; }
 
@@ -412,7 +408,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 
 /* inside the details sheet the box is on the sheet's own background */
-#info-chips { background: var(--bg); }
 
 /* ---------------- tabs ---------------- */
 .tabs {

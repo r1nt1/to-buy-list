@@ -154,16 +154,29 @@ becomes a one-item list — so nothing you typed is lost.
   three segments — the chosen one filled — instead of three separate buttons,
   so it reads as a single decision. The same control sits under the add box.
 
+- **The budget block is two lines now.** The budget itself is the headline —
+  you type straight into it — and under it a bar fills as things go into the
+  cart, with `S/45.00 in cart · S/155.00 left` beneath. No more expanding and
+  collapsing, and no more "whole list" total: that figure counted Low, which
+  is the parking bay, and the section headings already total each tier. It
+  still only appears once something has a price.
+
+- **Quantity in the open row.** A `− 1 +` stepper sits between the priority
+  and the price, because how many is the thing you change most while
+  shopping. It's shown as `Leche ×2` on the item's own line, and the price
+  on that line is the total for that many.
+
+- **The "budget runs out here" line is gone.** Within a section items are
+  alphabetical, so the line cut through things you fully meant to buy just
+  because their names came late. The bar at the top is the honest version.
+
+- **Stores left the i sheet.** They're set in the row, where you can see
+  them; a second place to edit the same thing was one place too many.
+
 ### Fixed
 
-- **The budget bar sat empty until you checked something off.** It measured
-  the cart against the budget, so a freshly set budget looked like it had
-  done nothing. It now shows the whole planned list as a pale bar with the
-  cart as the solid part on top. Pressing Enter (the keyboard's *Done*) now
-  puts the keyboard away — the number was already applied as you typed, but
-  on the phone the result was hidden behind the keys.
-- **`of S/…` on the budget row only shows once the panel is open.** Closed,
-  the row just says what's in the cart.
+- **Enter in the budget box puts the keyboard away.** The number was already
+  applied as you typed, but on the phone the result was hidden behind the keys.
 
 ### Changed
 

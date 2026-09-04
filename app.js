@@ -73,7 +73,6 @@ function seedState() {
     expanded: [],        // which store groups are open — none, to begin with
     collapsedPri: [],    // which priority sections are shut — none, to begin with
     byAisle: false,      // group by aisle? off unless you switch it on
-    budgetOpen: false,   // the budget panel stays shut until you open it
     skipAsk: {},         // confirmations you've ticked "don't ask me again" on
     items: [
       newItem('Rice',      { priority: 1 }),
@@ -97,7 +96,6 @@ function migrateFromV1(old) {
     expanded: [],
     collapsedPri: [],
     byAisle: false,
-    budgetOpen: false,
     skipAsk: {},
     items: (old.items || []).map((i) => normaliseItem({
       ...newItem(i.name),
@@ -131,7 +129,6 @@ function load() {
         if (!Array.isArray(parsed.expanded)) parsed.expanded = [];
         if (!Array.isArray(parsed.collapsedPri)) parsed.collapsedPri = [];
         if (typeof parsed.byAisle !== 'boolean') parsed.byAisle = false;
-        if (typeof parsed.budgetOpen !== 'boolean') parsed.budgetOpen = false;
         if (!parsed.skipAsk || typeof parsed.skipAsk !== 'object') parsed.skipAsk = {};
         parsed.items.forEach(normaliseItem);
         return parsed;
@@ -261,11 +258,11 @@ function renderTrip() {
   const pend    = onTrip.filter((i) => !i.done);
   const cartSum = inCart.reduce((s, i) => s + lineTotal(i), 0);
 
-  renderBudget(cartSum, pend);
+  renderBudget(cartSum);
 
   $('#trip-list').innerHTML =
     dueHtml(pend) +
-    (state.mode === 'store' ? byStoreHtml(pend) : byPriorityHtml(pend, cartSum)) +
+    (state.mode === 'store' ? byStoreHtml(pend) : byPriorityHtml(pend)) +
     emptyHtml(pend, onTrip) +
     cartHtml(inCart, cartSum);
 
@@ -302,50 +299,20 @@ function dueHtml(pend) {
     '</div>';
 }
 
-function byPriorityHtml(pend, cartSum) {
-  // Flatten in display order, so the budget cutoff can be measured against it.
-  const flat = [];
-  for (const p of PRIORITIES) flat.push(...pend.filter((i) => i.priority === p).sort(byName));
-
-  const budget = Number(state.budget) || 0;
-  let running = cartSum, cutoffAt = -1;
-  flat.forEach((item, i) => {
-    running += lineTotal(item);
-    if (cutoffAt === -1 && budget > 0 && running > budget) cutoffAt = i;
-  });
-
-  let html = '', idx = 0, drawn = false;
+/* There used to be a "budget runs out here" line drawn across the list.
+   It went: within a section the items are alphabetical, so the line cut
+   through things you fully intended to buy just because their names came
+   late. The bar at the top does the job honestly instead. */
+function byPriorityHtml(pend) {
+  let html = '';
   for (const p of PRIORITIES) {
-    const group = flat.filter((i) => i.priority === p);
+    const group = pend.filter((i) => i.priority === p).sort(byName);
     if (!group.length) continue;
-
-    if (idx === cutoffAt && !drawn) { html += cutoffDivider(); drawn = true; }
-
-    // Same tappable header as the Stores tab, so both tabs behave alike.
     const sum  = group.reduce((s, i) => s + lineTotal(i), 0);
     const open = !state.collapsedPri.includes(p);
     html += groupHeadHtml({ attr: 'data-pri', key: p, label: PRI_LABEL[p],
                             count: group.length, sum, open, tone: 'gh' + p });
-
-    if (!open) {
-      // The items are still on the list, so they still spend the budget —
-      // they just aren't drawn. If the money runs out inside a section you
-      // can't see, put the line straight under its header.
-      idx += group.length;
-      if (!drawn && cutoffAt > -1 && idx > cutoffAt) { html += cutoffDivider(); drawn = true; }
-      continue;
-    }
-
-    html += '<div class="card">';
-    for (const item of group) {
-      if (idx === cutoffAt && !drawn) {
-        html += '</div>' + cutoffDivider() + '<div class="card">';
-        drawn = true;
-      }
-      html += rowHtml(item);
-      idx++;
-    }
-    html += '</div>';
+    if (open) html += '<div class="card">' + group.map(rowHtml).join('') + '</div>';
   }
   return html;
 }
@@ -353,9 +320,8 @@ function byPriorityHtml(pend, cartSum) {
 /* Aisles inside one shop — the only place aisles group anything.
 
    Grouping the *priority* list by aisle was built and then taken out: with a
-   real list it fell into a dozen groups of one, and it cost the budget cutoff
-   line, which only means something while the list is ordered by priority.
-   Walking order only matters once you are standing in a shop anyway.
+   real list it fell into a dozen groups of one. Walking order only matters
+   once you are standing in a shop anyway.
 
    These headings don't collapse — the store above them already does, and two
    levels of folding is one too many. */
@@ -398,17 +364,12 @@ function byStoreHtml(pend) {
   return html;
 }
 
-function cutoffDivider() {
-  return '<div class="cutoff">budget runs out here</div>';
-}
-
 function rowHtml(item) {
   if (item.id === openId) return openRowHtml(item);
 
   // The price sits on the name's line, hard right under the section total.
   // That leaves the whole second line for the stores, so all of them fit.
   const bits = [];
-  if (item.qty > 1) bits.push('×' + item.qty);
   if (item.stores.length && state.mode !== 'store') bits.push(...item.stores.map(esc));
 
   return '' +
@@ -424,7 +385,9 @@ function rowHtml(item) {
         '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
         '<button class="row-main" data-act="open">' +
           '<span class="row-line">' +
-            '<span class="row-name">' + esc(item.name) + '</span>' +
+            '<span class="row-name">' + esc(item.name) +
+              (item.qty > 1 ? ' <span class="row-qty">×' + item.qty + '</span>' : '') +
+            '</span>' +
             (item.price ? '<span class="row-price">' + money(lineTotal(item)) + '</span>' : '') +
           '</span>' +
           (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
@@ -456,6 +419,13 @@ function openRowHtml(item) {
       // only grows when you actually put a second shop in it.
       '<div class="open-controls">' +
         '<div class="pri-group">' + pri + '</div>' +
+        // Quantity lives here because it's the thing you change most while
+        // shopping. Reminders and notes are set once, so they stay in the sheet.
+        '<div class="qty-step">' +
+          '<button class="qty-btn" data-act="qty" data-delta="-1" aria-label="One fewer">−</button>' +
+          '<span class="qty-val">' + (item.qty || 1) + '</span>' +
+          '<button class="qty-btn" data-act="qty" data-delta="1" aria-label="One more">+</button>' +
+        '</div>' +
         chipsHtml(item.stores, 'store-add') +
         '<input class="field field-price" data-field="price" type="number" min="0" ' +
           'step="0.01" inputmode="decimal" enterkeyhint="done" placeholder="' +
@@ -500,50 +470,29 @@ function cartHtml(inCart, cartSum) {
          '<div class="card">' + inCart.map(rowHtml).join('') + '</div>';
 }
 
-/* The budget block stays hidden until at least one item has a price,
-   so the app is useful from the very first item you type. */
-function renderBudget(cartSum, pend) {
+/* The budget block stays hidden until at least one item has a price, so
+   the app is useful from the very first item you type. It is two lines: the
+   budget you typed, and a bar that fills as you check things off. */
+function renderBudget(cartSum) {
   const anyPrice = tripItems().some((i) => i.price);
   $('#budget').classList.toggle('hidden', !anyPrice);
-  $('#budget').classList.toggle('compact', !state.budgetOpen);
   if (!anyPrice) return;
 
-  const budget    = Number(state.budget) || 0;
-  const projected = cartSum + pend.reduce((s, i) => s + lineTotal(i), 0);
-  const noPrice   = pend.filter((i) => !i.price).length;
-
-  // Closed, it answers the simple question: what is this shop going to cost?
-  // A budget is entirely optional — you only meet it if you open the panel.
-  $('#budget-cart').textContent = money(cartSum) + ' in cart';
-  $('#budget-total').textContent = 'of ' + money(projected);
+  const budget = Number(state.budget) || 0;
+  $('.budget-cur').textContent = CURRENCY;
   if (document.activeElement !== $('#budget-input')) $('#budget-input').value = budget || '';
 
-  // Pale layer: the whole planned list. Solid layer on top: the cart so far.
-  // Without the pale layer the bar sat empty until you checked something off,
-  // which made a freshly set budget look like it had done nothing.
-  const pct = (n) => (budget > 0 ? Math.min(100, (n / budget) * 100) : 0) + '%';
-  $('#bar-fill').style.width = pct(projected);
-  $('#bar-cart').style.width = pct(cartSum);
-  $('#bar-fill').classList.toggle('over', budget > 0 && projected > budget);
-  $('#bar-cart').classList.toggle('over', budget > 0 && cartSum > budget);
+  const over = budget > 0 && cartSum > budget;
+  $('#bar-cart').style.width = (budget > 0 ? Math.min(100, (cartSum / budget) * 100) : 0) + '%';
+  $('#bar-cart').classList.toggle('over', over);
+  $('.bar').classList.toggle('idle', !budget);
 
-  let note, over = false;
-  if (!budget) {
-    note = 'Set a budget to see what fits.';
-  } else if (cartSum > budget) {
-    note = money(cartSum - budget) + ' over budget already.'; over = true;
-  } else if (projected > budget) {
-    note = 'The whole list comes to ' + money(projected) + ' — ' +
-           money(projected - budget) + ' too much.'; over = true;
-  } else {
-    note = 'The whole list comes to ' + money(projected) + ' — it fits, with ' +
-           money(budget - projected) + ' to spare.';
-  }
-  if (noPrice) note += ' (' + noPrice + ' item' + (noPrice > 1 ? 's have' : ' has') + ' no price yet.)';
-
-  const el = $('#budget-note');
-  el.textContent = note;
-  el.classList.toggle('over', over);
+  let note;
+  if (!budget)     note = money(cartSum) + ' in cart';
+  else if (over)   note = money(cartSum) + ' in cart · ' + money(cartSum - budget) + ' over';
+  else             note = money(cartSum) + ' in cart · ' + money(budget - cartSum) + ' left';
+  $('#budget-note').textContent = note;
+  $('#budget-note').classList.toggle('over', over);
 }
 
 /* ---------------------------------------------------------------
@@ -688,6 +637,13 @@ function handleClick(event) {
         item.inTrip = !item.inTrip;
         if (!item.inTrip) item.done = false;
       });
+      break;
+
+    case 'qty':
+      // Like priority: change and save, but don't redraw under your finger.
+      item.qty = Math.max(1, (item.qty || 1) + Number(btn.dataset.delta));
+      save();
+      btn.parentElement.querySelector('.qty-val').textContent = item.qty;
       break;
 
     case 'chip-remove': {
@@ -1032,9 +988,6 @@ $('#budget-input').addEventListener('input', (e) => {
 $('#budget-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
 });
-$('#budget-toggle').addEventListener('click', () => {
-  update(() => { state.budgetOpen = !state.budgetOpen; });
-});
 
 /* ---------------- view toggle ---------------- */
 
@@ -1089,37 +1042,12 @@ document.querySelectorAll('.tab').forEach((tab) => {
 /* ---------------- details sheet ---------------- */
 const info = $('#info-dialog');
 let infoId = null;
-/* The sheet edits a copy, so pressing Cancel really does cancel. */
-let infoStores = [];
-
-function renderInfoChips() {
-  $('#info-chips').outerHTML = chipsHtml(infoStores, 'info-store', 'info-chips');
-}
-
-$('#info-form').addEventListener('click', (e) => {
-  const x = e.target.closest('[data-act="chip-remove"]');
-  if (!x) return;
-  const gone = x.dataset.value.toLowerCase();
-  infoStores = infoStores.filter((s) => s.toLowerCase() !== gone);
-  renderInfoChips();
-});
-
-$('#info-form').addEventListener('keydown', (e) => {
-  const chip = e.target.closest('.chip-input');
-  if (!chip || (e.key !== 'Enter' && e.key !== ',') || !chip.value.trim()) return;
-  e.preventDefault();
-  addStore({ stores: infoStores }, chip.value);   // pushes onto infoStores itself
-  renderInfoChips();
-  $('#info-chips .chip-input').focus();
-});
 
 function openInfo(item) {
   infoId = item.id;
   const f = $('#info-form');
   f.qty.value = item.qty || 1;
   f.price.value = item.price ?? '';
-  infoStores = [...item.stores];
-  renderInfoChips();
   // Aisles are automatic. The picker is only for the handful the dictionary
   // doesn't know, so it stays out of the way the rest of the time.
   const unknownAisle = aisleOf(item) === NO_AISLE;
@@ -1179,8 +1107,6 @@ $('#info-form').addEventListener('submit', () => {
   update(() => {
     item.qty = Math.max(1, parseInt(f.qty.value, 10) || 1);
     item.price = Number.isFinite(price) && price >= 0 ? price : null;
-    addStore({ stores: infoStores }, $('#info-chips .chip-input').value);
-    item.stores = infoStores;
     item.note = f.note.value.trim();
     item.aisle = f.aisle.value;
     item.repeatDays = repeatValue();
@@ -1385,7 +1311,6 @@ function adoptFromCloud(data) {
   if (!Array.isArray(state.expanded))  state.expanded  = [];
   if (!Array.isArray(state.collapsedPri)) state.collapsedPri = [];
   if (typeof state.byAisle !== 'boolean') state.byAisle = false;
-  if (typeof state.budgetOpen !== 'boolean') state.budgetOpen = false;
   if (!state.skipAsk || typeof state.skipAsk !== 'object') state.skipAsk = {};
   state.items.forEach(normaliseItem);
 
