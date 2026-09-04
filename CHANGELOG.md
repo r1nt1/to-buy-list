@@ -8,6 +8,18 @@ everything else. The running version shows at the bottom of the list.
 
 ---
 
+## v4.3 — 2026-09-04 (on `main`, not yet pushed)
+
+### Fixed
+- **A ~50 px hole above the add box on the phone** (v4.2). The box was padded
+  by the height of the strip under the clock so it could cover that strip
+  when stuck at the top — but the padding was there all the time, and with
+  no budget box to hide behind it showed as empty space. Now a slab reaches
+  up over the strip only while the box is actually stuck; the box itself
+  keeps its normal 15 px.
+
+---
+
 ## v4.2 — 2026-09-04
 - **Add box covers the strip under the clock**, so nothing shows above it
   while you scroll, and the fade below it is longer. *Tried and removed:* a

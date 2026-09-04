@@ -1084,6 +1084,22 @@ $('#add-input').addEventListener('input', renderSuggestions);
 $('#add-input').addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { $('#add-input').value = ''; renderSuggestions(); }
 });
+/* Is the add box stuck at the top right now? Only then does its slab cover
+   the strip under the clock. Checked on scroll, cheaply. */
+(function watchStuck() {
+  const wrap = $('.add-wrap');
+  const probe = $('#safe-probe');
+  let last = null;
+  function check() {
+    const safe = probe.getBoundingClientRect().height;
+    const stuck = wrap.getBoundingClientRect().top <= safe + 0.5 && window.scrollY > 0;
+    if (stuck !== last) { wrap.classList.toggle('stuck', stuck); last = stuck; }
+  }
+  window.addEventListener('scroll', check, { passive: true });
+  window.addEventListener('resize', check);
+  check();
+})();
+
 // The keyboard's Done key (Enter). With text in the box it adds the item;
 // with nothing typed it just puts the keyboard away. iOS shows "Done" for
 // enterkeyhint="done" but does not submit the form on its own.
