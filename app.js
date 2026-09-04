@@ -397,8 +397,9 @@ function rowHtml(item) {
   if (item.stores.length && state.mode !== 'store') {
     bits.push(...item.stores.map((s) => '<span class="store-name">' + esc(s) + '</span>'));
   }
+  // The reminder gets its own line under the stores, so it never has to
+  // share space with a long list of shop names.
   const due = isDue(item);
-  if (due) bits.push('bought ' + ago(item.lastBought));
 
   return '' +
     '<div class="swipe-wrap' + (item.priority === 3 ? ' will-delete' : '') + '">' +
@@ -421,6 +422,7 @@ function rowHtml(item) {
             (item.price ? '<span class="row-price">' + money(lineTotal(item)) + '</span>' : '') +
           '</span>' +
           (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
+          (due ? '<span class="row-sub row-due">bought ' + ago(item.lastBought) + '</span>' : '') +
           (item.note ? '<span class="row-note">' + esc(item.note) + '</span>' : '') +
         '</button>' +
       '</div>' +

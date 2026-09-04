@@ -38,6 +38,15 @@ stores, not one. Old saves are converted on first load; nothing is lost.
   Stores, quantity and price are edited in the row only.
 
 ### Changed
+- **Calmer colours.** High is violet and Medium teal instead of red and
+  amber — weight, not alarm. Amber and red are now reserved for the budget
+  bar (nearly spent / over) and Delete, so a Medium row and a warning never
+  look the same. The `⟳ due` badge and *bought 3 months ago* are blue: a
+  note, not a warning.
+- **Reminder text on its own line** under the stores, so it never fights
+  with a long list of shop names.
+- **Sheet buttons on one row:** Delete on the left, Cancel and Save on the
+  right. The confirmation box already says it's for good.
 - **Budget block is two lines:** the budget you type is the headline; a bar
   fills as you check things off (amber from 80 %, red only when over), with
   `S/45 in cart · S/155 left`. No whole-list total (it counted Low). Enter
