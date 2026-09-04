@@ -182,6 +182,19 @@ becomes a one-item list — so nothing you typed is lost.
 - **The budget bar turns amber at 80%.** Red is kept for actually being
   over, so that red still means something when it appears.
 
+- **Store names are kept in lowercase.** Type `plaza vea` — no shift key —
+  and the app shows it capitalised. `Plaza Vea` and `plaza vea` used to be
+  two headings in the Stores tab; now they're one, and any you already had
+  were folded together the first time this version loaded.
+
+- **The row under the add box matches the open row exactly**: priority,
+  quantity and price capsules on one line, store beneath.
+
+- **The aisle guesser forgives a typo.** `betteraga` is a slip away from
+  `beterraga`, and that's still Produce — the same one-or-two-letter
+  tolerance the add box already had for names. (Also added the Peruvian
+  `beterraga` and `remolacha`, which it didn't know.)
+
 ### Fixed
 
 - **Enter in the budget box puts the keyboard away.** The number was already

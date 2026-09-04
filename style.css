@@ -122,8 +122,9 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .add { display: flex; gap: 8px; }
 
 /* the optional detail row — same controls as an expanded item row */
-.add-more { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.add-more { margin-top: 8px; }
 .add-more .field-store {
+  order: 2; flex-basis: 100%;
   background: transparent; border-color: transparent; border-radius: 0;
   border-bottom: 1px solid var(--line); padding-left: 2px;
 }
@@ -250,7 +251,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .row-price { flex: none; font-size: 15px; color: var(--muted); padding-right: 21px; }
 .row-qty { font-size: 14px; color: var(--muted); font-weight: 500; }
 .row.done .row-price { text-decoration: line-through; }
-.row-sub  { display: block; font-size: 13px; color: var(--muted); }
+.row-sub  { display: block; font-size: 13px; color: var(--muted); text-transform: capitalize; }
 .row-note { display: block; font-size: 13px; color: var(--muted);
             font-style: italic; margin-top: 2px; }
 .row.done .row-name { text-decoration: line-through; color: var(--muted); }
@@ -402,7 +403,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   border: 1px solid var(--line); border-radius: 9px; background: var(--surface);
 }
 .chip {
-  display: inline-flex; align-items: center; gap: 2px;
+  display: inline-flex; align-items: center; gap: 2px; text-transform: capitalize;
   padding: 4px 4px 4px 11px; border-radius: 999px; font-size: 14px;
   background: color-mix(in srgb, var(--accent) 14%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));

@@ -33,7 +33,7 @@ const AISLE_WORDS = {
     'zanahoria','zanahorias','celery','apio','lettuce','lechuga','spinach','espinaca',
     'cabbage','col','repollo','broccoli','brocoli','cauliflower','coliflor','pepper','peppers',
     'pimiento','pimientos','aji','rocoto','cucumber','pepino','zucchini','zapallo','calabaza',
-    'pumpkin','beet','beets','betarraga','radish','rabanito','corn','choclo','maiz','peas',
+    'pumpkin','beet','beets','betarraga','beterraga','beterragas','remolacha','radish','rabanito','corn','choclo','maiz','peas',
     'arveja','arvejas','green beans','vainita','vainitas','mushroom','mushrooms','champinon',
     'champinones','hongos','ginger','kion','jengibre','cilantro','culantro','parsley','perejil',
     'basil','albahaca','mint','hierbabuena','huacatay','herbs','hierbas','sprouts','germinados',
@@ -313,6 +313,23 @@ function normalise(text) {
     .trim();
 }
 
+/* How many single-letter changes turn one word into another. Shared with
+   the add box's misspelling check in app.js. */
+function editDistance(a, b) {
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > 2) return 9;      // too different to bother
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1,
+                        prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[b.length];
+}
+
 function lookupOne(word) {
   if (!word) return null;
   if (AISLE_LOOKUP.has(word)) return AISLE_LOOKUP.get(word);
@@ -320,6 +337,22 @@ function lookupOne(word) {
   if (word.endsWith('es') && AISLE_LOOKUP.has(word.slice(0, -2))) return AISLE_LOOKUP.get(word.slice(0, -2));
   if (word.endsWith('s')  && AISLE_LOOKUP.has(word.slice(0, -1))) return AISLE_LOOKUP.get(word.slice(0, -1));
   return null;
+}
+
+/* The same forgiveness the add box has: "betteraga" is a slip away from
+   "beterraga", and that should still be Produce. One change is allowed for
+   short words, two for long ones; the closest known word wins. Words under
+   five letters are left alone — they're one slip away from too many things. */
+function lookupFuzzy(word) {
+  if (!word || word.length < 5) return null;
+  const limit = word.length <= 6 ? 1 : 2;
+  let best = null, bestD = 99;
+  for (const [known, aisle] of AISLE_LOOKUP) {
+    if (known.length < 4 || known.includes(' ')) continue;
+    const d = editDistance(word, known);
+    if (d > 0 && d <= limit && d < bestD) { best = aisle; bestD = d; }
+  }
+  return best;
 }
 
 /* Best guess for a name, or null if it genuinely doesn't know. Tries the
@@ -338,8 +371,14 @@ function guessAisle(name) {
     const pair = lookupOne(words[i] + ' ' + words[i + 1]);
     if (pair) return pair;
   }
-  for (const w of [...words].sort((a, b) => b.length - a.length)) {
+  const byLength = [...words].sort((a, b) => b.length - a.length);
+  for (const w of byLength) {
     const hit = lookupOne(w);
+    if (hit) return hit;
+  }
+  // Nothing exact — allow a single typo before giving up.
+  for (const w of byLength) {
+    const hit = lookupFuzzy(w);
     if (hit) return hit;
   }
   return null;

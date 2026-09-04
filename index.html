@@ -15,7 +15,7 @@
      files change, including while testing a version that hasn't shipped
      yet. Leaving it still during a testing session means the phone keeps
      showing the fix you just made as if it never happened. -->
-<link rel="stylesheet" href="style.css?v=20260903200913">
+<link rel="stylesheet" href="style.css?v=20260903203909">
 </head>
 <body>
 
@@ -75,18 +75,24 @@
       <!-- Hidden until you tap into the box, so the home screen stays
            clean. It stays while you're typing, and goes again once the box
            is empty and you've tapped elsewhere. -->
-      <div class="add-more hidden" id="add-more">
+      <!-- the same three capsules as an open row, store beneath -->
+      <div class="add-more open-controls hidden" id="add-more">
         <div class="pri-group" id="add-pri">
           <button type="button" class="pri v1" data-add-pri="1">H</button>
           <button type="button" class="pri v2" data-add-pri="2">M</button>
           <button type="button" class="pri v3" data-add-pri="3">L</button>
         </div>
-        <input class="field field-store" id="add-store" list="store-names"
-               placeholder="store" autocomplete="off" enterkeyhint="done">
+        <div class="qty-step" id="add-qty">
+          <button type="button" class="qty-btn" data-delta="-1" aria-label="One fewer">−</button>
+          <span class="qty-val" id="add-qty-val">1</span>
+          <button type="button" class="qty-btn" data-delta="1" aria-label="One more">+</button>
+        </div>
         <label class="price-wrap"><span class="price-cur"></span>
           <input class="field field-price" id="add-price" type="number" min="0"
                  step="0.01" inputmode="decimal" enterkeyhint="done" placeholder="price">
         </label>
+        <input class="field field-store" id="add-store" list="store-names"
+               placeholder="store" autocomplete="off" autocapitalize="none" enterkeyhint="done">
       </div>
       <!-- our own suggestion list. The browser's built-in one is drawn
            outside the page, so it can't be positioned or styled. -->
@@ -234,8 +240,8 @@
 <datalist id="store-names"></datalist>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="aisles.js?v=20260903200913"></script>
-<script src="sync.js?v=20260903200913"></script>
-<script src="app.js?v=20260903200913"></script>
+<script src="aisles.js?v=20260903203909"></script>
+<script src="sync.js?v=20260903203909"></script>
+<script src="app.js?v=20260903203909"></script>
 </body>
 </html>

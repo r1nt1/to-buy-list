@@ -22,7 +22,7 @@ const PRIORITIES = [1, 2, 3];
 // not buying on this trip. Swiping a row left drops it here.
 const PRI_LABEL  = { 1: 'High', 2: 'Medium', 3: 'Low' };
 const PRI_SHORT  = { 1: 'H', 2: 'M', 3: 'L' };
-const NO_STORE   = 'Other';
+const NO_STORE   = 'other';   // lowercase like every store; the styling capitalises
 
 /* ---------------------------------------------------------------
    1. State
@@ -56,7 +56,10 @@ function normaliseItem(i) {
     // Up to v3.3 an item had a single `store`, as plain text.
     i.stores = i.store && String(i.store).trim() ? [String(i.store).trim()] : [];
   }
-  i.stores = i.stores.map((s) => String(s).trim()).filter(Boolean);
+  // Kept in lowercase — you type faster without the shift key — and shown
+  // capitalised by the styling. This also folds "Plaza Vea" and "plaza vea"
+  // into one, which used to give two headings in the Stores tab.
+  i.stores = [...new Set(i.stores.map((s) => String(s).trim().toLowerCase()).filter(Boolean))];
   delete i.store;
   if (typeof i.repeatDays !== 'number' || !(i.repeatDays > 0)) i.repeatDays = null;
   // Guessed once, then stored — so whatever you set by hand is never
@@ -127,6 +130,7 @@ function load() {
       if (parsed && parsed.schema === 2 && Array.isArray(parsed.items)) {
         // fill in anything a older save is missing
         if (!Array.isArray(parsed.expanded)) parsed.expanded = [];
+        parsed.expanded = parsed.expanded.map((s) => String(s).toLowerCase());
         if (!Array.isArray(parsed.collapsedPri)) parsed.collapsedPri = [];
         if (typeof parsed.byAisle !== 'boolean') parsed.byAisle = false;
         if (!parsed.skipAsk || typeof parsed.skipAsk !== 'object') parsed.skipAsk = {};
@@ -231,14 +235,8 @@ const aisleOf   = (item) => (AISLES.includes(item.aisle) ? item.aisle : NO_AISLE
 /* Adds a store to an item, ignoring blanks and ones it already has.
    Matching ignores case, so "metro" can't become a second Metro. */
 function addStore(item, raw) {
-  let name = String(raw || '').trim();
-  if (!name) return false;
-  if (item.stores.some((s) => s.toLowerCase() === name.toLowerCase())) return false;
-  // "plaza vea" on one item and "Plaza Vea" on another would become two
-  // headings in the Stores tab. Reuse the spelling already on your list.
-  const known = state.items.flatMap((i) => i.stores)
-    .find((s) => s.toLowerCase() === name.toLowerCase());
-  if (known) name = known;
+  const name = String(raw || '').trim().toLowerCase();   // see normaliseItem
+  if (!name || item.stores.includes(name)) return false;
   item.stores.push(name);
   return true;
 }
@@ -752,23 +750,8 @@ document.addEventListener('click', (e) => {
 
 /* ---------------- adding ---------------- */
 
-/* How many single-letter changes turn one word into another. "ricw" and
-   "rice" are one apart; "rice" and "beans" are miles apart. This is the
-   whole misspelling check — no dictionary, just your own list. */
-function editDistance(a, b) {
-  if (a === b) return 0;
-  if (Math.abs(a.length - b.length) > 2) return 9;      // too different to bother
-  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
-  for (let i = 1; i <= a.length; i++) {
-    const cur = [i];
-    for (let j = 1; j <= b.length; j++) {
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1,
-                        prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-    }
-    prev = cur;
-  }
-  return prev[b.length];
-}
+// editDistance() — "ricw" is one change from "rice" — lives in aisles.js,
+// where the aisle guesser uses the same check.
 
 /* The closest thing already on the list, if it is close enough to be a
    typo rather than a different thing. Short words allow one change only —
@@ -797,6 +780,7 @@ function addFields() {
   const price = parseFloat($('#add-price').value);
   return {
     pri: on ? Number(on.dataset.addPri) : null,
+    qty: Math.max(1, parseInt($('#add-qty-val').textContent, 10) || 1),   // 1 = "not said"
     store: $('#add-store').value.trim(),
     price: Number.isFinite(price) && price >= 0 ? price : null
   };
@@ -805,6 +789,7 @@ function addFields() {
 function clearAddBox() {
   $('#add-input').value = '';
   $('#add-price').value = '';       // a price belongs to one item, never the next
+  $('#add-qty-val').textContent = '1';
   setAddPri(null);                  // back to "haven't said"
   renderSuggestions();
   $('#add-input').focus();
@@ -821,6 +806,7 @@ function reviveExisting(item, f) {
     item.inTrip = true;
     item.done = false;
     if (f.pri !== null)  item.priority = f.pri;
+    if (f.qty > 1)       item.qty = f.qty;
     if (f.store)         addStore(item, f.store);
     if (f.price !== null) item.price = f.price;
   });
@@ -831,8 +817,9 @@ function reviveExisting(item, f) {
 function changeList(item, f) {
   const bits = [];
   if (f.pri !== null && f.pri !== item.priority) bits.push('move it to ' + PRI_LABEL[f.pri]);
-  if (f.store && !item.stores.some((x) => x.toLowerCase() === f.store.toLowerCase())) {
-    bits.push('add ' + f.store + ' to its stores');
+  if (f.qty > 1 && f.qty !== item.qty)           bits.push('set the quantity to ' + f.qty);
+  if (f.store && !item.stores.includes(f.store.toLowerCase())) {
+    bits.push('add ' + f.store.toLowerCase() + ' to its stores');
   }
   if (f.price !== null && f.price !== item.price) bits.push('set its price to ' + money(f.price));
   if (item.done)                                  bits.push('uncheck it');
@@ -889,7 +876,8 @@ $('#add-form').addEventListener('submit', async (e) => {
   update(() => {
     state.items.push(newItem(name, {
       priority: f.pri ?? 2,
-      stores: f.store ? [f.store] : [],
+      qty: f.qty,
+      stores: f.store ? [f.store.trim().toLowerCase()] : [],
       price: f.price
     }));
   });
@@ -913,6 +901,7 @@ function syncAddMore() {
   const more  = $('#add-more');
   if (!show && !more.classList.contains('hidden')) {
     setAddPri(null);
+    $('#add-qty-val').textContent = '1';
     $('#add-store').value = '';
     $('#add-price').value = '';
   }
@@ -923,6 +912,13 @@ $('.add-wrap').addEventListener('focusin',  () => setTimeout(syncAddMore, 0));
 $('.add-wrap').addEventListener('focusout', () => setTimeout(syncAddMore, 0));
 $('.add-wrap').addEventListener('click',    () => setTimeout(syncAddMore, 0));
 $('#add-input').addEventListener('input',   syncAddMore);
+
+$('#add-qty').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-delta]');
+  if (!btn) return;
+  const el = $('#add-qty-val');
+  el.textContent = Math.max(1, (parseInt(el.textContent, 10) || 1) + Number(btn.dataset.delta));
+});
 
 $('#add-pri').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-add-pri]');
