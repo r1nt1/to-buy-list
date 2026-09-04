@@ -573,8 +573,8 @@ function renderBudget(cartSum) {
 
   // Just what's in the cart — the bar and its colour say how that compares
   // to the budget, so no "left"/"over" arithmetic.
-  $('#budget-note').innerHTML = '<span class="budget-label">In cart</span>' +
-    '<span class="budget-amount">' + money(cartSum) + '</span>';
+  $('#budget-note').innerHTML = '<span class="budget-amount">' + money(cartSum) + '</span>' +
+    '<span class="budget-label">In cart</span>';
   $('#budget-note').classList.toggle('over', over);
 }
 
