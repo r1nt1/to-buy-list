@@ -28,8 +28,9 @@ everything else. The running version shows at the bottom of the list.
 
 ### Changed
 - Rows fade out as they slide under the add box instead of being cut off.
-- Second go at the jump: when the add box is stuck at the top and you tap
-  into it, the page is put back where it was once the keyboard has opened.
+- *Tried and removed:* putting the page back where it was after the keyboard
+  opens. Made it worse (the box vanished). What's left of the jump is
+  Safari's own keyboard handling of a sticky box; living with it.
 
 ---
 
