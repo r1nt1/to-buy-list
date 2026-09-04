@@ -8,7 +8,26 @@ everything else. The running version shows at the bottom of the list.
 
 ---
 
-## v4.0 — 2026-09-03 (branch `v4`, not yet released)
+## v4.1 — 2026-09-03 (on `main`, not yet pushed)
+
+### Fixed
+- **The list no longer jumps when you tap the add box.** The detail row
+  (H/M/L, quantity, price, store) used to appear *inside* the sticky box,
+  making it taller and pushing the whole list down by that much — then back
+  up when it went away. It now hangs below the box without touching the
+  page. The other half of the jump is iOS scrolling the box into view when
+  the keyboard opens; that part is the phone's, not ours.
+- **The keyboard's Done key adds the item** (or just closes the keyboard if
+  the box is empty). iOS shows a Done key for `enterkeyhint="done"` but
+  doesn't submit on its own; the open row already handled Enter itself, the
+  add box didn't.
+
+### Changed
+- Rows fade out as they slide under the add box instead of being cut off.
+
+---
+
+## v4.0 — 2026-09-03
 
 Big number because saved data changed shape: an item now has a *list* of
 stores, not one. Old saves are converted on first load; nothing is lost.

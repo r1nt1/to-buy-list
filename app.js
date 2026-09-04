@@ -1041,6 +1041,15 @@ $('#add-input').addEventListener('input', renderSuggestions);
 $('#add-input').addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { $('#add-input').value = ''; renderSuggestions(); }
 });
+// The keyboard's Done key (Enter). With text in the box it adds the item;
+// with nothing typed it just puts the keyboard away. iOS shows "Done" for
+// enterkeyhint="done" but does not submit the form on its own.
+$('.add-wrap').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' || !e.target.matches('input')) return;
+  e.preventDefault();
+  if ($('#add-input').value.trim()) $('#add-form').requestSubmit();
+  else e.target.blur();
+});
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.add-wrap')) suggestBox.classList.add('hidden');
 });

@@ -130,9 +130,21 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   margin: 0 -16px 26px; padding: 10px 16px;
 }
 .add { display: flex; gap: 8px; }
+/* A soft edge under the box, so rows fade out as they slide beneath it
+   instead of being cut off by a hard line. */
+.add-wrap::after, .add-more::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 22px;
+  pointer-events: none;
+  background: linear-gradient(var(--bg), color-mix(in srgb, var(--bg) 0%, transparent));
+}
 
-/* the optional detail row — same controls as an expanded item row */
-.add-more { margin-top: 8px; }
+/* The optional detail row hangs BELOW the box rather than sitting inside it.
+   Inside, it made the sticky box taller every time it appeared, and the
+   whole list shifted down by that much — then back up when it went away. */
+.add-wrap .add-more {   /* outranks .open-controls' own margin-top below */
+  position: absolute; left: 0; right: 0; top: calc(100% - 1px); z-index: 20;
+  margin: 0; padding: 0 16px 10px; background: var(--bg);
+}
 .add-more .field-store {
   order: 2; flex-basis: 100%;
   background: transparent; border-color: transparent; border-radius: 0;

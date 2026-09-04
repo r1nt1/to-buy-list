@@ -1,6 +1,16 @@
 # Ideas parked, and things decided against
 
 ## Parked (not built yet)
+- **Push notifications for reminders** (asked 2026-09-03). Possible on iPhone
+  for a Home Screen app since iOS 16.4, but it needs three new pieces: a
+  manifest + service worker (makes it a proper PWA), the user granting
+  permission, and *a server that sends the push* — the phone can't schedule
+  its own. Cheapest server: a GitHub Actions cron once a day that reads due
+  items from Supabase and sends Web Push (VAPID keys). Only works for
+  signed-in users, since the list must be in the cloud to be read.
+- **A "done" button on an open row** — closing by tapping empty space is
+  fiddly; Enter works but needs the keyboard up. Proposed: a ✓ next to the
+  `i`, or tapping the row's own name line.
 - **Let the user choose the theme** (2026-09-03). Three palettes were tried on
   2026-09-03 and **C is the default**; A and B are only recorded here. A
   picker in a future settings menu would bring them back as a choice. Values, dark mode first, light in brackets:
