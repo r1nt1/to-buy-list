@@ -269,7 +269,10 @@ function update(fn) { fn(); save(); render(); }
 let openId = null;
 let focusPending = false;
 
-function openRow(id) { openId = id; focusPending = true; render(); }
+// Opening a row does NOT focus the name field. On iPhone, focusing an input
+// raises the keyboard and scrolls it into view — the row you tapped jumped.
+// Tap the name itself when you want to edit it.
+function openRow(id) { openId = id; render(); }
 function closeRow()  { if (openId === null) return; openId = null; render(); }
 
 /* ---------------------------------------------------------------
@@ -524,9 +527,9 @@ function renderBudget(cartSum) {
   $('.bar').classList.toggle('idle', !budget);
 
   let note;
-  if (!budget)     note = money(cartSum) + ' in cart';
-  else if (over)   note = money(cartSum) + ' in cart · ' + money(cartSum - budget) + ' over';
-  else             note = money(cartSum) + ' in cart · ' + money(budget - cartSum) + ' left';
+  // Just what's in the cart — the bar and its colour say how that compares
+  // to the budget, so no "left"/"over" arithmetic underneath.
+  note = money(cartSum) + ' in cart';
   $('#budget-note').textContent = note;
   $('#budget-note').classList.toggle('over', over);
 }
@@ -1095,8 +1098,6 @@ function openInfo(item) {
   if (item.repeatDays && item.lastBought) {
     lines.push(isDue(item) ? 'due now'
                            : 'next on ' + shortDate(addDays(item.lastBought, item.repeatDays)));
-  } else if (item.repeatDays) {
-    lines.push('the countdown starts the first time you buy it');
   }
   $('#info-stat').textContent = lines.join(' · ');
   $('#info-stat').classList.toggle('hidden', !lines.length);

@@ -8,13 +8,15 @@
   --line:    #e3e6ea;
   --text:    #14181d;
   --muted:   #6b7280;
-  --accent:  #2f6df6;
-  --p1:      #6d4fc2;   /* priority 1 — violet, "weighty" not "alarm" */
-  --p2:      #1f8a70;   /* priority 2 — teal   */
-  --p3:      #7b828d;   /* priority 3 — grey   */
-  --remind:  #4a7bd9;   /* the "due" reminder: a note, not a warning */
-  --warn:    #b26a00;   /* budget nearly spent */
-  --over:    #d7263d;   /* budget over, delete: the only real reds */
+  --accent:  #1a8fb5;   /* cyan-blue: Add, cart bar, focus */
+  --on-accent: #ffffff;
+  --p1:      #e2542f;   /* priority 1 — coral, not fire-engine red */
+  --p2:      #b8860b;   /* priority 2 — warm yellow, darkened for white paper */
+  --p3:      #7b8794;   /* priority 3 — grey */
+  --on-p2:   #ffffff;
+  --remind:  #6b4fd6;   /* the "due" reminder: lavender, a note not a warning */
+  --warn:    #c9971a;   /* budget nearly spent */
+  --over:    #c62f35;   /* budget over, delete: the only true red */
   --radius:  14px;
 }
 
@@ -25,13 +27,15 @@
     --line:    #2b313a;
     --text:    #eef1f5;
     --muted:   #939ba6;
-    --accent:  #6f9bff;
-    --p1:      #a58cf0;
-    --p2:      #47bd9e;
-    --p3:      #8b939f;
-    --remind:  #7fa6ff;
-    --warn:    #f0a83c;
-    --over:    #ff6b7d;
+    --accent:  #4fc3e8;
+    --on-accent: #0b1a20;
+    --p1:      #ff7a5c;
+    --p2:      #efc05c;
+    --p3:      #7b8794;
+    --on-p2:   #1a1a1a;
+    --remind:  #a98bff;
+    --warn:    #efc05c;
+    --over:    #e04a50;
   }
 }
 
@@ -80,7 +84,7 @@ button {
   padding: 10px 14px; min-height: 44px; cursor: pointer;
   background: var(--surface); color: var(--text);
 }
-button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 button.ghost   { background: transparent; border-color: var(--line); color: var(--muted); }
 button.danger  { background: transparent; border-color: transparent; color: var(--over); }
 
@@ -160,7 +164,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 .add input:focus { border-color: var(--accent); outline: none; }
 .add button { min-height: 50px; padding: 0 20px; border-radius: 12px;
-              background: var(--accent); color: #fff; border-color: var(--accent); }
+              background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 
 
 /* ---------------- list ---------------- */
@@ -238,7 +242,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   border-radius: 50%; border: 2px solid var(--line); background: transparent;
   font-size: 16px; line-height: 1; color: transparent;
 }
-.row.done .check { background: var(--accent); border-color: var(--accent); color: #fff; }
+.row.done .check { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 
 .row-main {
   flex: 1; min-width: 0; text-align: left; background: none; min-height: 0;
@@ -340,7 +344,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .pri + .pri { border-left: 1px solid var(--line); }
 .pri.on + .pri, .pri.on { border-left-color: transparent; }
 .pri.on.v1 { background: var(--p1); border-color: var(--p1); color: #fff; }
-.pri.on.v2 { background: var(--p2); border-color: var(--p2); color: #fff; }
+.pri.on.v2 { background: var(--p2); border-color: var(--p2); color: var(--on-p2); }
 .pri.on.v3 { background: var(--p3); border-color: var(--p3); color: #fff; }
 
 /* 16px is the magic number: iOS Safari zooms the page in whenever you focus
@@ -498,10 +502,11 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   font-size: 16px; text-align: right; resize: none;
 }
 #info-form .sheet-note textarea:focus, #info-form .sheet-value :focus { outline: none; }
-#info-form .stat { padding-top: 12px; }
-#info-form menu { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+#info-form .stat { padding: 18px 0 12px; }
 .stat { margin: 0; font-size: 13px; color: var(--muted); }
 #info-form menu, #store-form menu { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0; }
+/* Must come after the line above, which zeroes margin and padding. */
+#info-form menu { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
 .spacer { flex: 1; }
 
 /* ---------------- confetti ---------------- */

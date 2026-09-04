@@ -38,11 +38,18 @@ stores, not one. Old saves are converted on first load; nothing is lost.
   Stores, quantity and price are edited in the row only.
 
 ### Changed
-- **Calmer colours.** High is violet and Medium teal instead of red and
-  amber — weight, not alarm. Amber and red are now reserved for the budget
-  bar (nearly spent / over) and Delete, so a Medium row and a warning never
-  look the same. The `⟳ due` badge and *bought 3 months ago* are blue: a
-  note, not a warning.
+- **Warmer, calmer colours.** High is coral and Medium a warm yellow; true
+  red appears only on Delete and an over-budget bar. Add, the cart bar and
+  the tick are cyan; the `⟳ due` badge and *bought 3 months ago* are
+  lavender — a note, not a warning. Light mode uses darker tones of the same
+  hues so they still read on white.
+- **Tapping a row no longer jumps.** The name field used to take focus on
+  open, which on iPhone raised the keyboard and scrolled the row. Now tap the
+  name when you want to edit it.
+- **Budget line says only what's in the cart.** The bar shows how that
+  compares to the budget; the "left"/"over" sum is gone.
+- The sheet's "next on / due now" line breathes before the buttons; the
+  "countdown starts the first time you buy it" line is gone.
 - **Reminder text on its own line** under the stores, so it never fights
   with a long list of shop names.
 - **Sheet buttons on one row:** Delete on the left, Cancel and Save on the
