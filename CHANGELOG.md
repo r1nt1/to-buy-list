@@ -146,6 +146,14 @@ becomes a one-item list — so nothing you typed is lost.
   words, two for longer ones. Words under four letters are left alone, so
   `ice` and `rice` never get confused for each other.
 
+### Changed
+
+- **The open row looks like a row, not a form.** The name, price and store
+  fields lost their boxes: they're plain text on a faint underline that
+  brightens while you're in it. And High / Medium / Low is one control with
+  three segments — the chosen one filled — instead of three separate buttons,
+  so it reads as a single decision. The same control sits under the add box.
+
 ### Fixed
 
 - **The budget bar sat empty until you checked something off.** It measured
