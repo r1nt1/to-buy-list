@@ -8,7 +8,7 @@ everything else. The running version shows at the bottom of the list.
 
 ---
 
-## v4.3 — 2026-09-04 (on `main`, not yet pushed)
+## v4.3 — 2026-09-04
 
 ### Fixed
 - **A ~50 px hole above the add box on the phone** (v4.2). The box was padded
