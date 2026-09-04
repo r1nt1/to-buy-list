@@ -476,11 +476,7 @@ function chipHtml(name) {
    away. The chip is inserted straight into the page rather than through a
    redraw, so the keyboard never closes between two stores. */
 function chipsHtml(stores, field, id) {
-  // One shop, or none, sits on the same line as the priority buttons and the
-  // price — exactly the layout from before stores could be plural. Only a
-  // second shop takes a line of its own, and then the chips lay out sideways
-  // across it instead of stacking three deep in a narrow column.
-  return '<div class="chips' + (stores.length > 1 ? ' wide' : '') + '"' +
+  return '<div class="chips"' +
     (id ? ' id="' + id + '"' : '') + '>' +
     stores.map(chipHtml).join('') +
     '<input class="chip-input" data-field="' + field + '" list="store-names" ' +

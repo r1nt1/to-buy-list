@@ -295,11 +295,13 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* order, not markup order: the price stays beside the priority buttons even
    when the store chips drop to their own line below them */
 .open-controls .pri-group { order: 0; }
-.open-controls .chips     { order: 0; }
 /* margin-left:auto keeps the price hard right on its line, whether or not
    the store chips are sharing that line with it */
 .open-controls .field-price { order: 1; margin-left: auto; }
-.open-controls .chips.wide { order: 2; flex-basis: 100%; }
+/* The stores always get their own line. Sharing the first line with the
+   priority and price left a box too narrow for two shops, so a second chip
+   stacked underneath the first instead of sitting beside it. */
+.open-controls .chips { order: 2; flex-basis: 100%; }
 
 /* One control with three segments, the chosen one filled — rather than
    three separate buttons, so it reads as a single decision. */
