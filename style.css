@@ -468,10 +468,12 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
    look, rather than a label sitting over a full-width box */
 #info-form { gap: 0; }
 #info-form h2 { margin-bottom: 6px; }
-.sheet-row {
-  display: flex !important; align-items: center; gap: 12px;
+/* #info-form label sets display:grid; this needs to be more specific than
+   that but NOT !important — .hidden must still be able to hide a row. */
+#info-form label.sheet-row {
+  display: flex; align-items: center; gap: 12px;
   padding: 12px 0; border-bottom: 1px solid var(--line);
-  font-size: 16px !important; color: var(--text) !important;
+  font-size: 16px; color: var(--text);
 }
 .sheet-label { flex: none; color: var(--text); }
 .sheet-value { flex: 1; min-width: 0; display: flex; align-items: center;
