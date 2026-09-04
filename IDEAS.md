@@ -77,3 +77,38 @@ standing in a shop, so the Stores tab is its natural and only home.
 - **Progressive swipe** (swipe distance picking High/Medium/Low). Possible, but
   it needs precision — the thing gestures are meant to avoid — and Safari can't
   do haptics, so you'd have to watch the screen while dragging.
+
+## Decided on 2026-09-03 (the v4.0 build day)
+
+Things tried, or discussed, and settled — with the reason, so they aren't
+re-proposed without a new argument.
+
+- **Aisles group items inside a shop only, not in the priority list.** Built
+  both, compared them on a real list: the priority list fell into a dozen
+  groups of one. Walking order only matters once you're standing in a shop.
+- **No "budget runs out here" line.** Within a section items are alphabetical,
+  so the line cut through things you fully meant to buy because their names
+  came late. The bar at the top (amber from 80%, red only when over) is the
+  honest version.
+- **No whole-list total.** It counts Low, which is the parking bay, and the
+  section headings already total each tier.
+- **Reminders flag, never move.** A due item gets a badge and a line at the
+  top; nothing changes priority on its own. Repeat is one picker (the iOS
+  wheel), with a days box only for "every … days".
+- **Stores, quantity and price live in the row only.** The i sheet is Note,
+  Repeat, Delete. Two places to edit the same thing was one too many. The
+  aisle picker appears only for items the dictionary didn't recognise.
+- **Aisles come from a built-in dictionary, not an AI call.** Offline in a
+  supermarket basement, free, instant, and no secret key to leak from a
+  public repo. Typos are forgiven (one letter for short words, two for long).
+- **Store names are kept lowercase** and capitalised by the styling — type
+  without the shift key, and "Plaza Vea" / "plaza vea" can't split.
+- **No priority lit by default under the add box.** Unlit means "haven't
+  said": a new item is Medium, an existing one keeps what it had. Lighting M
+  by default would have offered to demote an existing High item.
+
+## Still open (bring to the next session)
+
+Alex has more modifications and questions queued. Start from CHANGELOG.md's
+v4.0 entry and this list. `main` = v3.3, branch `v4` = everything above;
+nothing pushed yet.
