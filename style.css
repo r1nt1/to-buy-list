@@ -13,6 +13,7 @@
   --p1:      #e2542f;   /* priority 1 — coral, not fire-engine red */
   --p2:      #b8860b;   /* priority 2 — warm yellow, darkened for white paper */
   --p3:      #7b8794;   /* priority 3 — grey */
+  --on-p1:   #ffffff;   /* text on a chosen High / Medium chip */
   --on-p2:   #ffffff;
   --remind:  #6b4fd6;   /* the "due" reminder: lavender, a note not a warning */
   --warn:    #c9971a;   /* budget nearly spent */
@@ -32,6 +33,7 @@
     --p1:      #ff7a5c;
     --p2:      #efc05c;
     --p3:      #7b8794;
+    --on-p1:   #ffffff;
     --on-p2:   #1a1a1a;
     --remind:  #a98bff;
     --warn:    #efc05c;
@@ -343,7 +345,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 .pri + .pri { border-left: 1px solid var(--line); }
 .pri.on + .pri, .pri.on { border-left-color: transparent; }
-.pri.on.v1 { background: var(--p1); border-color: var(--p1); color: #fff; }
+.pri.on.v1 { background: var(--p1); border-color: var(--p1); color: var(--on-p1); }
 .pri.on.v2 { background: var(--p2); border-color: var(--p2); color: var(--on-p2); }
 .pri.on.v3 { background: var(--p3); border-color: var(--p3); color: #fff; }
 
@@ -477,7 +479,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 /* label on the left, value on the right — the way the phone's own settings
    look, rather than a label sitting over a full-width box */
 #info-form { gap: 0; }
-#info-form h2 { margin-bottom: 14px; }
+#info-form h2 { margin-bottom: 14px; outline: none; }
 /* #info-form label sets display:grid; this needs to be more specific than
    that but NOT !important — .hidden must still be able to hide a row. */
 #info-form label.sheet-row {
@@ -496,7 +498,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 #info-form .sheet-value input { max-width: 70px; }
 .sheet-unit { color: var(--muted); }
 .chev { color: var(--muted); font-size: 20px; line-height: 1; margin-left: -2px; }
-#info-form label.sheet-note { align-items: flex-start; }  /* must outrank label.sheet-row above */
+#info-form label.sheet-note { align-items: flex-start; border-bottom: none; }  /* must outrank label.sheet-row above; the buttons draw the last line */
 /* Same font and line-height as the label, so the first line of the note
    sits exactly level with the word "Note". */
 #info-form .sheet-note textarea {
@@ -551,20 +553,31 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .cloud-form .field { width: 100%; }
 .cloud-note { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
 
-/* ---------------- alternative palette, for trying ----------------
-   Add ?theme=c to the URL. Priority is brightness, not hue: High is the
-   brightest stripe, Low the dimmest. Colour is left free for cart (green),
-   reminders (blue) and delete/over (red). */
+/* ---------------- alternative palettes, for trying ----------------
+   Add ?theme=a or ?theme=c to the URL. The default (no theme) is B.
+   Every palette sets the same variables; light values first, dark below. */
+
+/* A — reserve the red: priority is one warm hue at three strengths. */
+:root[data-theme="a"] {
+  --accent: #1e9a72;  --on-accent: #ffffff;
+  --p1: #d98a00;  --p2: #9a6a25;  --p3: #6e7681;  --on-p1: #ffffff;  --on-p2: #ffffff;
+  --remind: #5b57d6;  --warn: #b8860b;  --over: #d7263d;
+}
+/* C — priority by brightness: no hue at all on the stripes. */
 :root[data-theme="c"] {
   --accent: #1f9d6f;  --on-accent: #ffffff;
-  --p1: #14181d;  --p2: #6b7280;  --p3: #b6bcc4;  --on-p2: #ffffff;
+  --p1: #14181d;  --p2: #6b7280;  --p3: #b6bcc4;  --on-p1: #ffffff;  --on-p2: #ffffff;
   --remind: #2f6df6;  --warn: #b8860b;  --over: #d7263d;
 }
 @media (prefers-color-scheme: dark) {
+  :root[data-theme="a"] {
+    --accent: #3fb68b;  --on-accent: #0b1a14;
+    --p1: #ffb224;  --p2: #c08a3e;  --p3: #6e7681;  --on-p1: #1a1a1a;  --on-p2: #ffffff;
+    --remind: #8e8bff;  --warn: #ffb224;  --over: #e5484d;
+  }
   :root[data-theme="c"] {
     --accent: #5bd9a6;  --on-accent: #0b1a14;
-    --p1: #e6e9ec;  --p2: #8d959e;  --p3: #4a5158;  --on-p2: #ffffff;
+    --p1: #e6e9ec;  --p2: #8d959e;  --p3: #4a5158;  --on-p1: #14181d;  --on-p2: #ffffff;
     --remind: #6ea8fe;  --warn: #efc05c;  --over: #f05a5a;
   }
-  :root[data-theme="c"] .pri.on.v1 { color: #14181d; }
 }

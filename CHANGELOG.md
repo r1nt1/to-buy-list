@@ -52,9 +52,11 @@ stores, not one. Old saves are converted on first load; nothing is lost.
   "countdown starts the first time you buy it" line is gone. Note label and
   text line up; a little more air under the title and before the buttons.
 - **`?demo=1`** on the URL shows a 20-item sample list. Nothing is saved, so
-  your real list is untouched. **`?theme=c`** tries the "priority by
-  brightness" palette (High is the brightest stripe). Both are for trying
-  things out, not features.
+  your real list is untouched. **`?theme=a`** / **`?theme=c`** try the other
+  two palettes (values in IDEAS.md). Both are for trying things out, not
+  features.
+- Opening the sheet no longer pops the Repeat list open (the title takes
+  focus instead of the first control). No double line under Note.
 - **Reminder text on its own line** under the stores, so it never fights
   with a long list of shop names.
 - **Sheet buttons on one row:** Delete on the left, Cancel and Save on the

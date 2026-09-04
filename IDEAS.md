@@ -1,6 +1,19 @@
 # Ideas parked, and things decided against
 
 ## Parked (not built yet)
+- **Let the user choose the theme** (2026-09-03). Three palettes exist behind
+  `?theme=a` / `?theme=c` (B is the default); a picker in a future settings
+  menu would make it a real choice. Values, dark mode first, light in brackets:
+
+  | | High | Medium | Low | Accent (Add, cart) | Remind | Warn | Over/Delete |
+  |---|---|---|---|---|---|---|---|
+  | **A** reserve the red | `#FFB224` (`#D98A00`) | `#C08A3E` (`#9A6A25`) | `#6E7681` | `#3FB68B` (`#1E9A72`) | `#8E8BFF` (`#5B57D6`) | `#FFB224` (`#B8860B`) | `#E5484D` (`#D7263D`) |
+  | **B** warm ramp | `#FF7A5C` (`#E2542F`) | `#EFC05C` (`#B8860B`) | `#7B8794` | `#4FC3E8` (`#1A8FB5`) | `#A98BFF` (`#6B4FD6`) | `#EFC05C` (`#C9971A`) | `#E04A50` (`#C62F35`) |
+  | **C** priority by brightness | `#E6E9EC` (`#14181D`) | `#8D959E` (`#6B7280`) | `#4A5158` (`#B6BCC4`) | `#5BD9A6` (`#1F9D6F`) | `#6EA8FE` (`#2F6DF6`) | `#EFC05C` (`#B8860B`) | `#F05A5A` (`#D7263D`) |
+
+  Surfaces are shared by all three (dark `#111418` / `#1B1F25`, light
+  `#F6F7F9` / `#FFFFFF`). Colour-blindness: C is safest — priority never
+  depends on hue, and every other colour sits next to a word.
 - **Stats** — timesBought/lastBought are already recorded, just not shown.
   "Popcorn × 14 this year" needs no new plumbing. Easy first win.
 - **Profile/settings menu** — a small header button, not the bottom bar

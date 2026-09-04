@@ -358,7 +358,7 @@ function groupHeadHtml({ attr, key, label, count, sum, open, tone }) {
 function dueHtml(pend) {
   const fake = (FAKE_TODAY
     ? '<div class="fake-today">Pretending today is ' + esc(FAKE_TODAY) + '</div>' : '') +
-    (DEMO ? '<div class="fake-today">Sample list — nothing here is saved</div>' : '');
+    '';   // (a ?demo list is silent on purpose — it should look like the real thing)
   const due = pend.filter(isDue);
   if (!due.length) return fake;
   return fake + '<div class="due-banner">' + due.length +
@@ -1143,6 +1143,9 @@ function openInfo(item) {
   $('#info-stat').textContent = lines.join(' · ');
   $('#info-stat').classList.toggle('hidden', !lines.length);
   info.showModal();
+  // The browser focuses the first control in a dialog — the Repeat dropdown —
+  // and on the phone a focused dropdown pops open by itself. Focus the title instead.
+  $('#info-title').focus();
 }
 
 /* One list, the way a phone normally asks this. The extra box only appears
