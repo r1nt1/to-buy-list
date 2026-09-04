@@ -8,7 +8,7 @@ everything else. The running version shows at the bottom of the list.
 
 ---
 
-## v4.2 — 2026-09-03 (on `main`, not yet pushed)
+## v4.2 — 2026-09-04
 - **Add box covers the strip under the clock**, so nothing shows above it
   while you scroll, and the fade below it is longer. *Tried and removed:* a
   frosted-glass version — on the phone it read as a shiny box sliding over
