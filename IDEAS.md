@@ -34,6 +34,9 @@
   group ever matters, a sort option is far cheaper.
 
 ## Decided against — don't re-propose without a new argument
+- **Underlined fields in the open row** — tried in v4.0–4.2, looked
+  unfinished; boxes like the add panel instead. **Stores carrying over** to
+  the next added item — reverted 2026-09-04, wrong shop landed on things.
 - **Aisles in the priority list.** Built, compared on a real list: a dozen
   groups of one. Walking order only matters standing in a shop → Stores tab
   only. (Store = *where*, tagged by you; aisle = *what*, from the dictionary;

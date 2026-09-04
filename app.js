@@ -895,7 +895,7 @@ function clearAddBox() {
   $('#add-input').value = '';
   $('#add-price').value = '';       // a price belongs to one item, never the next
   $('#add-qty-val').textContent = '1';
-  // the stores stay — the next item is probably from the same shop
+  clearAddStores();                 // stores belong to that item, not the next one
   setAddPri(null);                  // back to "haven't said"
   renderSuggestions();
   $('#add-input').focus();

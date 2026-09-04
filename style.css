@@ -4,6 +4,7 @@
    --------------------------------------------------------------- */
 :root {
   --bg:      #f6f7f9;
+  --bar:     #e9ecf0;   /* the sticky add box: a shade apart from the page */
   --surface: #ffffff;
   --line:    #e3e6ea;
   --text:    #14181d;
@@ -24,6 +25,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg:      #111418;
+    --bar:     #0a0c0f;
     --surface: #1b1f25;
     --line:    #2b313a;
     --text:    #eef1f5;
@@ -134,14 +136,15 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 /* Solid, the same dark as the page. (A frosted-glass version was tried and
    looked like a shiny box sliding over the list — see CHANGELOG v4.2.) */
-.add-wrap, .add-wrap .add-more { background: var(--bg); }
+.add-wrap, .add-wrap .add-more { background: var(--bar); }
+.add-wrap::after, .add-more::after { border-top: 1px solid var(--line); }
 .add { display: flex; gap: 8px; }
 /* A soft edge under the box, so rows fade out as they slide beneath it
    instead of being cut off by a hard line. */
 .add-wrap::after, .add-more::after {
   content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 40px;
   pointer-events: none;
-  background: linear-gradient(var(--bg), color-mix(in srgb, var(--bg) 0%, transparent));
+  background: linear-gradient(var(--bar), color-mix(in srgb, var(--bar) 0%, transparent));
 }
 
 /* The optional detail row hangs BELOW the box rather than sitting inside it.
@@ -297,17 +300,12 @@ button.danger  { background: transparent; border-color: transparent; color: var(
    Flat fields: no boxes, just an underline that brightens while you're in
    it. The open row then looks like a closed row with its controls shown,
    not like a form dropped into the list. */
-.row.open .name-input,
-.row.open .chips {
-  background: transparent; border-color: transparent; border-radius: 0;
-  border-bottom: 1px solid var(--line); padding-left: 2px; padding-right: 2px;
-}
-/* Same padding as .row-main, so the name doesn't move when the row opens. */
-.row.open .name-input { padding-left: 10px; }
+/* The name field and the store box are real boxes, the same as under the
+   add box. (An underline version was tried first and looked unfinished.)
+   .name-input's padding equals .row-main's, so the name doesn't move. */
 .row.open .name-input:focus,
-.row.open .chips:focus-within { outline: none; border-bottom-color: var(--accent); }
+.row.open .chips:focus-within { outline: none; border-color: var(--accent); }
 .row.open .name-input { font-weight: inherit; }
-.row.open .chip-input { padding-left: 4px; }
 .row.open .info-btn { border-color: transparent; background: color-mix(in srgb, var(--text) 7%, transparent); }
 .row.open .done-btn { background: var(--accent); color: var(--on-accent); font-style: normal; font-family: inherit; }
 
@@ -429,9 +427,9 @@ button.danger  { background: transparent; border-color: transparent; color: var(
    chips with a text box on the end. The box grows to fill whatever space
    is left on the line and wraps onto a new one when there isn't any. */
 .chips {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
   flex: 1 1 110px; min-width: 0;
-  padding: 3px 4px; min-height: 40px;
+  padding: 6px 8px; min-height: 44px;
   border: 1px solid var(--line); border-radius: 9px; background: var(--surface);
 }
 .chip {

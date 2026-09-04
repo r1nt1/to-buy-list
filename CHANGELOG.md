@@ -17,8 +17,15 @@ everything else. The running version shows at the bottom of the list.
   row: Enter, comma or tapping away makes a chip, × removes one. The chips
   stay for the next item (the next thing is probably from the same shop).
   The panel used to end on a bare underline that was easy to miss.
+- **Open row matches the add panel:** the name and the stores are proper
+  boxes, not underlines, and the store box has more air around its chips
+  (both places). The add box sits on its own darker strip with a hairline
+  under it, so it no longer melts into the list.
+- **Stores clear after Add**, like the price. (v3.3 kept them; in practice
+  it put the wrong shop on the next item.)
 - **Even spacing:** 10 px between the add row, the capsules, the store box
-  and the panel's edge; the same inside an open row.
+  and the panel's edge; the same inside an open row, measured from the
+  boxes' edges.
 - **The name no longer moves when a row opens** — it was sliding 8 px left
   (the editable field had less padding than the closed line). Measured
   identical now.
