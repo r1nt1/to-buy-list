@@ -130,7 +130,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .add-wrap {
   position: relative; position: sticky; top: 0;
   z-index: 20;
-  margin: 0 -16px 26px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 12px;
+  margin: 0 -16px 26px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
 }
 /* Solid, the same dark as the page. (A frosted-glass version was tried and
    looked like a shiny box sliding over the list — see CHANGELOG v4.2.) */
@@ -149,14 +149,10 @@ button.danger  { background: transparent; border-color: transparent; color: var(
    whole list shifted down by that much — then back up when it went away. */
 .add-wrap .add-more {   /* outranks .open-controls' own margin-top below */
   position: absolute; left: 0; right: 0; top: calc(100% - 1px); z-index: 20;
-  margin: 0; padding: 0 16px 14px;
+  margin: 0; padding: 0 16px 10px;
 }
-.add-more .field-store {
-  order: 2; flex-basis: 100%; margin-top: 2px;
-  min-height: 40px; padding: 0 12px;
-  border: 1px solid var(--line); border-radius: 9px; background: var(--surface);
-}
-.add-more .field-store:focus { outline: none; border-color: var(--accent); }
+.add-more .chips { order: 2; flex-basis: 100%; }
+.add-more .chips:focus-within { border-color: var(--accent); }
 /* Nothing is preselected, so the three sit level as "not said yet". */
 .add-more .field-price { width: 74px; }
 /* No priority is lit until you tap one — see addFields(). */
@@ -306,9 +302,11 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   background: transparent; border-color: transparent; border-radius: 0;
   border-bottom: 1px solid var(--line); padding-left: 2px; padding-right: 2px;
 }
+/* Same padding as .row-main, so the name doesn't move when the row opens. */
+.row.open .name-input { padding-left: 10px; }
 .row.open .name-input:focus,
 .row.open .chips:focus-within { outline: none; border-bottom-color: var(--accent); }
-.row.open .name-input { font-weight: 500; }
+.row.open .name-input { font-weight: inherit; }
 .row.open .chip-input { padding-left: 4px; }
 .row.open .info-btn { border-color: transparent; background: color-mix(in srgb, var(--text) 7%, transparent); }
 .row.open .done-btn { background: var(--accent); color: var(--on-accent); font-style: normal; font-family: inherit; }
@@ -321,7 +319,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   background: var(--surface); color: var(--text);
 }
 .open-controls {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 8px; margin-top: 10px;
   justify-content: space-between;   /* priority left, quantity middle, price right */
 }
 .price-wrap {
@@ -350,7 +348,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* The stores always get their own line. Sharing the first line with the
    priority and price left a box too narrow for two shops, so a second chip
    stacked underneath the first instead of sitting beside it. */
-.open-controls .chips { order: 2; flex-basis: 100%; margin-top: 6px; }
+.open-controls .chips { order: 2; flex-basis: 100%; }
 
 /* One control with three segments, the chosen one filled — rather than
    three separate buttons, so it reads as a single decision. */

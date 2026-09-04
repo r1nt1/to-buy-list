@@ -13,9 +13,15 @@ everything else. The running version shows at the bottom of the list.
   while you scroll, and the fade below it is longer. *Tried and removed:* a
   frosted-glass version — on the phone it read as a shiny box sliding over
   the list. Solid dark instead.
-- The **store** field under the add box is a proper bordered box, "+ store",
-  the same as the chips in an open row — the panel used to end on a bare
-  underline that was easy to miss.
+- **Several stores in the add box**, as chips — the same box as an open
+  row: Enter, comma or tapping away makes a chip, × removes one. The chips
+  stay for the next item (the next thing is probably from the same shop).
+  The panel used to end on a bare underline that was easy to miss.
+- **Even spacing:** 10 px between the add row, the capsules, the store box
+  and the panel's edge; the same inside an open row.
+- **The name no longer moves when a row opens** — it was sliding 8 px left
+  (the editable field had less padding than the closed line). Measured
+  identical now.
 - A little more room around the **store** line, both under the add box and
   in an open row, so it stops getting lost.
 

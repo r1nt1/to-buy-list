@@ -15,7 +15,7 @@
      files change, including while testing a version that hasn't shipped
      yet. Leaving it still during a testing session means the phone keeps
      showing the fix you just made as if it never happened. -->
-<link rel="stylesheet" href="style.css?v=20260903234251">
+<link rel="stylesheet" href="style.css?v=20260904000620">
 </head>
 <body>
 
@@ -91,8 +91,12 @@
           <input class="field field-price" id="add-price" type="number" min="0"
                  step="0.01" inputmode="decimal" enterkeyhint="done" placeholder="price">
         </label>
-        <input class="field field-store" id="add-store" list="store-names"
-               placeholder="+ store" autocomplete="off" autocapitalize="none" enterkeyhint="done">
+        <!-- the same chip box as an open row: Enter, comma or tapping away
+             makes a chip; × removes one; several stores per item -->
+        <div class="chips" id="add-stores">
+          <input class="chip-input" id="add-store" list="store-names" placeholder="store"
+                 autocomplete="off" autocapitalize="words" enterkeyhint="done">
+        </div>
       </div>
       <!-- our own suggestion list. The browser's built-in one is drawn
            outside the page, so it can't be positioned or styled. -->
@@ -249,8 +253,8 @@
 <datalist id="store-names"></datalist>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="aisles.js?v=20260903234251"></script>
-<script src="sync.js?v=20260903234251"></script>
-<script src="app.js?v=20260903234251"></script>
+<script src="aisles.js?v=20260904000620"></script>
+<script src="sync.js?v=20260904000620"></script>
+<script src="app.js?v=20260904000620"></script>
 </body>
 </html>

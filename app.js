@@ -848,13 +848,45 @@ function nearMatch(name) {
    one: it means "I haven't said". A new item then comes out Medium, and an
    item you already have keeps whatever priority it was on. Lighting H makes
    it High in both cases. */
+/* Stores chosen in the add box, as chips — exactly like an open row.
+   The chip is put straight into the page rather than through a redraw, so
+   the keyboard stays up between two stores. */
+let addStores = [];
+function commitAddStore() {
+  const box = $('#add-store');
+  const name = box.value.trim().toLowerCase();
+  box.value = '';
+  if (!name || addStores.includes(name)) return;
+  addStores.push(name);
+  box.insertAdjacentHTML('beforebegin', chipHtml(name));
+  box.placeholder = '+ store';
+}
+function clearAddStores() {
+  addStores = [];
+  $('#add-stores').querySelectorAll('.chip').forEach((c) => c.remove());
+  $('#add-store').value = '';
+  $('#add-store').placeholder = 'store';
+}
+$('#add-stores').addEventListener('click', (e) => {
+  const x = e.target.closest('.chip-x');
+  if (!x) return;
+  addStores = addStores.filter((s) => s !== x.dataset.value.toLowerCase());
+  x.closest('.chip').remove();
+  if (!addStores.length) $('#add-store').placeholder = 'store';
+});
+$('#add-store').addEventListener('change', commitAddStore);   // tapping away
+$('#add-store').addEventListener('keydown', (e) => {
+  if (e.key === ',' && e.target.value.trim()) { e.preventDefault(); commitAddStore(); }
+});
+
 function addFields() {
   const on = $('#add-pri .on');
   const price = parseFloat($('#add-price').value);
+  commitAddStore();   // a half-typed store counts too
   return {
     pri: on ? Number(on.dataset.addPri) : null,
     qty: Math.max(1, parseInt($('#add-qty-val').textContent, 10) || 1),   // 1 = "not said"
-    store: $('#add-store').value.trim(),
+    stores: [...addStores],
     price: Number.isFinite(price) && price >= 0 ? price : null
   };
 }
@@ -863,7 +895,7 @@ function clearAddBox() {
   $('#add-input').value = '';
   $('#add-price').value = '';       // a price belongs to one item, never the next
   $('#add-qty-val').textContent = '1';
-  $('#add-store').value = $('#add-store').value.trim().toLowerCase();   // the store stays, tidied
+  // the stores stay — the next item is probably from the same shop
   setAddPri(null);                  // back to "haven't said"
   renderSuggestions();
   $('#add-input').focus();
@@ -881,7 +913,7 @@ function reviveExisting(item, f) {
     item.done = false;
     if (f.pri !== null)  item.priority = f.pri;
     if (f.qty > 1)       item.qty = f.qty;
-    if (f.store)         addStore(item, f.store);
+    f.stores.forEach((st) => addStore(item, st));
     if (f.price !== null) item.price = f.price;
   });
 }
@@ -892,9 +924,8 @@ function changeList(item, f) {
   const bits = [];
   if (f.pri !== null && f.pri !== item.priority) bits.push('move it to ' + PRI_LABEL[f.pri]);
   if (f.qty > 1 && f.qty !== item.qty)           bits.push('set the quantity to ' + f.qty);
-  if (f.store && !item.stores.includes(f.store.toLowerCase())) {
-    bits.push('add ' + f.store.toLowerCase() + ' to its stores');
-  }
+  const newStores = f.stores.filter((st) => !item.stores.includes(st));
+  if (newStores.length) bits.push('add ' + newStores.join(' and ') + ' to its stores');
   if (f.price !== null && f.price !== item.price) bits.push('set its price to ' + money(f.price));
   if (item.done)                                  bits.push('uncheck it');
   return bits;
@@ -951,7 +982,7 @@ $('#add-form').addEventListener('submit', async (e) => {
     state.items.push(newItem(name, {
       priority: f.pri ?? 2,
       qty: f.qty,
-      stores: f.store ? [f.store.trim().toLowerCase()] : [],
+      stores: f.stores,
       price: f.price
     }));
   });
@@ -976,7 +1007,7 @@ function syncAddMore() {
   if (!show && !more.classList.contains('hidden')) {
     setAddPri(null);
     $('#add-qty-val').textContent = '1';
-    $('#add-store').value = '';
+    clearAddStores();
     $('#add-price').value = '';
   }
   more.classList.toggle('hidden', !show);
@@ -1054,6 +1085,7 @@ $('#add-input').addEventListener('keydown', (e) => {
 $('.add-wrap').addEventListener('keydown', (e) => {
   if (e.key !== 'Enter' || !e.target.matches('input')) return;
   e.preventDefault();
+  if (e.target.id === 'add-store' && e.target.value.trim()) { commitAddStore(); return; }
   if ($('#add-input').value.trim()) $('#add-form').requestSubmit();
   else e.target.blur();
 });
