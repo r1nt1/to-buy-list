@@ -8,6 +8,15 @@ everything else. The running version shows at the bottom of the list.
 
 ---
 
+## v4.2 — 2026-09-03 (on `main`, not yet pushed)
+- **Frosted-glass add box**, like iOS's own bars: rows blur as they slide
+  underneath, and the fade below it is longer. The box now also covers the
+  strip under the clock, so nothing shows above it while you scroll.
+- A little more room around the **store** line, both under the add box and
+  in an open row, so it stops getting lost.
+
+---
+
 ## v4.1 — 2026-09-03
 
 ### Fixed

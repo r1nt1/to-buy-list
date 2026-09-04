@@ -124,18 +124,31 @@ button.danger  { background: transparent; border-color: transparent; color: var(
    the input clear of the clock in the Home Screen app. The negative side
    margins let its background cover the page gutters, so rows scrolling
    underneath disappear cleanly instead of showing at the edges. */
+/* Stuck at the very top (0) and padded down past the notch strip, so the
+   list can't show through above the box; frosted-glass background, the way
+   iOS's own bars look — rows blur as they slide underneath. */
 .add-wrap {
-  position: relative; position: sticky; top: env(safe-area-inset-top, 0px);
-  z-index: 20; background: var(--bg);
-  margin: 0 -16px 26px; padding: 10px 16px;
+  position: relative; position: sticky; top: 0;
+  z-index: 20;
+  margin: 0 -16px 26px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 12px;
+}
+/* The glass is a layer *behind* each box (::before), not on the box itself:
+   a blurred element becomes the only thing its children can blur against,
+   so the detail panel, a child, would see nothing but the box. */
+.add-wrap::before, .add-wrap .add-more::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
 }
 .add { display: flex; gap: 8px; }
 /* A soft edge under the box, so rows fade out as they slide beneath it
    instead of being cut off by a hard line. */
 .add-wrap::after, .add-more::after {
-  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 22px;
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 40px;
   pointer-events: none;
-  background: linear-gradient(var(--bg), color-mix(in srgb, var(--bg) 0%, transparent));
+  background: linear-gradient(color-mix(in srgb, var(--bg) 78%, transparent),
+                              color-mix(in srgb, var(--bg) 0%, transparent));
 }
 
 /* The optional detail row hangs BELOW the box rather than sitting inside it.
@@ -143,10 +156,10 @@ button.danger  { background: transparent; border-color: transparent; color: var(
    whole list shifted down by that much — then back up when it went away. */
 .add-wrap .add-more {   /* outranks .open-controls' own margin-top below */
   position: absolute; left: 0; right: 0; top: calc(100% - 1px); z-index: 20;
-  margin: 0; padding: 0 16px 10px; background: var(--bg);
+  margin: 0; padding: 0 16px 18px;
 }
 .add-more .field-store {
-  order: 2; flex-basis: 100%;
+  order: 2; flex-basis: 100%; margin-top: 6px;
   background: transparent; border-color: transparent; border-radius: 0;
   border-bottom: 1px solid var(--line); padding-left: 2px;
 }
@@ -344,7 +357,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* The stores always get their own line. Sharing the first line with the
    priority and price left a box too narrow for two shops, so a second chip
    stacked underneath the first instead of sitting beside it. */
-.open-controls .chips { order: 2; flex-basis: 100%; }
+.open-controls .chips { order: 2; flex-basis: 100%; margin-top: 6px; }
 
 /* One control with three segments, the chosen one filled — rather than
    three separate buttons, so it reads as a single decision. */
