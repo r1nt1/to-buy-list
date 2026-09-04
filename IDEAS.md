@@ -1,9 +1,9 @@
 # Ideas parked, and things decided against
 
 ## Parked (not built yet)
-- **Let the user choose the theme** (2026-09-03). Three palettes exist behind
-  `?theme=a` / `?theme=c` (B is the default); a picker in a future settings
-  menu would make it a real choice. Values, dark mode first, light in brackets:
+- **Let the user choose the theme** (2026-09-03). Three palettes were tried on
+  2026-09-03 and **C is the default**; A and B are only recorded here. A
+  picker in a future settings menu would bring them back as a choice. Values, dark mode first, light in brackets:
 
   | | High | Medium | Low | Accent (Add, cart) | Remind | Warn | Over/Delete |
   |---|---|---|---|---|---|---|---|

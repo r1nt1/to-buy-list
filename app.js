@@ -182,10 +182,6 @@ function load() {
   return seedState();
 }
 
-// ?theme=c on the URL tries an alternative palette (see the bottom of style.css).
-const THEME = new URLSearchParams(location.search).get('theme');
-if (THEME) document.documentElement.dataset.theme = THEME;
-
 const DEMO = new URLSearchParams(location.search).has('demo');
 
 function save() {

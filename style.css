@@ -8,16 +8,16 @@
   --line:    #e3e6ea;
   --text:    #14181d;
   --muted:   #6b7280;
-  --accent:  #1a8fb5;   /* cyan-blue: Add, cart bar, focus */
+  --accent:  #1f9d6f;   /* green: Add, cart bar, ticks */
   --on-accent: #ffffff;
-  --p1:      #e2542f;   /* priority 1 — coral, not fire-engine red */
-  --p2:      #b8860b;   /* priority 2 — warm yellow, darkened for white paper */
-  --p3:      #7b8794;   /* priority 3 — grey */
+  --p1:      #14181d;   /* priority 1 — darkest stripe: priority is brightness, not hue */
+  --p2:      #6b7280;   /* priority 2 */
+  --p3:      #b6bcc4;   /* priority 3 — faintest */
   --on-p1:   #ffffff;   /* text on a chosen High / Medium chip */
   --on-p2:   #ffffff;
-  --remind:  #6b4fd6;   /* the "due" reminder: lavender, a note not a warning */
-  --warn:    #c9971a;   /* budget nearly spent */
-  --over:    #c62f35;   /* budget over, delete: the only true red */
+  --remind:  #2f6df6;   /* the "due" reminder: a note, not a warning */
+  --warn:    #b8860b;   /* budget nearly spent */
+  --over:    #d7263d;   /* budget over, delete: the only true red */
   --radius:  14px;
 }
 
@@ -28,16 +28,16 @@
     --line:    #2b313a;
     --text:    #eef1f5;
     --muted:   #939ba6;
-    --accent:  #4fc3e8;
-    --on-accent: #0b1a20;
-    --p1:      #ff7a5c;
-    --p2:      #efc05c;
-    --p3:      #7b8794;
-    --on-p1:   #ffffff;
-    --on-p2:   #1a1a1a;
-    --remind:  #a98bff;
+    --accent:  #5bd9a6;
+    --on-accent: #0b1a14;
+    --p1:      #e6e9ec;
+    --p2:      #8d959e;
+    --p3:      #4a5158;
+    --on-p1:   #14181d;
+    --on-p2:   #ffffff;
+    --remind:  #6ea8fe;
     --warn:    #efc05c;
-    --over:    #e04a50;
+    --over:    #f05a5a;
   }
 }
 
@@ -552,32 +552,3 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .cloud-form { display: flex; flex-direction: column; gap: 10px; margin: 14px 0 0; }
 .cloud-form .field { width: 100%; }
 .cloud-note { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
-
-/* ---------------- alternative palettes, for trying ----------------
-   Add ?theme=a or ?theme=c to the URL. The default (no theme) is B.
-   Every palette sets the same variables; light values first, dark below. */
-
-/* A — reserve the red: priority is one warm hue at three strengths. */
-:root[data-theme="a"] {
-  --accent: #1e9a72;  --on-accent: #ffffff;
-  --p1: #d98a00;  --p2: #9a6a25;  --p3: #6e7681;  --on-p1: #ffffff;  --on-p2: #ffffff;
-  --remind: #5b57d6;  --warn: #b8860b;  --over: #d7263d;
-}
-/* C — priority by brightness: no hue at all on the stripes. */
-:root[data-theme="c"] {
-  --accent: #1f9d6f;  --on-accent: #ffffff;
-  --p1: #14181d;  --p2: #6b7280;  --p3: #b6bcc4;  --on-p1: #ffffff;  --on-p2: #ffffff;
-  --remind: #2f6df6;  --warn: #b8860b;  --over: #d7263d;
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-theme="a"] {
-    --accent: #3fb68b;  --on-accent: #0b1a14;
-    --p1: #ffb224;  --p2: #c08a3e;  --p3: #6e7681;  --on-p1: #1a1a1a;  --on-p2: #ffffff;
-    --remind: #8e8bff;  --warn: #ffb224;  --over: #e5484d;
-  }
-  :root[data-theme="c"] {
-    --accent: #5bd9a6;  --on-accent: #0b1a14;
-    --p1: #e6e9ec;  --p2: #8d959e;  --p3: #4a5158;  --on-p1: #14181d;  --on-p2: #ffffff;
-    --remind: #6ea8fe;  --warn: #efc05c;  --over: #f05a5a;
-  }
-}

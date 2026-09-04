@@ -38,11 +38,13 @@ stores, not one. Old saves are converted on first load; nothing is lost.
   Stores, quantity and price are edited in the row only.
 
 ### Changed
-- **Warmer, calmer colours.** High is coral and Medium a warm yellow; true
-  red appears only on Delete and an over-budget bar. Add, the cart bar and
-  the tick are cyan; the `⟳ due` badge and *bought 3 months ago* are
-  lavender — a note, not a warning. Light mode uses darker tones of the same
-  hues so they still read on white.
+- **Calmer colours: priority by brightness.** The High/Medium/Low stripes
+  are three greys, darkest for High (brightest in dark mode), instead of
+  red/amber/grey — the headings already say the word, so colour is free to
+  mean something else. Add, the cart bar and the ticks are green; the
+  `⟳ due` badge and *bought 3 months ago* are blue (a note, not a warning);
+  red appears only on Delete and an over-budget bar. Also the safest of the
+  three palettes tried for colour blindness. The other two are in IDEAS.md.
 - **Tapping a row no longer jumps.** The name field used to take focus on
   open, which on iPhone raised the keyboard and scrolled the row. Now tap the
   name when you want to edit it.
@@ -52,9 +54,7 @@ stores, not one. Old saves are converted on first load; nothing is lost.
   "countdown starts the first time you buy it" line is gone. Note label and
   text line up; a little more air under the title and before the buttons.
 - **`?demo=1`** on the URL shows a 20-item sample list. Nothing is saved, so
-  your real list is untouched. **`?theme=a`** / **`?theme=c`** try the other
-  two palettes (values in IDEAS.md). Both are for trying things out, not
-  features.
+  your real list is untouched. Handy for showing someone the app.
 - Opening the sheet no longer pops the Repeat list open (the title takes
   focus instead of the first control). No double line under Note.
 - **Reminder text on its own line** under the stores, so it never fights
