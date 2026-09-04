@@ -22,8 +22,14 @@ everything else. The running version shows at the bottom of the list.
   doesn't submit on its own; the open row already handled Enter itself, the
   add box didn't.
 
+### Added
+- **A green ✓ on the open row**, next to the `i`. Tap it to finish editing.
+  Tapping empty space or Enter still work too.
+
 ### Changed
 - Rows fade out as they slide under the add box instead of being cut off.
+- Second go at the jump: when the add box is stuck at the top and you tap
+  into it, the page is put back where it was once the keyboard has opened.
 
 ---
 

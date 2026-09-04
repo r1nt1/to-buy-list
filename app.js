@@ -483,6 +483,8 @@ function openRowHtml(item) {
         '<input class="name-input" data-field="name" value="' + esc(item.name) + '" ' +
           'enterkeyhint="done" autocomplete="off">' +
         '<button class="info-btn" data-act="info" aria-label="More details">i</button>' +
+        // A big, obvious way out — tapping empty space to close was fiddly.
+        '<button class="info-btn done-btn" data-act="close" aria-label="Done">✓</button>' +
       '</div>' +
       // One line, the way it was before stores could be plural. The chip box
       // only grows when you actually put a second shop in it.
@@ -737,6 +739,11 @@ function handleClick(event) {
     case 'info':
       commitOpenRow();
       openInfo(item);
+      break;
+
+    case 'close':
+      commitOpenRow();
+      closeRow();
       break;
   }
 }
@@ -1041,6 +1048,21 @@ $('#add-input').addEventListener('input', renderSuggestions);
 $('#add-input').addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { $('#add-input').value = ''; renderSuggestions(); }
 });
+/* iOS and a sticky add box: when the box is stuck at the top and you tap
+   into it, Safari scrolls the page towards where the box *would* be in the
+   normal flow — the top of the page — a little more on every tap. Remember
+   where you were when you touched the box, and put the page back there once
+   the keyboard has had its say. Does nothing when the box isn't stuck. */
+let addTouchY = null;
+$('.add-wrap').addEventListener('pointerdown', () => { addTouchY = window.scrollY; });
+$('.add-wrap').addEventListener('focusin', () => {
+  if (addTouchY === null || addTouchY < 10) return;
+  const y = addTouchY;
+  [0, 60, 200, 400].forEach((ms) => setTimeout(() => {
+    if (Math.abs(window.scrollY - y) > 2) window.scrollTo(0, y);
+  }, ms));
+});
+
 // The keyboard's Done key (Enter). With text in the box it adds the item;
 // with nothing typed it just puts the keyboard away. iOS shows "Done" for
 // enterkeyhint="done" but does not submit the form on its own.

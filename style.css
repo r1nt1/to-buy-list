@@ -305,6 +305,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .row.open .name-input { font-weight: 500; }
 .row.open .chip-input { padding-left: 4px; }
 .row.open .info-btn { border-color: transparent; background: color-mix(in srgb, var(--text) 7%, transparent); }
+.row.open .done-btn { background: var(--accent); color: var(--on-accent); font-style: normal; font-family: inherit; }
 
 .open-head { display: flex; align-items: center; gap: 10px; }
 .name-input {
