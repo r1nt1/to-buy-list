@@ -231,9 +231,14 @@ const aisleOf   = (item) => (AISLES.includes(item.aisle) ? item.aisle : NO_AISLE
 /* Adds a store to an item, ignoring blanks and ones it already has.
    Matching ignores case, so "metro" can't become a second Metro. */
 function addStore(item, raw) {
-  const name = String(raw || '').trim();
+  let name = String(raw || '').trim();
   if (!name) return false;
   if (item.stores.some((s) => s.toLowerCase() === name.toLowerCase())) return false;
+  // "plaza vea" on one item and "Plaza Vea" on another would become two
+  // headings in the Stores tab. Reuse the spelling already on your list.
+  const known = state.items.flatMap((i) => i.stores)
+    .find((s) => s.toLowerCase() === name.toLowerCase());
+  if (known) name = known;
   item.stores.push(name);
   return true;
 }
