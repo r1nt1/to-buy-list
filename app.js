@@ -10,7 +10,10 @@
    "Finish trip" clears both. The item itself survives.
    ================================================================= */
 
-const VERSION     = '4.0';
+// Read from this script's own ?v= token in index.html, so the label at the
+// bottom can never lag behind a release again (it sat on 4.0 through 4.3).
+const VERSION = ((document.querySelector('script[src*="app.js"]') || {}).src || '')
+  .replace(/^.*[?&]v=([^&]+).*$/, '$1') || 'dev';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
