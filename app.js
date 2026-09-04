@@ -790,6 +790,7 @@ function clearAddBox() {
   $('#add-input').value = '';
   $('#add-price').value = '';       // a price belongs to one item, never the next
   $('#add-qty-val').textContent = '1';
+  $('#add-store').value = $('#add-store').value.trim().toLowerCase();   // the store stays, tidied
   setAddPri(null);                  // back to "haven't said"
   renderSuggestions();
   $('#add-input').focus();
