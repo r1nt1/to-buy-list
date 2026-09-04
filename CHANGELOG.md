@@ -24,6 +24,7 @@ everything else. The running version shows at the bottom of the list.
   (A hairline under it was tried and hated.)
 - **Stores clear after Add**, like the price. (v3.3 kept them; in practice
   it put the wrong shop on the next item.)
+- **Rows 10 px shorter** (5 less top and bottom) — more list per screen.
 - **Even spacing:** 10 px between the add row, the capsules, the store box
   and the panel's edge; the same inside an open row, measured from the
   boxes' edges.

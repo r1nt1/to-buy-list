@@ -132,7 +132,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .add-wrap {
   position: relative; position: sticky; top: 0;
   z-index: 20;
-  margin: 0 -16px 26px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 20px;
+  margin: 0 -16px 26px; padding: calc(15px + env(safe-area-inset-top, 0px)) 16px 20px;
 }
 /* Solid, the same dark as the page. (A frosted-glass version was tried and
    looked like a shiny box sliding over the list — see CHANGELOG v4.2.) */
@@ -141,7 +141,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* A soft edge under the box, so rows fade out as they slide beneath it
    instead of being cut off by a hard line. */
 .add-wrap::after, .add-more::after {
-  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 40px;
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 20px;
   pointer-events: none;
   background: linear-gradient(var(--bar), color-mix(in srgb, var(--bar) 0%, transparent));
 }
@@ -219,7 +219,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .card { background: var(--surface); border: 1px solid var(--line);
         border-radius: var(--radius); overflow: hidden; }
 
-.row { display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+.row { display: flex; align-items: center; gap: 10px; padding: 5px 12px;
        border-top: 1px solid var(--line); }
 .row:first-child { border-top: none; }
 
