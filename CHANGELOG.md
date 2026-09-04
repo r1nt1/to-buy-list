@@ -17,6 +17,8 @@ everything else. The running version shows at the bottom of the list.
   no budget box to hide behind it showed as empty space. Now a slab reaches
   up over the strip only while the box is actually stuck; the box itself
   keeps its normal 15 px.
+- The **version at the bottom** said 4.0 since 4.0 — it was a separate number
+  nobody bumped. It now reads the same token the files are loaded with.
 
 ---
 
