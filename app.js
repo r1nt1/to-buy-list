@@ -394,7 +394,9 @@ function rowHtml(item) {
   // The price sits on the name's line, hard right under the section total.
   // That leaves the whole second line for the stores, so all of them fit.
   const bits = [];
-  if (item.stores.length && state.mode !== 'store') bits.push(...item.stores.map(esc));
+  if (item.stores.length && state.mode !== 'store') {
+    bits.push(...item.stores.map((s) => '<span class="store-name">' + esc(s) + '</span>'));
+  }
   const due = isDue(item);
   if (due) bits.push('bought ' + ago(item.lastBought));
 
