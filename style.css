@@ -132,12 +132,11 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .add-wrap {
   position: relative; position: sticky; top: 0;
   z-index: 20;
-  margin: 0 -16px 26px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
+  margin: 0 -16px 26px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 20px;
 }
 /* Solid, the same dark as the page. (A frosted-glass version was tried and
    looked like a shiny box sliding over the list — see CHANGELOG v4.2.) */
 .add-wrap, .add-wrap .add-more { background: var(--bar); }
-.add-wrap::after, .add-more::after { border-top: 1px solid var(--line); }
 .add { display: flex; gap: 8px; }
 /* A soft edge under the box, so rows fade out as they slide beneath it
    instead of being cut off by a hard line. */
@@ -152,7 +151,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
    whole list shifted down by that much — then back up when it went away. */
 .add-wrap .add-more {   /* outranks .open-controls' own margin-top below */
   position: absolute; left: 0; right: 0; top: calc(100% - 1px); z-index: 20;
-  margin: 0; padding: 0 16px 10px;
+  margin: 0; padding: 0 16px 20px;   /* twice the inner gap: the bar ends with a clear margin */
 }
 .add-more .chips { order: 2; flex-basis: 100%; }
 .add-more .chips:focus-within { border-color: var(--accent); }

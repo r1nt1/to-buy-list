@@ -19,8 +19,9 @@ everything else. The running version shows at the bottom of the list.
   The panel used to end on a bare underline that was easy to miss.
 - **Open row matches the add panel:** the name and the stores are proper
   boxes, not underlines, and the store box has more air around its chips
-  (both places). The add box sits on its own darker strip with a hairline
-  under it, so it no longer melts into the list.
+  (both places). The add box sits on its own darker strip with twice
+  the margin below the store box, so it no longer melts into the list.
+  (A hairline under it was tried and hated.)
 - **Stores clear after Add**, like the price. (v3.3 kept them; in practice
   it put the wrong shop on the next item.)
 - **Even spacing:** 10 px between the add row, the capsules, the store box
