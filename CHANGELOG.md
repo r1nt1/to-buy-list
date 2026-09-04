@@ -9,9 +9,13 @@ everything else. The running version shows at the bottom of the list.
 ---
 
 ## v4.2 — 2026-09-03 (on `main`, not yet pushed)
-- **Frosted-glass add box**, like iOS's own bars: rows blur as they slide
-  underneath, and the fade below it is longer. The box now also covers the
-  strip under the clock, so nothing shows above it while you scroll.
+- **Add box covers the strip under the clock**, so nothing shows above it
+  while you scroll, and the fade below it is longer. *Tried and removed:* a
+  frosted-glass version — on the phone it read as a shiny box sliding over
+  the list. Solid dark instead.
+- The **store** field under the add box is a proper bordered box, "+ store",
+  the same as the chips in an open row — the panel used to end on a bare
+  underline that was easy to miss.
 - A little more room around the **store** line, both under the add box and
   in an open row, so it stops getting lost.
 

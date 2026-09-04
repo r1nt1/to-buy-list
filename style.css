@@ -132,23 +132,16 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   z-index: 20;
   margin: 0 -16px 26px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 12px;
 }
-/* The glass is a layer *behind* each box (::before), not on the box itself:
-   a blurred element becomes the only thing its children can blur against,
-   so the detail panel, a child, would see nothing but the box. */
-.add-wrap::before, .add-wrap .add-more::before {
-  content: ""; position: absolute; inset: 0; z-index: -1;
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
-  backdrop-filter: blur(18px) saturate(1.5);
-}
+/* Solid, the same dark as the page. (A frosted-glass version was tried and
+   looked like a shiny box sliding over the list — see CHANGELOG v4.2.) */
+.add-wrap, .add-wrap .add-more { background: var(--bg); }
 .add { display: flex; gap: 8px; }
 /* A soft edge under the box, so rows fade out as they slide beneath it
    instead of being cut off by a hard line. */
 .add-wrap::after, .add-more::after {
   content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 40px;
   pointer-events: none;
-  background: linear-gradient(color-mix(in srgb, var(--bg) 78%, transparent),
-                              color-mix(in srgb, var(--bg) 0%, transparent));
+  background: linear-gradient(var(--bg), color-mix(in srgb, var(--bg) 0%, transparent));
 }
 
 /* The optional detail row hangs BELOW the box rather than sitting inside it.
@@ -156,14 +149,14 @@ button.danger  { background: transparent; border-color: transparent; color: var(
    whole list shifted down by that much — then back up when it went away. */
 .add-wrap .add-more {   /* outranks .open-controls' own margin-top below */
   position: absolute; left: 0; right: 0; top: calc(100% - 1px); z-index: 20;
-  margin: 0; padding: 0 16px 18px;
+  margin: 0; padding: 0 16px 14px;
 }
 .add-more .field-store {
-  order: 2; flex-basis: 100%; margin-top: 6px;
-  background: transparent; border-color: transparent; border-radius: 0;
-  border-bottom: 1px solid var(--line); padding-left: 2px;
+  order: 2; flex-basis: 100%; margin-top: 2px;
+  min-height: 40px; padding: 0 12px;
+  border: 1px solid var(--line); border-radius: 9px; background: var(--surface);
 }
-.add-more .field-store:focus { outline: none; border-bottom-color: var(--accent); }
+.add-more .field-store:focus { outline: none; border-color: var(--accent); }
 /* Nothing is preselected, so the three sit level as "not said yet". */
 .add-more .field-price { width: 74px; }
 /* No priority is lit until you tap one — see addFields(). */
