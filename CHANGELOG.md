@@ -48,8 +48,13 @@ stores, not one. Old saves are converted on first load; nothing is lost.
   name when you want to edit it.
 - **Budget line says only what's in the cart.** The bar shows how that
   compares to the budget; the "left"/"over" sum is gone.
-- The sheet's "next on / due now" line breathes before the buttons; the
-  "countdown starts the first time you buy it" line is gone.
+- The sheet's "bought / due" line shows only when a repeat is set; the
+  "countdown starts the first time you buy it" line is gone. Note label and
+  text line up; a little more air under the title and before the buttons.
+- **`?demo=1`** on the URL shows a 20-item sample list. Nothing is saved, so
+  your real list is untouched. **`?theme=c`** tries the "priority by
+  brightness" palette (High is the brightest stripe). Both are for trying
+  things out, not features.
 - **Reminder text on its own line** under the stores, so it never fights
   with a long list of shop names.
 - **Sheet buttons on one row:** Delete on the left, Cancel and Save on the

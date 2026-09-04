@@ -70,6 +70,39 @@ function normaliseItem(i) {
   return i;
 }
 
+/* A long, realistic list for trying the app out. Loaded by ?demo=1 on the
+   URL and NEVER saved — your real list on the phone is untouched. */
+function demoState() {
+  const d = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return t.toISOString().slice(0, 10); };
+  const it = (name, priority, extra = {}) => newItem(name, { priority, inTrip: true, ...extra });
+  return {
+    ...seedState(),
+    budget: 250,
+    items: [
+      it('Chicken thighs', 1, { stores: ['metro'], price: 24 }),
+      it('Rice', 1, { stores: ['metro', 'plaza vea'], price: 12, qty: 2, repeatDays: 30, lastBought: d(95), timesBought: 6 }),
+      it('Eggs', 1, { stores: ['metro'], price: 14, repeatDays: 7, lastBought: d(9), timesBought: 22 }),
+      it('Milk', 1, { stores: ['metro', 'wong'], price: 5.5, qty: 3 }),
+      it('Bread', 1, { price: 4, done: true, lastBought: d(0), timesBought: 30 }),
+      it('Onions', 1, { stores: ['plaza vea'], price: 3 }),
+      it('Tomatoes', 1, { stores: ['plaza vea'], price: 6 }),
+      it('Olive oil', 2, { stores: ['wong'], price: 38, note: 'the big bottle, not the small one' }),
+      it('Coffee', 2, { stores: ['metro'], price: 30, repeatDays: 14, lastBought: d(20), timesBought: 9 }),
+      it('Bananas', 2, { price: 6, done: true, lastBought: d(0), timesBought: 12 }),
+      it('Dish soap', 2, { stores: ['plaza vea'], price: 9, repeatDays: 60, lastBought: d(30), timesBought: 4 }),
+      it('Yogurt', 2, { stores: ['wong'], price: 7, qty: 4 }),
+      it('Pasta', 2, { stores: ['metro', 'plaza vea'], price: 5 }),
+      it('Toilet paper', 2, { stores: ['plaza vea'], price: 22, repeatDays: 30, lastBought: d(40), timesBought: 8 }),
+      it('Cheese', 2, { stores: ['wong'], price: 18, note: 'edam' }),
+      it('Light bulbs', 3, { stores: ['sodimac'], price: 15 }),
+      it('Treadmill', 3, { stores: ['sodimac'], price: 1400 }),
+      it('Ice cream', 3, { stores: ['wong'], price: 16 }),
+      it('Batteries AA', 3, { stores: ['sodimac', 'metro'], price: 12 }),
+      it('Candles', 3, { price: 8 })
+    ]
+  };
+}
+
 function seedState() {
   return {
     schema: 2, budget: 0, mode: 'priority',
@@ -149,7 +182,14 @@ function load() {
   return seedState();
 }
 
+// ?theme=c on the URL tries an alternative palette (see the bottom of style.css).
+const THEME = new URLSearchParams(location.search).get('theme');
+if (THEME) document.documentElement.dataset.theme = THEME;
+
+const DEMO = new URLSearchParams(location.search).has('demo');
+
 function save() {
+  if (DEMO) return;   // a demo list is for looking at, never for keeping
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   catch (err) { console.warn('Could not save.', err); }
   // Then send a copy to the cloud, if backup is switched on. This runs
@@ -159,7 +199,7 @@ function save() {
   catch (err) { console.warn('Could not queue the backup.', err); }
 }
 
-let state = load();
+let state = DEMO ? demoState() : load();
 
 /* ---------------------------------------------------------------
    2. Helpers
@@ -316,8 +356,9 @@ function groupHeadHtml({ attr, key, label, count, sum, open, tone }) {
 }
 
 function dueHtml(pend) {
-  const fake = FAKE_TODAY
-    ? '<div class="fake-today">Pretending today is ' + esc(FAKE_TODAY) + '</div>' : '';
+  const fake = (FAKE_TODAY
+    ? '<div class="fake-today">Pretending today is ' + esc(FAKE_TODAY) + '</div>' : '') +
+    (DEMO ? '<div class="fake-today">Sample list — nothing here is saved</div>' : '');
   const due = pend.filter(isDue);
   if (!due.length) return fake;
   return fake + '<div class="due-banner">' + due.length +
@@ -1094,8 +1135,8 @@ function openInfo(item) {
   $('#info-title').textContent = item.name;
   // Only worth a line if it actually tells you something.
   const lines = [];
-  if (item.lastBought) lines.push('Bought ' + ago(item.lastBought));
   if (item.repeatDays && item.lastBought) {
+    lines.push('Bought ' + ago(item.lastBought));
     lines.push(isDue(item) ? 'due now'
                            : 'next on ' + shortDate(addDays(item.lastBought, item.repeatDays)));
   }

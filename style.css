@@ -477,7 +477,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 /* label on the left, value on the right — the way the phone's own settings
    look, rather than a label sitting over a full-width box */
 #info-form { gap: 0; }
-#info-form h2 { margin-bottom: 6px; }
+#info-form h2 { margin-bottom: 14px; }
 /* #info-form label sets display:grid; this needs to be more specific than
    that but NOT !important — .hidden must still be able to hide a row. */
 #info-form label.sheet-row {
@@ -496,17 +496,19 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 #info-form .sheet-value input { max-width: 70px; }
 .sheet-unit { color: var(--muted); }
 .chev { color: var(--muted); font-size: 20px; line-height: 1; margin-left: -2px; }
-.sheet-note { align-items: flex-start; }
+#info-form label.sheet-note { align-items: flex-start; }  /* must outrank label.sheet-row above */
+/* Same font and line-height as the label, so the first line of the note
+   sits exactly level with the word "Note". */
 #info-form .sheet-note textarea {
   flex: 1; min-width: 0; min-height: 0; padding: 0; border: none; background: none;
-  font-size: 16px; text-align: right; resize: none;
+  font: inherit; font-size: 16px; line-height: inherit; text-align: right; resize: none;
 }
 #info-form .sheet-note textarea:focus, #info-form .sheet-value :focus { outline: none; }
-#info-form .stat { padding: 18px 0 12px; }
+#info-form .stat { padding: 14px 0 2px; }
 .stat { margin: 0; font-size: 13px; color: var(--muted); }
 #info-form menu, #store-form menu { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0; }
 /* Must come after the line above, which zeroes margin and padding. */
-#info-form menu { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+#info-form menu { margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--line); }
 .spacer { flex: 1; }
 
 /* ---------------- confetti ---------------- */
@@ -548,3 +550,21 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .cloud-form { display: flex; flex-direction: column; gap: 10px; margin: 14px 0 0; }
 .cloud-form .field { width: 100%; }
 .cloud-note { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+
+/* ---------------- alternative palette, for trying ----------------
+   Add ?theme=c to the URL. Priority is brightness, not hue: High is the
+   brightest stripe, Low the dimmest. Colour is left free for cart (green),
+   reminders (blue) and delete/over (red). */
+:root[data-theme="c"] {
+  --accent: #1f9d6f;  --on-accent: #ffffff;
+  --p1: #14181d;  --p2: #6b7280;  --p3: #b6bcc4;  --on-p2: #ffffff;
+  --remind: #2f6df6;  --warn: #b8860b;  --over: #d7263d;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="c"] {
+    --accent: #5bd9a6;  --on-accent: #0b1a14;
+    --p1: #e6e9ec;  --p2: #8d959e;  --p3: #4a5158;  --on-p2: #ffffff;
+    --remind: #6ea8fe;  --warn: #efc05c;  --over: #f05a5a;
+  }
+  :root[data-theme="c"] .pri.on.v1 { color: #14181d; }
+}
