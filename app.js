@@ -325,9 +325,12 @@ function renderTrip() {
 
   $('#trip-list').innerHTML =
     dueHtml(pend) +
-    (state.mode === 'store' ? byStoreHtml(pend) : byPriorityHtml(pend)) +
+    // Stores tab: bought things stay in their shop, greyed out, and there is
+    // no separate cart section — the question there is "what did I get
+    // where, and what did it cost", so a store's total keeps counting them.
+    (state.mode === 'store' ? byStoreHtml(onTrip) : byPriorityHtml(pend)) +
     emptyHtml(pend, onTrip) +
-    cartHtml(inCart, cartSum);
+    (state.mode === 'store' ? '' : cartHtml(inCart, cartSum));
 
   if (focusPending && openId) {
     const input = $('.name-input');
@@ -413,7 +416,7 @@ function byStoreHtml(pend) {
     // total therefore answers "if I buy everything here, what does it cost" —
     // the figure at the top of the screen still counts each item once.
     const group = pend.filter((i) => storesOf(i).includes(store))
-                      .sort((a, b) => a.priority - b.priority || byName(a, b));
+                      .sort((a, b) => a.done - b.done || a.priority - b.priority || byName(a, b));
     const isOpen = state.expanded.includes(store);
     const sum = group.reduce((s, i) => s + lineTotal(i), 0);
 

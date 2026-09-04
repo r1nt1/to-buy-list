@@ -26,9 +26,13 @@ everything else. The running version shows at the bottom of the list.
   it put the wrong shop on the next item.)
 - **Tap a section's total to collapse or expand it**, on both tabs — the
   label and the chevron still work; the gap between stays dead.
-- The **In cart** total lines up with the store totals above it (it was
-  sitting further right, where the missing chevron would be).
-- A little air between *Group by aisle* and the due line.
+- **Stores tab: no In cart section.** Bought things stay in their shop,
+  greyed and moved to the bottom of it, and the shop's total keeps counting
+  them — the question there is "what did I get where, and for how much".
+  The Priority tab keeps its In cart section (its total now lines up with
+  the sections above it).
+- **Smaller budget headline** — you type it once; the bar is what you watch.
+- A little air (12 px) between *Group by aisle* and the due line.
 - *Trying:* the add box in the page colour rather than a darker strip.
 - **Rows 10 px shorter** (5 less top and bottom) — more list per screen —
   and a smaller check circle (24 px, like Reminders).

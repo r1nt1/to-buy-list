@@ -34,6 +34,9 @@
   group ever matters, a sort option is far cheaper.
 
 ## Decided against — don't re-propose without a new argument
+- **An "In cart" section on the Stores tab** — removed 2026-09-04. Bought
+  items stay under their shop, greyed; store totals include them (spend per
+  shop). Priority tab keeps In cart, because that is where the budget lives.
 - **Underlined fields in the open row** — tried in v4.0–4.2, looked
   unfinished; boxes like the add panel instead. **Stores carrying over** to
   the next added item — reverted 2026-09-04, wrong shop landed on things.
