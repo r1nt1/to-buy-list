@@ -32,7 +32,8 @@ everything else. The running version shows at the bottom of the list.
   The Priority tab keeps its In cart section (its total now lines up with
   the sections above it).
 - **Smaller budget headline** — you type it once; the bar is what you watch.
-- A little air (12 px) between *Group by aisle* and the due line.
+- A little air (12 px) between *Group by aisle* and the due line, and the
+  gap under the add box now equals the gap above it (27 px both).
 - *Trying:* the add box in the page colour rather than a darker strip.
 - **Rows 10 px shorter** (5 less top and bottom) — more list per screen —
   and a smaller check circle (24 px, like Reminders).

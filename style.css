@@ -132,7 +132,10 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .add-wrap {
   position: relative; position: sticky; top: 0;
   z-index: 20;
-  margin: 0 -16px 26px; padding: calc(15px + env(safe-area-inset-top, 0px)) 16px 20px;
+  /* 20px bar padding + 7 = 27, the same as the gap between the budget box
+     and the add row (12 + 15). (The 7 swallows the next block's own 4px
+     top margin — touching vertical margins merge, the larger one wins.) */
+  margin: 0 -16px 7px; padding: calc(15px + env(safe-area-inset-top, 0px)) 16px 20px;
 }
 /* Solid, the same dark as the page. (A frosted-glass version was tried and
    looked like a shiny box sliding over the list — see CHANGELOG v4.2.) */
@@ -393,7 +396,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .empty { color: var(--muted); text-align: center; padding: 28px 12px; font-size: 15px; }
 
 /* ---------------- group by aisle ---------------- */
-.list-tools { display: flex; justify-content: flex-end; margin: -14px 2px 4px; }
+.list-tools { display: flex; justify-content: flex-end; margin: 4px 2px 4px; }
 .list-tools { margin-bottom: 12px; }   /* air between the switch and the due line */
 .tool {
   min-height: 34px; padding: 5px 12px; border-radius: 999px;
