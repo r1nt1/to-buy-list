@@ -8,7 +8,7 @@ everything else. The running version shows at the bottom of the list.
 
 ---
 
-## v4.1 — 2026-09-03 (on `main`, not yet pushed)
+## v4.1 — 2026-09-03
 
 ### Fixed
 - **The list no longer jumps when you tap the add box.** The detail row
