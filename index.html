@@ -15,7 +15,7 @@
      files change, including while testing a version that hasn't shipped
      yet. Leaving it still during a testing session means the phone keeps
      showing the fix you just made as if it never happened. -->
-<link rel="stylesheet" href="style.css?v=20260903204018">
+<link rel="stylesheet" href="style.css?v=20260903204656">
 </head>
 <body>
 
@@ -126,32 +126,44 @@
   <form method="dialog" id="info-form">
     <h2 id="info-title">Details</h2>
 
+    <!-- Rows, the way the phone's own settings look: label on the left,
+         value on the right. -->
+
+    <!-- Buying it again. This only ever puts a "due" marker on the row —
+         it never moves anything up your list on its own. -->
+    <label class="sheet-row">
+      <span class="sheet-label">Repeat</span>
+      <span class="sheet-value">
+        <select name="repeat" id="info-repeat">
+          <option value="0">Never</option>
+          <option value="7">Every week</option>
+          <option value="14">Every 2 weeks</option>
+          <option value="30">Every month</option>
+          <option value="90">Every 3 months</option>
+          <option value="180">Every 6 months</option>
+          <option value="365">Every year</option>
+          <option value="custom">Every … days</option>
+        </select><span class="chev">›</span>
+      </span>
+    </label>
+    <label class="sheet-row hidden" id="repeat-custom">
+      <span class="sheet-label">Every</span>
+      <span class="sheet-value">
+        <input name="repeatDays" type="number" min="1" step="1" inputmode="numeric"
+               placeholder="30"><span class="sheet-unit">days</span>
+      </span>
+    </label>
+
     <!-- Aisles are worked out automatically from the item's name. This only
          appears for the few the dictionary doesn't recognise. -->
-    <label id="aisle-row" class="hidden">Aisle — this one wasn't recognised
-      <select name="aisle" id="info-aisle"></select>
+    <label class="sheet-row hidden" id="aisle-row">
+      <span class="sheet-label">Aisle</span>
+      <span class="sheet-value"><select name="aisle" id="info-aisle"></select><span class="chev">›</span></span>
     </label>
 
-    <label>Note
-      <textarea name="note" rows="3" placeholder="e.g. the big bag, not the small one"></textarea>
-    </label>
-
-    <!-- Buying it again. This only ever puts a "due again" marker on the row —
-         it never moves anything up your list on its own. -->
-    <label>Buy it again
-      <select name="repeat" id="info-repeat">
-        <option value="0">Never</option>
-        <option value="7">Every week</option>
-        <option value="14">Every 2 weeks</option>
-        <option value="30">Every month</option>
-        <option value="90">Every 3 months</option>
-        <option value="180">Every 6 months</option>
-        <option value="365">Every year</option>
-        <option value="custom">Every so many days…</option>
-      </select>
-    </label>
-    <label class="repeat-days hidden" id="repeat-custom">Every this many days
-      <input name="repeatDays" type="number" min="1" step="1" inputmode="numeric">
+    <label class="sheet-row sheet-note">
+      <span class="sheet-label">Note</span>
+      <textarea name="note" rows="2" placeholder="e.g. the big bag, not the small one"></textarea>
     </label>
 
     <p class="stat" id="info-stat"></p>
@@ -240,8 +252,8 @@
 <datalist id="store-names"></datalist>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="aisles.js?v=20260903204018"></script>
-<script src="sync.js?v=20260903204018"></script>
-<script src="app.js?v=20260903204018"></script>
+<script src="aisles.js?v=20260903204656"></script>
+<script src="sync.js?v=20260903204656"></script>
+<script src="app.js?v=20260903204656"></script>
 </body>
 </html>

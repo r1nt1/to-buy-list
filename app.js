@@ -207,6 +207,27 @@ function daysSince(stamp) {
   return Math.round((today - then) / 86400000);
 }
 
+/* "3 months ago", the way you'd say it. */
+function ago(stamp) {
+  const d = daysSince(stamp);
+  if (d === null) return '';
+  if (d <= 0)  return 'today';
+  if (d === 1) return 'yesterday';
+  if (d < 14)  return d + ' days ago';
+  if (d < 60)  return Math.round(d / 7) + ' weeks ago';
+  if (d < 365) return Math.round(d / 30) + ' months ago';
+  const y = Math.round(d / 365);
+  return y === 1 ? 'a year ago' : y + ' years ago';
+}
+
+/* "3 Oct", or "3 Oct 2027" if it isn't this year. */
+function shortDate(stamp) {
+  const [y, m, d] = String(stamp).split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  const s = dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return y === now().getFullYear() ? s : s + ' ' + y;
+}
+
 function addDays(stamp, n) {
   const [y, m, d] = String(stamp).split('-').map(Number);
   const dt = new Date(y, m - 1, d + n);
@@ -297,7 +318,7 @@ function dueHtml(pend) {
   const due = pend.filter(isDue);
   if (!due.length) return fake;
   return fake + '<div class="due-banner">' + due.length +
-    (due.length > 1 ? ' things are' : ' thing is') + ' due again: ' +
+    (due.length > 1 ? ' things are' : ' thing is') + ' due: ' +
     due.map((i) => esc(i.name)).sort().join(', ') +
     '</div>';
 }
@@ -374,6 +395,8 @@ function rowHtml(item) {
   // That leaves the whole second line for the stores, so all of them fit.
   const bits = [];
   if (item.stores.length && state.mode !== 'store') bits.push(...item.stores.map(esc));
+  const due = isDue(item);
+  if (due) bits.push('bought ' + ago(item.lastBought));
 
   return '' +
     '<div class="swipe-wrap' + (item.priority === 3 ? ' will-delete' : '') + '">' +
@@ -390,14 +413,13 @@ function rowHtml(item) {
           '<span class="row-line">' +
             '<span class="row-name">' + esc(item.name) +
               (item.qty > 1 ? ' <span class="row-qty">×' + item.qty + '</span>' : '') +
+              // A marker only. Deciding it is worth buying stays your job.
+              (due ? ' <span class="due-pill">⟳ due</span>' : '') +
             '</span>' +
             (item.price ? '<span class="row-price">' + money(lineTotal(item)) + '</span>' : '') +
           '</span>' +
           (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
           (item.note ? '<span class="row-note">' + esc(item.note) + '</span>' : '') +
-          // A marker only. Deciding it is worth buying stays your job.
-          (isDue(item) ? '<span class="row-due">Due again · last bought ' +
-                         esc(item.lastBought) + '</span>' : '') +
         '</button>' +
       '</div>' +
     '</div>';
@@ -1065,13 +1087,12 @@ function openInfo(item) {
   $('#info-title').textContent = item.name;
   // Only worth a line if it actually tells you something.
   const lines = [];
-  if (item.lastBought) lines.push('Last bought ' + item.lastBought);
+  if (item.lastBought) lines.push('Bought ' + ago(item.lastBought));
   if (item.repeatDays && item.lastBought) {
-    lines.push(isDue(item)
-      ? 'Due again now.'
-      : 'Due again on ' + addDays(item.lastBought, item.repeatDays) + '.');
+    lines.push(isDue(item) ? 'due now'
+                           : 'next on ' + shortDate(addDays(item.lastBought, item.repeatDays)));
   } else if (item.repeatDays) {
-    lines.push('The countdown starts the first time you buy it.');
+    lines.push('the countdown starts the first time you buy it');
   }
   $('#info-stat').textContent = lines.join(' · ');
   $('#info-stat').classList.toggle('hidden', !lines.length);

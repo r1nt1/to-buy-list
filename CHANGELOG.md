@@ -190,6 +190,15 @@ becomes a one-item list — so nothing you typed is lost.
 - **The row under the add box matches the open row exactly**: priority,
   quantity and price capsules on one line, store beneath.
 
+- **Reminders speak like a person.** A due item gets a small amber `⟳ due`
+  badge beside its name, with *bought 3 months ago* in the small print —
+  instead of a whole line quoting a date like `2026-06-01`. The sheet says
+  *Bought 2 days ago · next on 8 Sept*.
+
+- **The i sheet is laid out like the phone's own settings**: label on the
+  left, value on the right — `Repeat        Every month ›` — instead of a
+  label sitting over a full-width box.
+
 - **The aisle guesser forgives a typo.** `betteraga` is a slip away from
   `beterraga`, and that's still Produce — the same one-or-two-letter
   tolerance the add box already had for names. (Also added the Peruvian

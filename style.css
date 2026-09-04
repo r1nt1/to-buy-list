@@ -380,9 +380,12 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 
 /* ---------------- repeat reminders ----------------
    A marker, never a mover: nothing on this list rearranges itself. */
-.row-due {
-  display: block; font-size: 13px; font-weight: 600; margin-top: 3px;
-  color: var(--p2);
+.due-pill {
+  display: inline-block; vertical-align: 2px; margin-left: 4px;
+  padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 700;
+  letter-spacing: .02em; color: var(--p2);
+  background: color-mix(in srgb, var(--p2) 16%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--p2) 35%, var(--line));
 }
 .due-banner {
   margin: 4px 2px 0; padding: 10px 13px; border-radius: 10px;
@@ -460,8 +463,35 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   width: 100%; min-width: 0;   /* stops inputs forcing the sheet wider than the screen */
   resize: vertical;
 }
-#info-form label, .two-up > * { min-width: 0; }
-.two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+#info-form label { min-width: 0; }
+/* label on the left, value on the right — the way the phone's own settings
+   look, rather than a label sitting over a full-width box */
+#info-form { gap: 0; }
+#info-form h2 { margin-bottom: 6px; }
+.sheet-row {
+  display: flex !important; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--line);
+  font-size: 16px !important; color: var(--text) !important;
+}
+.sheet-label { flex: none; color: var(--text); }
+.sheet-value { flex: 1; min-width: 0; display: flex; align-items: center;
+               justify-content: flex-end; gap: 6px; color: var(--muted); }
+#info-form .sheet-value select, #info-form .sheet-value input {
+  width: auto; min-height: 0; padding: 4px 0; border: none; background: none;
+  color: var(--muted); text-align: right; font-size: 16px;
+  -webkit-appearance: none; appearance: none;
+}
+#info-form .sheet-value input { max-width: 70px; }
+.sheet-unit { color: var(--muted); }
+.chev { color: var(--muted); font-size: 20px; line-height: 1; margin-left: -2px; }
+.sheet-note { align-items: flex-start; }
+#info-form .sheet-note textarea {
+  flex: 1; min-width: 0; min-height: 0; padding: 0; border: none; background: none;
+  font-size: 16px; text-align: right; resize: none;
+}
+#info-form .sheet-note textarea:focus, #info-form .sheet-value :focus { outline: none; }
+#info-form .stat { padding-top: 12px; }
+#info-form .sheet-actions { margin-top: 14px; }
 .stat { margin: 0; font-size: 13px; color: var(--muted); }
 .sheet-actions { display: flex; gap: 8px; border-top: 1px solid var(--line);
                  padding-top: 12px; }
