@@ -24,7 +24,12 @@ everything else. The running version shows at the bottom of the list.
   (A hairline under it was tried and hated.)
 - **Stores clear after Add**, like the price. (v3.3 kept them; in practice
   it put the wrong shop on the next item.)
-- **Rows 10 px shorter** (5 less top and bottom) — more list per screen.
+- **Rows 10 px shorter** (5 less top and bottom) — more list per screen —
+  and a smaller check circle (24 px, like Reminders).
+- **Editing gets room:** no check circle while a row is open, 15 px above
+  and below, and the name box, H/M/L, quantity, price and store box all
+  start on the same left edge. The name moves down a little when the row
+  opens — Alex chose the room over the rule, 2026-09-04.
 - **Even spacing:** 10 px between the add row, the capsules, the store box
   and the panel's edge; the same inside an open row, measured from the
   boxes' edges.

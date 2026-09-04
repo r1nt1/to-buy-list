@@ -141,9 +141,10 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* A soft edge under the box, so rows fade out as they slide beneath it
    instead of being cut off by a hard line. */
 .add-wrap::after, .add-more::after {
-  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 20px;
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px;
   pointer-events: none;
-  background: linear-gradient(var(--bar), color-mix(in srgb, var(--bar) 0%, transparent));
+  background: linear-gradient(color-mix(in srgb, var(--bar) 70%, transparent),
+                              color-mix(in srgb, var(--bar) 0%, transparent));
 }
 
 /* The optional detail row hangs BELOW the box rather than sitting inside it.
@@ -253,12 +254,16 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .sw-armed.sw-right .swipe-bg { background: #27a266; }
 .sw-armed.sw-left  .swipe-bg { background: #5f6b7c; }
 .will-delete.sw-armed.sw-left .swipe-bg { background: #c62a3b; }
-.row.open { display: block; background: var(--bg); }
+/* Editing: no check circle, 15px above and below, and every control starts
+   at the same left edge as the name box. The name does move down a little
+   when the row opens — accepted (2026-09-04) in exchange for the room. */
+.row.open { display: block; background: var(--bg); padding-top: 15px; padding-bottom: 15px; }
+.row.open .check { display: none; }
 
 .check {
-  flex: none; width: 30px; height: 30px; min-height: 30px; padding: 0;
-  border-radius: 50%; border: 2px solid var(--line); background: transparent;
-  font-size: 16px; line-height: 1; color: transparent;
+  flex: none; width: 24px; height: 24px; min-height: 24px; padding: 0;
+  border-radius: 50%; border: 1.5px solid var(--line); background: transparent;
+  font-size: 13px; line-height: 1; color: transparent;
 }
 .row.done .check { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 

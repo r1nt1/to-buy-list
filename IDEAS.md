@@ -54,6 +54,12 @@
 - **Fourth "none" priority** — Low already means "not this trip".
 - **Progressive swipe** (distance picks priority) — needs precision, no haptics.
 
+## Rule relaxed
+- "The item never moves when opened" — held from v2.0 to v4.2. Relaxed on
+  2026-09-04 for the *vertical* only: the open row drops the check circle and
+  gets 15 px top/bottom, so the name shifts down a little. Horizontal
+  position is still exact (no circle = name box starts at the row edge).
+
 ## Still open
 Alex has more modifications and questions queued. `main` = v3.3, branch
 `v4` = v4.0; nothing pushed yet. Next: merge, set `?v=` back to `4.0`, push
