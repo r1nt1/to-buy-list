@@ -170,8 +170,17 @@ becomes a one-item list — so nothing you typed is lost.
   alphabetical, so the line cut through things you fully meant to buy just
   because their names came late. The bar at the top is the honest version.
 
-- **Stores left the i sheet.** They're set in the row, where you can see
-  them; a second place to edit the same thing was one place too many.
+- **Stores, quantity and price left the i sheet.** They're all set in the
+  row now, where you can see them; a second place to edit the same thing was
+  one place too many. The sheet is just Note, Buy it again, and Delete.
+
+- **The open row's three controls match.** Priority, quantity and price are
+  three capsules of the same height and border, spread evenly across the
+  line — priority left, quantity middle, price right with its `S/`. The
+  row under the add box got the same treatment.
+
+- **The budget bar turns amber at 80%.** Red is kept for actually being
+  over, so that red still means something when it appears.
 
 ### Fixed
 

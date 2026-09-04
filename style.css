@@ -103,6 +103,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .bar.idle { opacity: .45; }               /* no budget yet: nothing to fill against */
 .bar-cart { position: absolute; left: 0; top: 0; height: 100%; width: 0;
             background: var(--accent); transition: width .2s; }
+.bar-cart.warn { background: var(--p2); }
 .bar-cart.over { background: var(--over); }
 .budget-note { margin: 0; font-size: 14px; color: var(--muted); }
 .budget-note.over { color: var(--over); }
@@ -122,6 +123,11 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 
 /* the optional detail row — same controls as an expanded item row */
 .add-more { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.add-more .field-store {
+  background: transparent; border-color: transparent; border-radius: 0;
+  border-bottom: 1px solid var(--line); padding-left: 2px;
+}
+.add-more .field-store:focus { outline: none; border-bottom-color: var(--accent); }
 /* Nothing is preselected, so the three sit level as "not said yet". */
 .add-more .field-price { width: 74px; }
 /* No priority is lit until you tap one — see addFields(). */
@@ -265,13 +271,11 @@ button.danger  { background: transparent; border-color: transparent; color: var(
    it. The open row then looks like a closed row with its controls shown,
    not like a form dropped into the list. */
 .row.open .name-input,
-.row.open .field-price,
 .row.open .chips {
   background: transparent; border-color: transparent; border-radius: 0;
   border-bottom: 1px solid var(--line); padding-left: 2px; padding-right: 2px;
 }
 .row.open .name-input:focus,
-.row.open .field-price:focus,
 .row.open .chips:focus-within { outline: none; border-bottom-color: var(--accent); }
 .row.open .name-input { font-weight: 500; }
 .row.open .chip-input { padding-left: 4px; }
@@ -286,7 +290,20 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 .open-controls {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px;
+  justify-content: space-between;   /* priority left, quantity middle, price right */
 }
+.price-wrap {
+  display: inline-flex; align-items: center; flex: none;
+  border: 1.5px solid var(--line); border-radius: 10px; padding-left: 10px;
+  background: var(--surface);
+}
+.price-cur { color: var(--muted); font-size: 14px; font-weight: 600; }
+.price-wrap .field-price {
+  width: 58px; border: none; background: transparent; border-radius: 0;
+  padding: 0 8px 0 4px; min-height: 38px; text-align: right;   /* same height as its siblings */
+}
+.price-wrap:focus-within { border-color: var(--accent); }
+.price-wrap .field-price:focus { outline: none; }
 /* order, not markup order: the price stays beside the priority buttons even
    when the store chips drop to their own line below them */
 .open-controls .pri-group { order: 0; }
@@ -294,12 +311,10 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   order: 0; display: inline-flex; align-items: center; flex: none;
   border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden;
 }
-.qty-btn { width: 34px; min-height: 38px; padding: 0; border: none; border-radius: 0;
+.qty-btn { width: 30px; min-height: 38px; padding: 0; border: none; border-radius: 0;
            background: transparent; color: var(--muted); font-size: 18px; }
 .qty-val { min-width: 24px; text-align: center; font-weight: 600; font-size: 15px; }
-/* margin-left:auto keeps the price hard right on its line, whether or not
-   the store chips are sharing that line with it */
-.open-controls .field-price { order: 1; margin-left: auto; }
+.open-controls .price-wrap { order: 1; }
 /* The stores always get their own line. Sharing the first line with the
    priority and price left a box too narrow for two shops, so a second chip
    stacked underneath the first instead of sitting beside it. */
@@ -312,7 +327,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface);
 }
 .pri {
-  width: 38px; min-height: 38px; padding: 0; font-size: 15px; font-weight: 700;
+  width: 36px; min-height: 38px; padding: 0; font-size: 15px; font-weight: 700;
   border: none; border-radius: 0; background: transparent; color: var(--muted);
 }
 .pri + .pri { border-left: 1px solid var(--line); }

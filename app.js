@@ -432,9 +432,12 @@ function openRowHtml(item) {
           '<button class="qty-btn" data-act="qty" data-delta="1" aria-label="One more">+</button>' +
         '</div>' +
         chipsHtml(item.stores, 'store-add') +
-        '<input class="field field-price" data-field="price" type="number" min="0" ' +
-          'step="0.01" inputmode="decimal" enterkeyhint="done" placeholder="' +
-          CURRENCY + '" value="' + (item.price ?? '') + '">' +
+        // A capsule like the other two, so the three read as one family.
+        '<label class="price-wrap"><span class="price-cur">' + CURRENCY + '</span>' +
+          '<input class="field field-price" data-field="price" type="number" min="0" ' +
+            'step="0.01" inputmode="decimal" enterkeyhint="done" placeholder="price" ' +
+            'value="' + (item.price ?? '') + '">' +
+        '</label>' +
       '</div>' +
     '</div>';
 }
@@ -488,7 +491,11 @@ function renderBudget(cartSum) {
   if (document.activeElement !== $('#budget-input')) $('#budget-input').value = budget || '';
 
   const over = budget > 0 && cartSum > budget;
-  $('#bar-cart').style.width = (budget > 0 ? Math.min(100, (cartSum / budget) * 100) : 0) + '%';
+  const share = budget > 0 ? cartSum / budget : 0;
+  $('#bar-cart').style.width = Math.min(100, share * 100) + '%';
+  // Amber from 80% as a heads-up; red is kept for actually being over, so
+  // that red still means something when it appears.
+  $('#bar-cart').classList.toggle('warn', !over && share >= 0.8);
   $('#bar-cart').classList.toggle('over', over);
   $('.bar').classList.toggle('idle', !budget);
 
@@ -892,7 +899,7 @@ $('#add-form').addEventListener('submit', async (e) => {
 });
 
 /* ---------------- the detail row ---------------- */
-$('#add-price').placeholder = CURRENCY;
+document.querySelectorAll('.price-cur').forEach((el) => { el.textContent = CURRENCY; });
 
 /* Shown while you're in the add box — the box has focus, or there's text in
    it, or you're on one of its own controls. When you leave with the box
@@ -1051,8 +1058,6 @@ let infoId = null;
 function openInfo(item) {
   infoId = item.id;
   const f = $('#info-form');
-  f.qty.value = item.qty || 1;
-  f.price.value = item.price ?? '';
   // Aisles are automatic. The picker is only for the handful the dictionary
   // doesn't know, so it stays out of the way the rest of the time.
   const unknownAisle = aisleOf(item) === NO_AISLE;
@@ -1108,10 +1113,7 @@ $('#info-form').addEventListener('submit', () => {
   const item = findItem(infoId);
   if (!item) return;
   const f = $('#info-form');
-  const price = parseFloat(f.price.value);
   update(() => {
-    item.qty = Math.max(1, parseInt(f.qty.value, 10) || 1);
-    item.price = Number.isFinite(price) && price >= 0 ? price : null;
     item.note = f.note.value.trim();
     item.aisle = f.aisle.value;
     item.repeatDays = repeatValue();
