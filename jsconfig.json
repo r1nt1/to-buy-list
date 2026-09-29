@@ -1,0 +1,13 @@
+{
+  // TypeScript's checker, reading the app's plain JavaScript as it is.
+  // Nothing is converted or produced (noEmit); it only reports problems.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "es2022",
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "strict": false
+  },
+  "files": ["aisles.js", "sync.js", "app.js"]
+}

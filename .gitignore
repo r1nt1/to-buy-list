@@ -4,3 +4,6 @@
 # editor noise
 .vscode/
 *.swp
+
+# checking tools, installed by npm install
+node_modules/

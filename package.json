@@ -1,0 +1,17 @@
+{
+  "name": "to-buy-list",
+  "private": true,
+  "description": "Checking tools only. The app itself has no build step and uses none of these.",
+  "scripts": {
+    "typecheck": "tsc -p jsconfig.json",
+    "lint": "eslint .",
+    "audit": "npm audit",
+    "secrets": "gitleaks git --redact -v",
+    "check": "npm run typecheck; npm run lint; npm run audit; npm run secrets"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "typescript": "^7.0.2"
+  }
+}
