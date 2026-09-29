@@ -164,7 +164,7 @@ stores, not one. Old saves are converted on first load; nothing is lost.
 
 ---
 
-## v3.3 — 2026-09-02 (on `main`, not yet pushed)
+## v3.3 — 2026-09-02
 
 ### Added
 - **Collapsible priority sections.** Tap the label or the far-right chevron;

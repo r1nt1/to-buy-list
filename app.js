@@ -1,13 +1,15 @@
 /* =================================================================
-   To buy list — v2.9
+   To buy list — v4 (the exact version is the ?v= token in index.html)
 
    The idea in one sentence: an item is never deleted when you buy
-   it, it just leaves this trip and waits in All items for next week.
+   it, it just gets unchecked by "New trip" and waits for next time.
 
-   Every item carries two separate flags:
-     inTrip  – is it on this week's list?
+   Every item carries two flags:
+     inTrip  – is it on the list? Left over from the old All items
+               tab; everything added is on it, and nothing in the
+               screens turns it off any more.
      done    – have I put it in the cart on THIS trip?
-   "Finish trip" clears both. The item itself survives.
+   "New trip" clears done, counts the purchase, and keeps the item.
    ================================================================= */
 
 // Read from this script's own ?v= token in index.html, so the label at the

@@ -64,6 +64,6 @@
   position is still exact (no circle = name box starts at the row edge).
 
 ## Still open
-Alex has more modifications and questions queued. `main` = v3.3, branch
-`v4` = v4.0; nothing pushed yet. Next: merge, set `?v=` back to `4.0`, push
-(ask first).
+v4.3.1 is live (2026-09-04); everything is merged into `main` and there
+are no other branches. Next candidates: Stats (the easy first win above),
+a real logo (the header one is a placeholder), and the settings menu.
