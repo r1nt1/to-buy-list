@@ -9,5 +9,5 @@
     "lib": ["es2022", "dom", "dom.iterable"],
     "strict": false
   },
-  "files": ["aisles.js", "sync.js", "app.js"]
+  "files": ["globals.d.ts", "aisles.js", "sync.js", "app.js"]
 }
