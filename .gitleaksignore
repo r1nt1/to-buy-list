@@ -1,0 +1,13 @@
+# Findings Alex has looked at and approved (2026-09-28). One exact finding
+# per line: commit:file:rule:line. Anything not listed here still fails.
+
+# SB_KEY — the Supabase *publishable* key. Designed to be public: every
+# visitor's browser downloads it. The dangerous sb_secret_ key is not here.
+f77c721ccb9ca12bc0b90368a66e5e15a99383b3:sync.js:generic-api-key:22
+
+# STAMP_KEY — false alarm: the name of a storage box on the phone, not a key.
+f77c721ccb9ca12bc0b90368a66e5e15a99383b3:sync.js:generic-api-key:24
+
+# REPLACED_KEY — false alarm, same as above (removed from sync.js
+# 2026-09-28, but gitleaks still sees it in this old commit).
+f77c721ccb9ca12bc0b90368a66e5e15a99383b3:sync.js:generic-api-key:25
