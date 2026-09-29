@@ -245,7 +245,7 @@ function daysSince(stamp) {
   const then  = new Date(y, m - 1, d);
   const today = now();
   today.setHours(0, 0, 0, 0);
-  return Math.round((today - then) / 86400000);
+  return Math.round((today.getTime() - then.getTime()) / 86400000);
 }
 
 /* "3 months ago", the way you'd say it. */
@@ -348,7 +348,7 @@ function renderTrip() {
    total and the chevron on the right. The space between is deliberately dead,
    because that gap is how you dismiss an open row — if the whole heading were
    one button, tapping the blank part would collapse the section instead. */
-function groupHeadHtml({ attr, key, label, count, sum, open, tone }) {
+function groupHeadHtml({ attr, key, label, count, sum, open, tone = '' }) {
   return '<div class="group-head' + (open ? '' : ' collapsed') +
            (tone ? ' ' + tone : '') + '">' +
     '<button class="gh-label" ' + attr + '="' + esc(key) + '">' +
@@ -411,7 +411,7 @@ function aisleSubHtml(group) {
 function byStoreHtml(pend) {
   // Real stores alphabetically, "Other" always last.
   const stores = [...new Set(pend.flatMap(storesOf))]
-    .sort((a, b) => (a === NO_STORE) - (b === NO_STORE) || a.localeCompare(b));
+    .sort((a, b) => Number(a === NO_STORE) - Number(b === NO_STORE) || a.localeCompare(b));
 
   let html = '';
   for (const store of stores) {
