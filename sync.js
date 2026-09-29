@@ -137,7 +137,9 @@ window.Cloud = (function () {
 
   function wire() {
     const btn = $('cloud-btn');
-    const dlg = $('cloud-dialog');
+    const dlg = /** @type {HTMLDialogElement} */ ($('cloud-dialog'));
+    const emailBox = /** @type {HTMLInputElement} */ ($('cloud-email'));
+    const codeBox  = /** @type {HTMLInputElement} */ ($('cloud-code'));
     if (!btn || !dlg) return;
 
     btn.addEventListener('click', () => { paintDialog(); dlg.showModal(); });
@@ -152,7 +154,7 @@ window.Cloud = (function () {
     // which keeps the whole sign-in inside this app.
     $('cloud-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = $('cloud-email').value.trim();
+      const email = emailBox.value.trim();
       if (!email) return;
       const note = $('cloud-note');
       note.textContent = 'Sending…';
@@ -196,7 +198,7 @@ window.Cloud = (function () {
     $('cloud-code-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const note = $('cloud-code-note');
-      const parsed = readPastedLink($('cloud-code').value);
+      const parsed = readPastedLink(codeBox.value);
 
       if (parsed.kind === 'bad') {
         note.textContent = "That doesn't look like the sign-in link. Copy the whole thing from the email.";
@@ -218,7 +220,7 @@ window.Cloud = (function () {
         }
         note.textContent = '';
         pendingEmail = '';
-        $('cloud-code').value = '';
+        codeBox.value = '';
         // onAuthStateChange takes it from here: paints, pulls, backs up.
       } catch (err) {
         // A malformed link throws rather than returning an error, so don't
@@ -232,7 +234,7 @@ window.Cloud = (function () {
 
     $('cloud-back').addEventListener('click', () => {
       pendingEmail = '';
-      $('cloud-code').value = '';
+      codeBox.value = '';
       $('cloud-code-note').textContent = '';
       showStep('email');
     });

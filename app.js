@@ -14,7 +14,7 @@
 
 // Read from this script's own ?v= token in index.html, so the label at the
 // bottom can never lag behind a release again (it sat on 4.0 through 4.3).
-const VERSION = ((document.querySelector('script[src*="app.js"]') || {}).src || '')
+const VERSION = ((/** @type {HTMLScriptElement | null} */ (document.querySelector('script[src*="app.js"]')))?.src || '')
   .replace(/^.*[?&]v=([^&]+).*$/, '$1') || 'dev';
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
@@ -588,7 +588,7 @@ function renderBudget(cartSum) {
    --------------------------------------------------------------- */
 
 function render() {
-  document.querySelectorAll('.tab').forEach((b) =>
+  /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.tab')).forEach((b) =>
     b.classList.toggle('active', b.dataset.mode === state.mode));
   // Aisles only mean something inside one shop, so the switch only exists
   // in the tab where shops do.
@@ -825,8 +825,9 @@ $('#trip-list').addEventListener('keydown', (e) => {
 // Tapping anywhere outside the open row closes it.
 document.addEventListener('click', (e) => {
   if (!openId) return;
-  if (e.target.closest('.row.open') || e.target.closest('dialog')) return;
-  if (e.target.closest('[data-act="open"]')) return;   // handled above
+  const target = /** @type {Element} */ (e.target);
+  if (target.closest('.row.open') || target.closest('dialog')) return;
+  if (target.closest('[data-act="open"]')) return;   // handled above
   commitOpenRow();
   closeRow();
 });
@@ -912,7 +913,7 @@ function clearAddBox() {
 }
 
 function setAddPri(p) {
-  document.querySelectorAll('#add-pri .pri').forEach((b) =>
+  /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('#add-pri .pri')).forEach((b) =>
     b.classList.toggle('on', p !== null && Number(b.dataset.addPri) === p));
 }
 
@@ -1116,7 +1117,7 @@ $('.add-wrap').addEventListener('keydown', (e) => {
   else e.target.blur();
 });
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.add-wrap')) suggestBox.classList.add('hidden');
+  if (!(/** @type {Element} */ (e.target)).closest('.add-wrap')) suggestBox.classList.add('hidden');
 });
 
 /* ---------------- group by aisle ---------------- */
@@ -1176,7 +1177,7 @@ $('#new-trip').addEventListener('click', async () => {
 });
 
 /* ---------------- tabs ---------------- */
-document.querySelectorAll('.tab').forEach((tab) => {
+/** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.tab')).forEach((tab) => {
   tab.addEventListener('click', () => {
     commitOpenRow();
     update(() => {
