@@ -22,7 +22,8 @@ const SB_URL = 'https://wuoktzfjknuvmegjzusn.supabase.co';
 const SB_KEY = 'sb_publishable_UXfu1wEGZJ_rxX3v7bVukg_tR9j2cy6';
 
 const STAMP_KEY   = 'groceries.v2.savedAt';   // when this device last changed something
-const REPLACED_KEY = 'groceries.v2.replaced'; // safety net, see adopt() in app.js
+// (The list a cloud copy replaces is kept under 'groceries.v2.replaced' —
+//  app.js does that, see adoptFromCloud.)
 
 window.Cloud = (function () {
   let sb = null;         // the supabase client, once it exists
@@ -32,7 +33,6 @@ window.Cloud = (function () {
   let onRestore = null;  // app.js hands us this, to hand data back
   let getState  = null;  // app.js hands us this, to read the live list
   let pendingEmail = ''; // the address we sent a code to
-  let status = 'off';    // off | ready | saving | saved | error
 
   const ready = () => !!(sb && user);
   const $ = (id) => document.getElementById(id);
@@ -98,8 +98,7 @@ window.Cloud = (function () {
 
   /* ---------------- the button and the dialog ---------------- */
 
-  function setStatus(next) {
-    status = next;
+  function setStatus(next) {   // next: off | ready | saving | saved | error
     const btn = $('cloud-btn');
     if (!btn) return;
     const label = {
