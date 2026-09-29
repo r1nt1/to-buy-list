@@ -8,6 +8,27 @@ everything else. The running version shows at the bottom of the list.
 
 ---
 
+## v4.3.2 — 2026-09-29
+
+Nothing looks different — this round is housekeeping behind the scenes.
+
+- **Four checking machines** now run on the code: a type checker
+  (TypeScript), a linter (ESLint), a dependency audit (npm audit) and a
+  secret scanner (gitleaks). `npm run check` runs all four; all pass. They
+  run on the Mac only — the live app doesn't load any of them.
+- **Fixed what they found:** two unused leftovers in the backup code, hints
+  telling the checker what each page element is, and three spots rewritten
+  to say plainly what they mean. Same behaviour.
+- **gitleaks' three findings approved one by one** (the public Supabase key
+  and two storage labels named "KEY"), with the reasons written down.
+- **When sending a sign-in link fails**, the real reason now goes to the
+  browser console instead of being thrown away. The message you see is the
+  same.
+- **Docs caught up:** README, the research brief, IDEAS and old notes in
+  the code described earlier versions.
+
+---
+
 ## v4.3 — 2026-09-04
 
 ### Fixed
