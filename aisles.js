@@ -301,6 +301,7 @@ const AISLE_LOOKUP = (() => {
   return map;
 })();
 
+/* exported AISLES */   // used by app.js
 const AISLES = [...Object.keys(AISLE_WORDS), NO_AISLE];
 
 /* Lower case, no accents, no punctuation — so "Plátano", "platano" and
@@ -358,6 +359,7 @@ function lookupFuzzy(word) {
 /* Best guess for a name, or null if it genuinely doesn't know. Tries the
    whole name first ("olive oil" beats "oil"), then the longest words in it,
    so "aceite de oliva" finds "aceite" and "de" is never consulted. */
+/* exported guessAisle */   // used by app.js
 function guessAisle(name) {
   const text = normalise(name);
   if (!text) return null;

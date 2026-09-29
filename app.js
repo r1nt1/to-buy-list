@@ -1449,7 +1449,7 @@ render();
 function adoptFromCloud(data) {
   if (!data || !Array.isArray(data.items)) return;
   try { localStorage.setItem('groceries.v2.replaced', JSON.stringify(state)); }
-  catch (err) { /* the stash is a nicety, not a requirement */ }
+  catch { /* the stash is a nicety, not a requirement */ }
 
   state = data;
   // An older save may predate some fields, exactly as load() guards for.

@@ -169,6 +169,7 @@ window.Cloud = (function () {
         $('cloud-sent-to').textContent = 'Link sent to ' + email;
         showStep('code');
       } catch (err) {
+        console.warn('Could not send the sign-in link.', err);
         note.textContent = 'Could not send. Are you online?';
       }
     });
@@ -180,7 +181,7 @@ window.Cloud = (function () {
     function readPastedLink(text) {
       let url;
       try { url = new URL(text.trim()); }
-      catch (err) { return { kind: 'bad' }; }
+      catch { return { kind: 'bad' }; }
 
       const q = url.searchParams;
       const token = q.get('token_hash') || q.get('token');
