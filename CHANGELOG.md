@@ -26,6 +26,11 @@ Nothing looks different — this round is housekeeping behind the scenes.
   same.
 - **Docs caught up:** README, the research brief, IDEAS and old notes in
   the code described earlier versions.
+- **Supabase pinned to 2.117.2** with a fingerprint check. It used to load
+  "the newest version 2" — seven untested updates since 2 September. Now it
+  only changes when we move the pin, and if the file ever arrives altered
+  the browser refuses it and the app carries on local-only. npm audit
+  watches the same version.
 
 ---
 

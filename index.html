@@ -254,7 +254,13 @@
 
 <datalist id="store-names"></datalist>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<!-- Supabase, pinned to one exact version. The integrity value is the file's
+     fingerprint: if a single character differs, the browser refuses it and
+     the app carries on local-only. To update: change the version here AND in
+     package.json (so npm audit watches the same one), then the fingerprint. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"
+        integrity="sha384-Rj26LVGvoeRVR6+mwQmFfcR3QOBEwT+ZmuCWpuiqeTzJpCs0ER4ITAWGb4Hiy3Ok"
+        crossorigin="anonymous"></script>
 <script src="aisles.js?v=4.3.2"></script>
 <script src="sync.js?v=4.3.2"></script>
 <script src="app.js?v=4.3.2"></script>
