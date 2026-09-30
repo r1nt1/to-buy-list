@@ -7,3 +7,6 @@
 
 # checking tools, installed by npm install
 node_modules/
+
+# Claude app settings for this Mac (e.g. how the browser pane starts the server)
+.claude/
