@@ -20,10 +20,26 @@ never ends. New trip has no use for him, and it would put bought things
   and taking two swipes from Low. Not the rejected progressive swipe: you
   tap a button, distance picks nothing. H/M/L stays in the open row too —
   swipes are invisible, every gesture keeps a visible button.
-- **Lucide icons** for the Priority and Stores tabs, and a Lucide icon as
-  the logo for now (ISC licence: free, keep the notice).
-- **Stores tab stays as it is** — 15+ stores, collapsed by default;
-  collapsing the greyed bought items too would be a second tap.
+- **Lucide icons** and a Lucide icon as the logo for now (ISC licence:
+  free, keep the notice).
+- **Low and Bought collapsed by default** (agreed 2026-10-01) — Low is the
+  parking bay (a treadmill can sit there for years); out of sight until
+  opened.
+- **Due items first within their own section** (agreed 2026-10-01) — Eggs
+  and Rice due → top of High. They never change priority; this softens
+  the "reminders never move anything" rule below to "never change
+  section".
+- **One list, one tab, a filter** (asked 2026-10-01, under discussion) —
+  back to a single Priority list, with a filter for store, aisle or
+  department. Stores leave the closed row (shown only in the open row) to
+  save space. Filtering narrows the list but keeps the High / Medium / Low
+  headings, so priority is still readable without colour. Replaces the
+  Stores tab.
+- **Priority by ink weight + headings, not colour** (agreed 2026-10-01) —
+  the critique found too many colours; palette B's coral/amber stripes go.
+- **New look: two directions to compare** (2026-10-01) — "modern notepad"
+  (reference 2's warmth + reference 1's calm structure) and "clean"
+  (reference 1 alone). Mockups first, then choose.
 
 ## The budget and prices (open, 2026-09-30)
 Kept as it is for now. It's for people who count every cent — Alex once
@@ -41,6 +57,31 @@ the receipt. A whole project: needs an AI/OCR service (cost, a key that
 can't live in public code → a small server), only works online, and
 Peruvian receipts abbreviate ("PALTA FTE KG") so matching often fails.
 Parked.
+
+## Spending instead of a budget? (open, 2026-10-01)
+Alex is leaning towards **removing the budget**: it takes space, needs
+re-setting daily/weekly/monthly, and only works if every item has an
+up-to-date price — a hassle for a shopping list. In its place, a
+**spending record**: every tick of an item that has a price is logged
+(date, item, price × qty). The app then shows spent this week / month, by
+department, and tapping a department lists its items (e.g. "bread: S/48
+this month"). Prices stay estimates; logging needs no extra step. Cost:
+medium — a purchase log in the saved data (small, backed up with the
+rest), a spending screen, and departments (see below).
+
+## A family monthly budget app (parked, 2026-10-01)
+The bigger idea: To buy list becomes one part of a family's monthly
+budget. Departments like **health, clothes, services, groceries**, each
+with its own budget; groceries is the list being built now. There a
+budget makes far more sense — people already think in monthly amounts per
+area, so they're willing to type prices.
+- **Bills** (water, light, internet …) belong here: fixed due dates, an
+  amount, a "paid" state — a different kind of item from shopping (which
+  has "bought N days ago"). Probably needs a new name for the app.
+- **Departments vs aisles:** aisles (Produce, Dairy …) sort things inside
+  groceries; departments (health, clothes, services, groceries) sort
+  spending. The aisle dictionary could map aisles → departments.
+- Revisit after v5.0.
 
 ## Parked (not built yet)
 - **Push notifications for reminders** (asked 2026-09-03). Possible on iPhone
@@ -89,7 +130,9 @@ Parked.
 - **The "budget runs out here" line.** Alphabetical order within a section
   cut through wanted items. The top bar (amber ≥80 %, red when over) replaces it.
 - **Whole-list total** — counts Low, the parking bay; headings total each tier.
-- **Reminders that move items** — they flag only. One picker, not pills.
+- **Reminders that move items to another section** — they flag only. One
+  picker, not pills. (Relaxed 2026-10-01: due items may sort first
+  *within* their section.)
 - **Stores/qty/price in the i sheet** — row only; two places was one too many.
 - **AI call for aisles** — dictionary instead: offline, free, no key in a
   public repo.
