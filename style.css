@@ -123,8 +123,11 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .bar { position: relative; height: 7px; border-radius: 4px; background: var(--line);
        margin: 8px 0 0; overflow: hidden; }
 .bar.idle { opacity: .45; }               /* no budget yet: nothing to fill against */
-.bar-cart { position: absolute; left: 0; top: 0; height: 100%; width: 0;
-            background: var(--accent); transition: width .2s; }
+/* Grows by scaling, not by width: a width change makes the browser redo
+   the layout every frame; a scale is drawn by the GPU and stays smooth. */
+.bar-cart { position: absolute; left: 0; top: 0; height: 100%; width: 100%;
+            transform: scaleX(0); transform-origin: left center;
+            background: var(--accent); transition: transform .2s ease-out; }
 .bar-cart.warn { background: var(--warn); }
 .bar-cart.over { background: var(--over); }
 
@@ -183,7 +186,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   position: absolute; top: calc(100% - 2px); left: 16px; right: 16px; z-index: 60;
   background: var(--surface); border: 1px solid var(--line);
   border-radius: 12px; overflow: hidden;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, .28);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);   /* one depth style: tight, offset */
 }
 .suggest-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -507,7 +510,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 6px 6px 6px 16px; border-radius: var(--radius);
   background: var(--surface); color: var(--text); border: 1px solid var(--line);
-  box-shadow: 0 6px 24px rgb(0 0 0 / 0.25); font-size: 15px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.2); font-size: 15px;
 }
 #toast-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #toast-undo {

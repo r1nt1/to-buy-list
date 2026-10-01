@@ -567,7 +567,7 @@ function renderBudget(cartSum) {
 
   const over = budget > 0 && cartSum > budget;
   const share = budget > 0 ? cartSum / budget : 0;
-  $('#bar-cart').style.width = Math.min(100, share * 100) + '%';
+  $('#bar-cart').style.transform = 'scaleX(' + Math.min(1, share) + ')';
   // Amber from 80% as a heads-up; red is kept for actually being over, so
   // that red still means something when it appears.
   $('#bar-cart').classList.toggle('warn', !over && share >= 0.8);
