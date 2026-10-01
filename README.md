@@ -4,8 +4,9 @@ A shopping list that understands you buy the same things again and again.
 
 Most list apps delete an item when you check it off. But buying rice doesn't mean rice
 stops existing — you'll want it again next week. So here **checking off never deletes**.
-When the shop is done, **New trip** unchecks everything, counts what you bought, and
-leaves the list ready for next time. Deleting is a separate, deliberate action.
+Ticking an item records the purchase and moves it to **Bought**; when you need it again,
+type it in the add box and it comes back with its store and price. Deleting is a separate,
+deliberate action (swipe left, with Undo).
 
 Live at <https://r1nt1.github.io/to-buy-list/> — add it to the iPhone Home Screen and it
 opens fullscreen like an app. Add `?demo=1` to the address to see a sample list
@@ -60,7 +61,7 @@ protects each person's list is Row Level Security in the database.
 |---|---|
 | `index.html` | The page: header, budget, add box, list, tabs, and the pop-up sheets |
 | `style.css`  | All the styling. Colours are CSS variables at the very top |
-| `app.js`     | All the behaviour: saving, drawing the list, adding, swipes, New trip |
+| `app.js`     | All the behaviour: saving, drawing the list, adding, swipes, Bought |
 | `aisles.js`  | The word → aisle dictionary and its typo-tolerant matching |
 | `sync.js`    | The optional cloud backup |
 | `bump-cache.sh` | Changes the `?v=` cache-buster so phones fetch fresh files |

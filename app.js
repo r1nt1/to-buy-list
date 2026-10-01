@@ -2,14 +2,17 @@
    To buy list — v4 (the exact version is the ?v= token in index.html)
 
    The idea in one sentence: an item is never deleted when you buy
-   it, it just gets unchecked by "New trip" and waits for next time.
+   it, it moves to Bought and waits there until you need it again.
 
    Every item carries two flags:
      inTrip  – is it on the list? Left over from the old All items
                tab; everything added is on it, and nothing in the
                screens turns it off any more.
-     done    – have I put it in the cart on THIS trip?
-   "New trip" clears done, counts the purchase, and keeps the item.
+     done    – is it bought? Ticking records the purchase there and
+               then (date and count). Adding it again — from the add
+               box or its suggestions — brings it back.
+   There is no "New trip" any more (v5.0): people shop a little most
+   days, not in trips.
    ================================================================= */
 
 // Read from this script's own ?v= token in index.html, so the label at the
@@ -329,7 +332,7 @@ function renderTrip() {
   renderBudget(cartSum);
 
   $('#trip-list').innerHTML =
-    dueHtml(pend) +
+    fakeTodayHtml() +
     // Stores tab: bought things stay in their shop, greyed out, and there is
     // no separate cart section — the question there is "what did I get
     // where, and what did it cost", so a store's total keeps counting them.
@@ -359,16 +362,11 @@ function groupHeadHtml({ attr, key, label, count, sum, open, tone = '' }) {
   '</div>';
 }
 
-function dueHtml(pend) {
-  const fake = (FAKE_TODAY
-    ? '<div class="fake-today">Pretending today is ' + esc(FAKE_TODAY) + '</div>' : '') +
-    '';   // (a ?demo list is silent on purpose — it should look like the real thing)
-  const due = pend.filter(isDue);
-  if (!due.length) return fake;
-  return fake + '<div class="due-banner">' + due.length +
-    (due.length > 1 ? ' things are' : ' thing is') + ' due: ' +
-    due.map((i) => esc(i.name)).sort().join(', ') +
-    '</div>';
+/* Only the ?today= testing note now. The "4 things are due: …" banner
+   went in v5.0 — it repeated the "due" badges already on the rows. */
+function fakeTodayHtml() {
+  return FAKE_TODAY
+    ? '<div class="fake-today">Pretending today is ' + esc(FAKE_TODAY) + '</div>' : '';
 }
 
 /* There used to be a "budget runs out here" line drawn across the list.
@@ -539,14 +537,14 @@ function chipsHtml(stores, field, id) {
 function emptyHtml(pend, onTrip) {
   if (pend.length) return '';
   return '<p class="empty">' + (onTrip.length
-    ? 'Everything is in the cart. 🎉<br>Tap <b>New trip</b> to uncheck it all for next time.'
-    : 'Nothing on this trip yet.<br>Start typing above — the box remembers everything<br>you have bought before.')
+    ? 'Everything is bought. 🎉<br>When you need something again, type it above —<br>it comes back with its store and price.'
+    : 'Nothing on your list yet.<br>Start typing above — the box remembers everything<br>you have bought before.')
     + '</p>';
 }
 
 function cartHtml(inCart, cartSum) {
   if (!inCart.length) return '';
-  return '<div class="group-head"><span class="gh-label plain">In cart · ' +
+  return '<div class="group-head"><span class="gh-label plain">Bought · ' +
          inCart.length + '</span>' +
          (cartSum > 0 ? '<span class="sum">' + money(cartSum) + '</span>' : '') +
          // no chevron here, but keep its width so the total lines up with
@@ -579,7 +577,7 @@ function renderBudget(cartSum) {
   // Just what's in the cart — the bar and its colour say how that compares
   // to the budget, so no "left"/"over" arithmetic.
   $('#budget-note').innerHTML = '<span class="budget-amount">' + money(cartSum) + '</span>' +
-    '<span class="budget-label">In cart</span>';
+    '<span class="budget-label">Bought</span>';
   $('#budget-note').classList.toggle('over', over);
 }
 
@@ -708,7 +706,7 @@ function handleClick(event) {
 
     case 'toggle-done':
       commitOpenRow();
-      update(() => { item.done = !item.done; openId = null; });
+      update(() => { setBought(item, !item.done); openId = null; });
       maybeCelebrate();
       break;
 
@@ -921,7 +919,7 @@ function setAddPri(p) {
 function reviveExisting(item, f) {
   update(() => {
     item.inTrip = true;
-    item.done = false;
+    needAgain(item);
     if (f.pri !== null)  item.priority = f.pri;
     if (f.qty > 1)       item.qty = f.qty;
     f.stores.forEach((st) => addStore(item, st));
@@ -938,7 +936,7 @@ function changeList(item, f) {
   const newStores = f.stores.filter((st) => !item.stores.includes(st));
   if (newStores.length) bits.push('add ' + newStores.join(' and ') + ' to its stores');
   if (f.price !== null && f.price !== item.price) bits.push('set its price to ' + money(f.price));
-  if (item.done)                                  bits.push('uncheck it');
+  if (item.done)                                  bits.push('take it out of Bought');
   return bits;
 }
 
@@ -1068,7 +1066,7 @@ function renderSuggestions() {
     '<button type="button" class="suggest-row" data-pick-item="' + i.id + '">' +
       '<span>' + esc(i.name) + '</span>' +
       '<span class="suggest-hint">' +
-        (i.done ? 'in cart' : 'already on your list') +
+        (i.done ? 'bought' : 'already on your list') +
       '</span>' +
     '</button>').join('');
   suggestBox.classList.remove('hidden');
@@ -1079,8 +1077,8 @@ suggestBox.addEventListener('click', (e) => {
   if (!btn) return;
   const item = findItem(btn.dataset.pickItem);
   if (!item) return;
-  // Tapping one means "I need this" — so bring it back out of the cart.
-  update(() => { item.done = false; });
+  // Tapping one means "I need this" — so bring it back out of Bought.
+  update(() => { needAgain(item); });
   $('#add-input').value = '';
   renderSuggestions();
   $('#add-input').focus();
@@ -1142,39 +1140,34 @@ $('#budget-input').addEventListener('keydown', (e) => {
 /* ---------------- view toggle ---------------- */
 
 
-/* ---------------- finish trip ---------------- */
-$('#new-trip').addEventListener('click', async () => {
-  commitOpenRow();
-  const bought = tripItems().filter((i) => i.done);
-
-  if (!bought.length) {
-    await ask('Nothing to reset',
-              'Nothing is checked off yet, so there is nothing to clear.',
-              { yes: 'OK', cancel: false });
-    return;
-  }
-
-  const ok = await ask(
-    'Start a new trip?',
-    bought.length + (bought.length > 1 ? ' items get' : ' item gets') +
-    ' marked as bought. Everything stays on your list — it just gets unchecked, ' +
-    'ready for next time.',
-    { yes: 'Start new trip', remember: 'newTrip' });
-  if (!ok) return;
-
-  const today = todayLocal();
-  update(() => {
-    for (const item of state.items) {
-      if (item.done) {
-        item.timesBought = (item.timesBought || 0) + 1;
-        item.lastBought = today;
-      }
-      item.done = false;      // unchecked, but it stays on the list
+/* ---------------- bought ----------------
+   Ticking records the purchase there and then — one more time bought,
+   and today's date — because there is no "New trip" any more to do it.
+   Unticking straight after (a mis-tap) puts the old record back, so a
+   stray tap never counts as shopping. */
+function setBought(item, done) {
+  if (done === !!item.done) return;
+  if (done) {
+    // Remember the record as it was, for as long as it stays ticked.
+    item.undoBought = { lastBought: item.lastBought || null, timesBought: item.timesBought || 0 };
+    item.timesBought = (item.timesBought || 0) + 1;
+    item.lastBought = todayLocal();
+  } else {
+    if (item.undoBought) {
+      item.lastBought = item.undoBought.lastBought;
+      item.timesBought = item.undoBought.timesBought;
     }
-    openId = null;
-  });
-  wasComplete = false;
-});
+    delete item.undoBought;
+  }
+  item.done = done;
+}
+
+/* Out of Bought because you need it again: the purchase really happened,
+   so its record stays. */
+function needAgain(item) {
+  delete item.undoBought;
+  item.done = false;
+}
 
 /* ---------------- tabs ---------------- */
 /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.tab')).forEach((tab) => {
@@ -1338,7 +1331,7 @@ function endSwipe() {
   if (!item) return;
 
   if (dx >= SWIPE_TRIGGER) {
-    update(() => { item.done = !item.done; });
+    update(() => { setBought(item, !item.done); });
     maybeCelebrate();
   } else if (dx <= -SWIPE_TRIGGER) {
     deleteWithUndo(item);

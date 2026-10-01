@@ -4,16 +4,17 @@
 Alex doesn't shop in trips: he buys a few things most days, so the list
 never ends. New trip has no use for him, and it would put bought things
 (diapers, just bought) back into High.
-- **"In cart" becomes "Bought"** — "In cart" sounds like something you're
-  about to pay for. Collapsed by default, newest first, each row dated
+- **"In cart" becomes "Bought"** — DONE (2026-10-01): the heading and the
+  budget line say Bought. Still to do: collapsed by default, newest first, each row dated
   (*Diapers · 3 days ago*). It never needs clearing: it already works as
   the memory of everything bought — open it and tap, or type the name in
   the add box and the same item comes back with its store, priority and
   price. Other names considered: Recently bought (implies items drop off),
   History (sounds rarely opened), Got it (vague).
-- **Ticking records the purchase** (lastBought, timesBought) at once, not
-  at New trip — so "bought 3 days ago" and reminders become true.
-- **New trip goes.** Nothing replaces it.
+- **Ticking records the purchase** (lastBought, timesBought) at once —
+  DONE (2026-10-01); unticking straight after restores the old record.
+- **New trip goes.** DONE (2026-10-01), with the "N things are due"
+  banner (it repeated the row badges).
 - **Swipe right = H/M/L picker.** The row slides aside to show H, M, L
   (current one lit); tap one. Fixes "move up one" doing nothing on High
   and taking two swipes from Low. Not the rejected progressive swipe: you

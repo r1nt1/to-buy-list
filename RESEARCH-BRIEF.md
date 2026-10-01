@@ -24,10 +24,11 @@ it disappears. Groceries don't work that way. Buying rice doesn't mean you stop
 needing rice — you'll want it again next week.
 
 So in this app **checking an item off never deletes it**. Every item is
-permanent. At the end of a shop you tap "New trip", which unchecks everything,
-records what was bought and when, and leaves the list intact, ready for next
-time. The list is a standing inventory of things you buy, not a queue of tasks
-that empties.
+permanent. Ticking an item records when it was bought and moves it to a
+"Bought" section; when you need it again you type it and it comes back with
+its store and price. There are no "trips" to start or finish — people buy a
+few things most days. The list is a standing inventory of things you buy, not
+a queue of tasks that empties.
 
 Deleting is a separate, explicit action.
 

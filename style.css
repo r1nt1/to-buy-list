@@ -449,12 +449,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   background: color-mix(in srgb, var(--remind) 16%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--remind) 35%, var(--line));
 }
-.due-banner {
-  margin: 4px 2px 0; padding: 10px 13px; border-radius: 10px;
-  font-size: 14px; line-height: 1.4; color: var(--remind);
-  background: color-mix(in srgb, var(--remind) 11%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--remind) 30%, var(--line));
-}
 .repeat-days input { max-width: 150px; }
 
 /* ---------------- store chips ----------------

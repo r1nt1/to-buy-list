@@ -35,9 +35,9 @@ bought before comes back in one tap with its store, priority and price.
 ## Operating Context
 
 - Used in shops, often with no signal, often one-handed, often in a hurry.
-- Shopping is continuous, not in trips: a few items on most days. The
-  "New trip" button exists but has no use in this pattern (to be removed
-  in v5.0, see IDEAS.md).
+- Shopping is continuous, not in trips: a few items on most days. So
+  there is no "New trip" (removed in v5.0): ticking records the purchase,
+  and bought things wait in Bought until needed again.
 - Stores are typed freely (Metro, Plaza Vea, Wong, Sodimac …); Alex has
   15+ of them. Item names are Spanish or English.
 - Currency is Peruvian soles, written `S/`.
@@ -61,8 +61,8 @@ bought before comes back in one tap with its store, priority and price.
   is used most. Items in Spanish and English, prices in S/; the app's own
   words stay English. Plain HTML/CSS/JS files on GitHub Pages, no build
   step (revisit only if it ever ships to strangers).
-- Terminology: "High / Medium / Low", "In cart" (planned rename to
-  "Bought"), "store" for a shop, "aisle" for a category inside one.
+- Terminology: "High / Medium / Low", "Bought" (was "In cart" until
+  v5.0), "store" for a shop, "aisle" for a category inside one.
 
 ## Brand Commitments
 
