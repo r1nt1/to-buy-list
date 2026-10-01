@@ -289,7 +289,11 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   flex: none; width: 24px; height: 24px; min-height: 24px; padding: 0;
   border-radius: 50%; border: 1.5px solid var(--line); background: transparent;
   font-size: 13px; line-height: 1; color: transparent;
+  position: relative;
 }
+/* The circle looks 24px but answers taps across 44×44 — Apple's minimum
+   for a thumb, one-handed, in a shop. A near-miss used to open the row. */
+.check::after { content: ''; position: absolute; inset: -11.5px; }   /* 10px + the 1.5px border */
 .row.done .check { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 
 .row-main {
