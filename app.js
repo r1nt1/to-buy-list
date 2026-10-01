@@ -450,10 +450,10 @@ function rowHtml(item) {
   const due = isDue(item);
 
   return '' +
-    '<div class="swipe-wrap' + (item.priority === 3 ? ' will-delete' : '') + '">' +
+    '<div class="swipe-wrap">' +
       '<div class="swipe-bg">' +
         '<span class="sb-l">' + (item.done ? '↩ put back' : '✓ bought') + '</span>' +
-        '<span class="sb-r">' + (item.priority === 3 ? 'delete' : 'send to Low') + '</span>' +
+        '<span class="sb-r">delete</span>' +
       '</div>' +
       // The priority is a colour stripe down the left edge rather than a
       // number — a "1" next to Chicken read like "buy one chicken".
@@ -1262,8 +1262,7 @@ $('#info-form').addEventListener('submit', () => {
 
 async function confirmDelete(item) {
   const ok = await ask('Delete "' + item.name + '"?',
-                       'It goes for good. This is the only thing in the app that really ' +
-                       'deletes something.',
+                       'It goes for good.',
                        { yes: 'Delete', danger: true, remember: 'delete' });
   if (!ok) return;
   update(() => {
@@ -1281,9 +1280,9 @@ $('#info-delete').addEventListener('click', () => {
 
 /* ---------------------------------------------------------------
    7. Swipe
-   Swipe a row right to mark it bought, left to choose its store.
-   Both actions also have ordinary buttons, so a gesture is never
-   the only way to do something.
+   Swipe a row right to mark it bought, left to delete it (with an
+   Undo bar, so a stray swipe costs nothing). Both actions also have
+   ordinary buttons, so a gesture is never the only way to do something.
    --------------------------------------------------------------- */
 
 const SWIPE_TRIGGER = 70;   // how far you must drag before it counts
@@ -1342,13 +1341,43 @@ function endSwipe() {
     update(() => { item.done = !item.done; });
     maybeCelebrate();
   } else if (dx <= -SWIPE_TRIGGER) {
-    // Two stages: anything above Low gets demoted to Low. Only something
-    // already sitting in Low is actually deleted — so a stray swipe can
-    // never destroy something you cared about.
-    if (item.priority === 3) confirmDelete(item);
-    else update(() => { item.priority = 3; });
+    deleteWithUndo(item);
   }
 }
+
+/* ---------------- delete, with an Undo bar ----------------
+   A swipe deletes straight away — no question first — and a bar at the
+   bottom offers Undo for a few seconds. Undo puts the item back exactly
+   where it was. A second delete while the bar is up makes the first one
+   final and offers Undo for the new one. */
+
+const UNDO_MS = 5000;
+let undoable = null;   // { item, index } — the last thing deleted
+let undoTimer = null;
+
+function deleteWithUndo(item) {
+  const index = state.items.indexOf(item);
+  if (index === -1) return;
+  update(() => { state.items.splice(index, 1); });
+  undoable = { item, index };
+  $('#toast-text').textContent = item.name + ' deleted';
+  $('#toast').classList.remove('hidden');
+  clearTimeout(undoTimer);
+  undoTimer = setTimeout(hideUndo, UNDO_MS);
+}
+
+function hideUndo() {
+  clearTimeout(undoTimer);
+  undoable = null;
+  $('#toast').classList.add('hidden');
+}
+
+$('#toast-undo').addEventListener('click', () => {
+  if (!undoable) return;
+  const { item, index } = undoable;
+  update(() => { state.items.splice(Math.min(index, state.items.length), 0, item); });
+  hideUndo();
+});
 
 window.addEventListener('pointerup', endSwipe);
 window.addEventListener('pointercancel', endSwipe);
