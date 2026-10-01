@@ -2,7 +2,8 @@
 import js from '@eslint/js';
 
 export default [
-  { ignores: ['node_modules/'] },
+  // .claude/ holds tools for this Mac (e.g. the Impeccable skill), not app code.
+  { ignores: ['node_modules/', '.claude/'] },
   js.configs.recommended,
   {
     files: ['aisles.js', 'sync.js', 'app.js'],
