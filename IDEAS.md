@@ -1,5 +1,46 @@
 # Ideas parked, and things decided against
 
+## Planned for v5.0 (agreed 2026-09-30, details after the Impeccable critique)
+Alex doesn't shop in trips: he buys a few things most days, so the list
+never ends. New trip has no use for him, and it would put bought things
+(diapers, just bought) back into High.
+- **"In cart" becomes "Bought"** — "In cart" sounds like something you're
+  about to pay for. Collapsed by default, newest first, each row dated
+  (*Diapers · 3 days ago*). It never needs clearing: it already works as
+  the memory of everything bought — open it and tap, or type the name in
+  the add box and the same item comes back with its store, priority and
+  price. Other names considered: Recently bought (implies items drop off),
+  History (sounds rarely opened), Got it (vague).
+- **Ticking records the purchase** (lastBought, timesBought) at once, not
+  at New trip — so "bought 3 days ago" and reminders become true.
+- **New trip goes.** Nothing replaces it.
+- **Swipe right = H/M/L picker.** The row slides aside to show H, M, L
+  (current one lit); tap one. Fixes "move up one" doing nothing on High
+  and taking two swipes from Low. Not the rejected progressive swipe: you
+  tap a button, distance picks nothing. H/M/L stays in the open row too —
+  swipes are invisible, every gesture keeps a visible button.
+- **Lucide icons** for the Priority and Stores tabs, and a Lucide icon as
+  the logo for now (ISC licence: free, keep the notice).
+- **Stores tab stays as it is** — 15+ stores, collapsed by default;
+  collapsing the greyed bought items too would be a second tap.
+
+## The budget and prices (open, 2026-09-30)
+Kept as it is for now. It's for people who count every cent — Alex once
+did. He doesn't type prices so the bar stays hidden, which costs him
+section totals; an opt-in setting is the fix if that bothers him.
+**Working rule: prices are estimates, not facts** — the app remembers the
+last price; edit it only when it surprises you. The budget answers "will
+this roughly fit?". The real problem is for v5.0: with Bought never
+emptying, "in cart" grows forever, so the budget needs a new meaning
+(spent this week/month, from the purchase dates). Options, simplest first:
+1. Estimates (above). 2. A price per shop (avocados Metro S/3, Wong S/5) —
+accurate but more typing. 3. Confirm the price when ticking — the moment
+you know what you paid; optional. 4. **Receipt photo** — reads prices off
+the receipt. A whole project: needs an AI/OCR service (cost, a key that
+can't live in public code → a small server), only works online, and
+Peruvian receipts abbreviate ("PALTA FTE KG") so matching often fails.
+Parked.
+
 ## Parked (not built yet)
 - **Push notifications for reminders** (asked 2026-09-03). Possible on iPhone
   for a Home Screen app since iOS 16.4, but it needs three new pieces: a
@@ -64,6 +105,6 @@
   position is still exact (no circle = name box starts at the row edge).
 
 ## Still open
-v4.3.1 is live (2026-09-04); everything is merged into `main` and there
-are no other branches. Next candidates: Stats (the easy first win above),
-a real logo (the header one is a placeholder), and the settings menu.
+v4.3.2 is live (2026-09-29). v4.4 in progress: swipe left = delete with
+undo, H/M/L to the right of the open row (one-handed use), palette B, then
+an Impeccable critique of the whole app. v5.0 after that (above).
