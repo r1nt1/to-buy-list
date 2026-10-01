@@ -343,7 +343,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 .open-controls {
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px 8px; margin-top: 10px;
-  justify-content: space-between;   /* priority left, quantity middle, price right */
+  justify-content: space-between;   /* price left, quantity middle, priority right */
 }
 .price-wrap {
   display: inline-flex; align-items: center; flex: none;
@@ -357,21 +357,22 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 .price-wrap:focus-within { border-color: var(--accent); }
 .price-wrap .field-price:focus { outline: none; }
-/* order, not markup order: the price stays beside the priority buttons even
-   when the store chips drop to their own line below them */
-.open-controls .pri-group { order: 0; }
+/* order, not markup order. Priority is on the RIGHT, under a right thumb —
+   it's the control used most (2026-10-01, for one-handed use). The price
+   moved to the left in exchange. The stores still drop to their own line. */
+.open-controls .price-wrap { order: 0; }
 .qty-step {
-  order: 0; display: inline-flex; align-items: center; flex: none;
+  order: 1; display: inline-flex; align-items: center; flex: none;
   border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden;
 }
 .qty-btn { width: 30px; min-height: 38px; padding: 0; border: none; border-radius: 0;
            background: transparent; color: var(--muted); font-size: 18px; }
 .qty-val { min-width: 24px; text-align: center; font-weight: 600; font-size: 15px; }
-.open-controls .price-wrap { order: 1; }
+.open-controls .pri-group { order: 2; }
 /* The stores always get their own line. Sharing the first line with the
    priority and price left a box too narrow for two shops, so a second chip
    stacked underneath the first instead of sitting beside it. */
-.open-controls .chips { order: 2; flex-basis: 100%; }
+.open-controls .chips { order: 3; flex-basis: 100%; }
 
 /* One control with three segments, the chosen one filled — rather than
    three separate buttons, so it reads as a single decision. */
