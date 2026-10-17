@@ -8,6 +8,31 @@ everything else. The running version shows at the bottom of the list.
 
 ---
 
+## v5.0 — 2026-10-16
+
+The app works differently in a few places; the look is the same as 4.3.2.
+
+- **Ticking an item means you bought it.** It records the purchase right
+  away (the date, one more time bought) and moves the item to **Bought**
+  (was "In cart"). Untick straight after and the old record comes back, so
+  a mis-tap never counts.
+- **New trip is gone.** You shop a little most days, so there's no trip to
+  close; it would also have put just-bought things back into High.
+- **The "things are due" banner is gone.** The blue "due" badge on each
+  row already says it.
+- **Swipe left deletes any item**, with a bar saying "Milk deleted · Undo"
+  for 5 seconds. Undo puts it back exactly where it was. (It used to send
+  High/Medium to Low first and only delete from Low.)
+- **H / M / L sit on the right** of an open row and the add box, under
+  your thumb; the price moves to the left.
+- **The tick circle is easier to hit:** it answers taps across 44×44 while
+  still looking 24px, so a near-miss no longer opens the row.
+- **Budget line** reads "S/10.00 Bought"; its bar now grows smoothly.
+- Palette B (coral / amber) was tried and put back: colours stay palette C
+  until the new look is chosen.
+
+---
+
 ## v4.3.2 — 2026-09-29
 
 Nothing looks different — this round is housekeeping behind the scenes.
