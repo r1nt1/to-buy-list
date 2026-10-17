@@ -94,7 +94,7 @@ function demoState() {
       it('Tomatoes', 1, { stores: ['plaza vea'] }),
       it('Olive oil', 2, { stores: ['wong'], note: 'the big bottle, not the small one' }),
       it('Coffee', 2, { stores: ['metro'], repeatDays: 14, lastBought: d(20), timesBought: 9 }),
-      it('Bananas', 2, { done: true, lastBought: d(0), timesBought: 12 }),
+      it('Bananas', 2, { done: true, lastBought: d(3), timesBought: 12 }),
       it('Dish soap', 2, { stores: ['plaza vea'], repeatDays: 60, lastBought: d(30), timesBought: 4 }),
       it('Yogurt 4', 2, { stores: ['wong'] }),
       it('Pasta', 2, { stores: ['metro', 'plaza vea'] }),
@@ -296,6 +296,12 @@ function isDue(item) {
 }
 
 const byName    = (a, b) => a.name.localeCompare(b.name);
+// Due things go to the top of their own section — they never change
+// section (v5.1; the old rule was that reminders move nothing at all).
+const dueFirst  = (a, b) => Number(isDue(b)) - Number(isDue(a)) || byName(a, b);
+// Bought: the most recent first. Things ticked before v5.0 have no date and
+// sit at the bottom. 'YYYY-MM-DD' stamps sort correctly as plain text.
+const byNewest  = (a, b) => (b.lastBought || '').localeCompare(a.lastBought || '') || byName(a, b);
 const findItem  = (id) => state.items.find((i) => i.id === id);
 const tripItems = () => state.items.filter((i) => i.inTrip);
 // Which store headings an item belongs under. Something with no store at
@@ -331,7 +337,7 @@ function closeRow()  { if (openId === null) return; openId = null; render(); }
 
 function renderTrip() {
   const onTrip  = tripItems();
-  const inCart  = onTrip.filter((i) => i.done).sort(byName);
+  const inCart  = onTrip.filter((i) => i.done).sort(byNewest);
   const pend    = onTrip.filter((i) => !i.done);
 
   $('#trip-list').innerHTML =
@@ -373,7 +379,7 @@ function fakeTodayHtml() {
 function byPriorityHtml(pend) {
   let html = '';
   for (const p of PRIORITIES) {
-    const group = pend.filter((i) => i.priority === p).sort(byName);
+    const group = pend.filter((i) => i.priority === p).sort(dueFirst);
     if (!group.length) continue;
     const open = !state.collapsedPri.includes(p);
     html += groupHeadHtml({ attr: 'data-pri', key: p, label: PRI_LABEL[p],
@@ -413,7 +419,7 @@ function byStoreHtml(pend) {
     // priority view, so a 1 is never buried under a 2.
     // An item tagged with two shops appears under both.
     const group = pend.filter((i) => storesOf(i).includes(store))
-                      .sort((a, b) => a.done - b.done || a.priority - b.priority || byName(a, b));
+                      .sort((a, b) => a.done - b.done || a.priority - b.priority || dueFirst(a, b));
     const isOpen = state.expanded.includes(store);
 
     html += groupHeadHtml({ attr: 'data-store', key: store, label: store,
@@ -459,6 +465,8 @@ function rowHtml(item) {
           '</span>' +
           (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
           (due ? '<span class="row-sub row-due">bought ' + ago(item.lastBought) + '</span>' : '') +
+          // In Bought, when — the list's memory of what you got (v5.1).
+          (item.done && item.lastBought ? '<span class="row-sub">bought ' + ago(item.lastBought) + '</span>' : '') +
           (item.note ? '<span class="row-note">' + esc(item.note) + '</span>' : '') +
         '</button>' +
       '</div>' +
