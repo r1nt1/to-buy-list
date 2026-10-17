@@ -53,7 +53,12 @@
       <form class="add" id="add-form">
         <input id="add-input" placeholder="Add an item…" autocomplete="off"
                enterkeyhint="done">
-        <button type="submit">Add</button>
+        <button type="submit" aria-label="Add">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+               stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/><path d="M12 5v14"/>
+          </svg>
+        </button>
       </form>
       <!-- Always visible. None of it has to be filled in — typing a name and
            pressing Add still works on its own — but when you do want an item
@@ -61,7 +66,7 @@
       <!-- Hidden until you tap into the box, so the home screen stays
            clean. It stays while you're typing, and goes again once the box
            is empty and you've tapped elsewhere. -->
-      <!-- the same three capsules as an open row, store beneath -->
+      <!-- the same line as an open row: H/M/L left, stores right -->
       <div class="add-more open-controls hidden" id="add-more">
         <div class="pri-group" id="add-pri">
           <button type="button" class="pri v1" data-add-pri="1">H</button>

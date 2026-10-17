@@ -470,8 +470,8 @@ function openRowHtml(item) {
         // A big, obvious way out — tapping empty space to close was fiddly.
         '<button class="info-btn done-btn" data-act="close" aria-label="Done">✓</button>' +
       '</div>' +
-      // One line, the way it was before stores could be plural. The chip box
-      // only grows when you actually put a second shop in it.
+      // One line: H/M/L on the left, stores on the right (v5.1). The chip
+      // box only grows when you actually put more shops in it.
       '<div class="open-controls">' +
         '<div class="pri-group">' + pri + '</div>' +
         chipsHtml(item.stores, 'store-add') +

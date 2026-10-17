@@ -69,7 +69,9 @@ main {
 /* ---------------- top bar ---------------- */
 .topbar {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: calc(26px + env(safe-area-inset-top)) 0 18px;
+  /* 6px under the title (was 18): with the add box's own 15px, the gap
+     from title to box is about half what it was (v5.1). */
+  padding: calc(26px + env(safe-area-inset-top)) 0 6px;
 }
 .count { color: var(--muted); font-size: 15px; }
 
@@ -103,9 +105,9 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .add-wrap {
   position: relative; position: sticky; top: env(safe-area-inset-top, 0px);
   z-index: 20;
-  /* 20px bar padding + 7 = 27, the same as the gap between the budget box
-     and the add row (12 + 15). (The 7 swallows the next block's own 4px
-     top margin — touching vertical margins merge, the larger one wins.) */
+  /* 20px bar padding + 7 = 27 down to the first heading. (The 7 swallows
+     the next block's own 4px top margin — touching vertical margins merge,
+     the larger one wins.) */
   margin: 0 -16px 7px; padding: 15px 16px 20px;
 }
 /* Solid, the same dark as the page. (A frosted-glass version was tried and
@@ -135,7 +137,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   position: absolute; left: 0; right: 0; top: calc(100% - 1px); z-index: 20;
   margin: 0; padding: 0 16px 20px;   /* twice the inner gap: the bar ends with a clear margin */
 }
-.add-more .chips { order: 2; flex-basis: 100%; }
 .add-more .chips:focus-within { border-color: var(--accent); }
 /* No priority is lit until you tap one — see addFields(). */
 
@@ -161,7 +162,9 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   background: color-mix(in srgb, var(--accent) 6%, var(--surface));
 }
 .add input:focus { border-color: var(--accent); outline: none; }
-.add button { min-height: 50px; padding: 0 20px; border-radius: 12px;
+/* A square "+" rather than the word Add (v5.1). */
+.add button { flex: none; width: 50px; min-height: 50px; padding: 0; border-radius: 12px;
+              display: inline-flex; align-items: center; justify-content: center;
               background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 
 
@@ -296,15 +299,14 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   border: 1px solid var(--line); border-radius: 8px;
   background: var(--surface); color: var(--text);
 }
+/* One line: H/M/L on the left, the stores filling the rest on the right,
+   under the thumb — priority is mostly set by swiping right now (v5.1).
+   With prices and quantities gone there is room for a couple of shops; the
+   chip box wraps inside itself when there are more. */
 .open-controls {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 8px; margin-top: 10px;
-  justify-content: space-between;   /* price left, quantity middle, priority right */
+  display: flex; align-items: center; gap: 8px; margin-top: 10px;
 }
-.open-controls .pri-group { order: 2; }
-/* The stores always get their own line. Sharing the first line with the
-   priority and price left a box too narrow for two shops, so a second chip
-   stacked underneath the first instead of sitting beside it. */
-.open-controls .chips { order: 3; flex-basis: 100%; }
+.open-controls .chips { flex: 1 1 auto; }
 
 /* One control with three segments, the chosen one filled — rather than
    three separate buttons, so it reads as a single decision. */
