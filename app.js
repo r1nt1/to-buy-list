@@ -469,9 +469,10 @@ function rowHtml(item) {
   return '' +
     '<div class="swipe-wrap">' +
       '<div class="swipe-bg">' +
-        // Swipe right uncovers H / M / L; it stays open for a tap (v5.1).
-        '<span class="sb-l pri-group" data-id="' + item.id + '">' +
-          PRIORITIES.map((p) => '<button class="pri v' + p +
+        // Swipe right uncovers H / M / L, three blocks in their own colours;
+        // it stays open for a tap (v5.1).
+        '<span class="sb-l pick-group" data-id="' + item.id + '">' +
+          PRIORITIES.map((p) => '<button class="pick v' + p +
             (!item.done && item.priority === p ? ' on' : '') +
             '" data-act="pick" data-value="' + p + '" tabindex="-1">' + PRI_SHORT[p] + '</button>').join('') +
         '</span>' +
@@ -1038,16 +1039,6 @@ document.addEventListener('pointerdown', (e) => {
   if (active && wrap.contains(active)) active.blur();
   setTimeout(syncAddMore, 0);
 });
-// iPhone Safari often leaves the box focused when you tap a row or a
-// heading (things that can't take focus themselves), so the line stayed up.
-// A touch anywhere outside the add box, while it's empty, counts as leaving.
-document.addEventListener('pointerdown', (e) => {
-  const wrap = $('.add-wrap');
-  if (wrap.contains(/** @type {Node} */ (e.target)) || $('#add-input').value.trim()) return;
-  const active = /** @type {HTMLElement | null} */ (document.activeElement);
-  if (active && wrap.contains(active)) active.blur();
-  setTimeout(syncAddMore, 0);
-});
 
 $('#add-pri').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-add-pri]');
@@ -1286,7 +1277,7 @@ let picking = null;         // the row held open on its H / M / L
 function openPicker(row, wrap) {
   const pick = /** @type {HTMLElement} */ (wrap.querySelector('.sb-l'));
   wrap.classList.add('sw-right', 'picking');
-  row.style.transform = 'translateX(' + (pick.offsetWidth + 24) + 'px)';
+  row.style.transform = 'translateX(' + pick.offsetWidth + 'px)';
   picking = { row, wrap };
 }
 
