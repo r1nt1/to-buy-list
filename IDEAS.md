@@ -1,48 +1,44 @@
 # Ideas parked, and things decided against
 
-## Planned for v5.0 (agreed 2026-09-30, details after the Impeccable critique)
-Alex doesn't shop in trips: he buys a few things most days, so the list
-never ends. New trip has no use for him, and it would put bought things
-(diapers, just bought) back into High.
-- **"In cart" becomes "Bought"** — DONE (2026-10-01): the heading and the
-  budget line say Bought. Still to do: collapsed by default, newest first, each row dated
-  (*Diapers · 3 days ago*). It never needs clearing: it already works as
-  the memory of everything bought — open it and tap, or type the name in
-  the add box and the same item comes back with its store, priority and
-  price. Other names considered: Recently bought (implies items drop off),
-  History (sounds rarely opened), Got it (vague).
-- **Ticking records the purchase** (lastBought, timesBought) at once —
-  DONE (2026-10-01); unticking straight after restores the old record.
-- **New trip goes.** DONE (2026-10-01), with the "N things are due"
-  banner (it repeated the row badges).
-- **Swipe right = H/M/L picker.** The row slides aside to show H, M, L
-  (current one lit); tap one. Fixes "move up one" doing nothing on High
-  and taking two swipes from Low. Not the rejected progressive swipe: you
-  tap a button, distance picks nothing. H/M/L stays in the open row too —
-  swipes are invisible, every gesture keeps a visible button.
-- **Lucide icons** and a Lucide icon as the logo for now (ISC licence:
-  free, keep the notice).
-- **Low and Bought collapsed by default** (agreed 2026-10-01) — Low is the
-  parking bay (a treadmill can sit there for years); out of sight until
-  opened.
-- **Due items first within their own section** (agreed 2026-10-01) — Eggs
-  and Rice due → top of High. They never change priority; this softens
-  the "reminders never move anything" rule below to "never change
-  section".
-- **One list, one tab, a filter** (asked 2026-10-01, under discussion) —
-  back to a single Priority list, with a filter for store, aisle or
-  department. Stores leave the closed row (shown only in the open row) to
-  save space. Filtering narrows the list but keeps the High / Medium / Low
-  headings, so priority is still readable without colour. Replaces the
-  Stores tab.
-- **Priority by ink weight + headings, not colour** (agreed 2026-10-01) —
-  the critique found too many colours; palette B's coral/amber stripes go.
-- **New look: two directions to compare** (2026-10-01) — "modern notepad"
-  (reference 2's warmth + reference 1's calm structure) and "clean"
-  (reference 1 alone). Mockups first, then choose.
+## v5.1 — agreed 2026-10-16 (v5.0 went live the same day)
+Alex: keep the look (palette C) and get the app working the way he wants
+first; the new aesthetic comes after.
+- **Low and Bought start collapsed**, and remember what you last did
+  (open one and it stays open next time).
+- **Due items first** within their own section (they still never change
+  section).
+- **Bought: newest first, each row dated** (*Diapers · 3 days ago*). It is
+  the memory of everything bought: tap it, or type the name, to bring it back.
+- **No prices, no quantities, no budget** — keep it simple. The price box,
+  the quantity stepper, the budget bar and the section totals all go, and
+  the stored prices, quantities and budget amount are deleted from saved
+  data (Alex's choice: not kept hidden). Need four? Type it in the name:
+  "Eggs 4" or "Eggs x4". Prices may come back one day (see below).
+- **Add box: one line under it** — H/M/L on the left, stores on the right
+  (under the thumb: priority is mostly set by swiping now). The green Add
+  button becomes "+". The open row uses the same line.
+- **Swipe right = H/M/L picker**: the row slides aside to show H, M, L
+  (current one lit); tap one. Ticking is the check circle only. On a
+  Bought row, picking a priority brings it back into that section.
+- **The open row covers the list instead of pushing it down** — nothing
+  below moves when you tap an item (the old "item never moves" rule, back).
+- **Three tabs: Priority, Stores, Aisles.** Aisles groups the whole list by
+  aisle across every shop. Store and aisle headings in the normal text
+  colour (they were Medium's grey). The "Group by aisle" switch inside
+  Stores goes — the Aisles tab replaces it.
+- **Lucide icons** (free, ISC licence — keep the notice) for the tabs, the
+  logo and the small controls.
+- **Less space between the title and the add box.**
 
-## The budget and prices (open, 2026-09-30)
-Kept as it is for now. It's for people who count every cent — Alex once
+## A menu instead of the lone cloud icon (idea, 2026-10-16)
+The cloud icon floats alone top right. Replace it with a menu button
+(hamburger or similar); inside: **backup** (the cloud, moved here),
+**profile**, **stats** (times bought, by item and by aisle/department —
+timesBought and lastBought are already recorded), **delete account**.
+Later — not part of v5.1.
+
+## The budget and prices (REMOVED in v5.1, 2026-10-16 — notes kept for if they return)
+Was kept as it was until v5.0. It's for people who count every cent — Alex once
 did. He doesn't type prices so the bar stays hidden, which costs him
 section totals; an opt-in setting is the fix if that bothers him.
 **Working rule: prices are estimates, not facts** — the app remembers the
@@ -107,7 +103,8 @@ area, so they're willing to type prices.
 - **Stats** — timesBought/lastBought are already recorded, just not shown.
   "Popcorn × 14 this year" needs no new plumbing. Easy first win.
 - **Profile/settings menu** — a small header button, not the bottom bar
-  (that stays "which arrangement am I looking at").
+  (that stays "which arrangement am I looking at"). Fleshed out above
+  (2026-10-16).
 - **Sharing to social** — serves attracting *other* users, not weekly use;
   revisit once the daily version is finished.
 - **Sync across devices** — direction agreed: managed backend (Supabase).
@@ -142,13 +139,14 @@ area, so they're willing to type prices.
 - **Fourth "none" priority** — Low already means "not this trip".
 - **Progressive swipe** (distance picks priority) — needs precision, no haptics.
 
-## Rule relaxed
+## Rule relaxed, then restored
 - "The item never moves when opened" — held from v2.0 to v4.2. Relaxed on
   2026-09-04 for the *vertical* only: the open row drops the check circle and
-  gets 15 px top/bottom, so the name shifts down a little. Horizontal
-  position is still exact (no circle = name box starts at the row edge).
+  gets 15 px top/bottom, so the name shifts down a little. **Restored in
+  v5.1** (Alex, 2026-10-16): the row keeps its height and its controls float
+  over the list below, so nothing moves.
 
 ## Still open
-v4.3.2 is live (2026-09-29). v4.4 in progress: swipe left = delete with
-undo, H/M/L to the right of the open row (one-handed use), palette B, then
-an Impeccable critique of the whole app. v5.0 after that (above).
+v5.0 is live (2026-10-16), palette C. v5.1 in progress (above). The new
+look (yellow pad v2 and others, mockups in ~/Developer/artifacts) waits
+until the app works the way Alex wants.
