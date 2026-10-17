@@ -113,7 +113,10 @@ function seedState() {
   return {
     schema: 2, mode: 'priority',
     expanded: [],        // which store groups are open — none, to begin with
-    collapsedPri: [],    // which priority sections are shut — none, to begin with
+    // Which sections are shut: Low (the parking bay) and Bought (which never
+    // empties) start shut, and after that it's whatever you last did.
+    collapsedPri: [3, 'bought'],
+    collapseDefaults: true,
     byAisle: false,      // group by aisle? off unless you switch it on
     skipAsk: {},         // confirmations you've ticked "don't ask me again" on
     items: [
@@ -168,6 +171,7 @@ function load() {
         if (!Array.isArray(parsed.expanded)) parsed.expanded = [];
         parsed.expanded = parsed.expanded.map((s) => String(s).toLowerCase());
         if (!Array.isArray(parsed.collapsedPri)) parsed.collapsedPri = [];
+        collapseDefaults(parsed);
         if (typeof parsed.byAisle !== 'boolean') parsed.byAisle = false;
         if (!parsed.skipAsk || typeof parsed.skipAsk !== 'object') parsed.skipAsk = {};
         delete parsed.budget;   // the budget went in v5.1
@@ -184,6 +188,14 @@ function load() {
     console.warn('Saved data could not be read, starting fresh.', err);
   }
   return seedState();
+}
+
+/* v5.1: Low and Bought start shut. A list saved before that gets them shut
+   once, on its first load; from then on they stay however you leave them. */
+function collapseDefaults(s) {
+  if (s.collapseDefaults) return;
+  s.collapsedPri = [...new Set([...s.collapsedPri, 3, 'bought'])];
+  s.collapseDefaults = true;
 }
 
 const DEMO = new URLSearchParams(location.search).has('demo');
@@ -509,10 +521,10 @@ function emptyHtml(pend, onTrip) {
 
 function cartHtml(inCart) {
   if (!inCart.length) return '';
-  return '<div class="group-head"><span class="gh-label plain">Bought · ' +
-         inCart.length + '</span>' +
-         '<span class="gh-caret-space"></span></div>' +
-         '<div class="card">' + inCart.map(rowHtml).join('') + '</div>';
+  const open = !state.collapsedPri.includes('bought');
+  return groupHeadHtml({ attr: 'data-pri', key: 'bought', label: 'Bought',
+                         count: inCart.length, open }) +
+         (open ? '<div class="card">' + inCart.map(rowHtml).join('') + '</div>' : '');
 }
 
 /* ---------------------------------------------------------------
@@ -618,7 +630,9 @@ function handleClick(event) {
 
   const priHead = event.target.closest('[data-pri]');
   if (priHead) {                               // collapse / expand a priority section
-    const p = Number(priHead.dataset.pri);
+    // Priority sections are numbers; Bought is the word 'bought'.
+    const raw = priHead.dataset.pri;
+    const p = raw === 'bought' ? raw : Number(raw);
     update(() => {
       state.collapsedPri = state.collapsedPri.includes(p)
         ? state.collapsedPri.filter((n) => n !== p)
@@ -1367,6 +1381,7 @@ function adoptFromCloud(data) {
   // An older save may predate some fields, exactly as load() guards for.
   if (!Array.isArray(state.expanded))  state.expanded  = [];
   if (!Array.isArray(state.collapsedPri)) state.collapsedPri = [];
+  collapseDefaults(state);
   if (typeof state.byAisle !== 'boolean') state.byAisle = false;
   if (!state.skipAsk || typeof state.skipAsk !== 'object') state.skipAsk = {};
   delete state.budget;

@@ -179,8 +179,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* With nothing due, the first heading sits right under the add box: same
    27px as everywhere else (20 of bar + 7), not its usual 22px section gap. */
 #trip-list > .group-head:first-child { margin-top: 7px; }
-.group-head .gh-caret-space { flex: none; width: 34px; }
-.group-head .gh-caret-space:first-child, .group-head .gh-label + .gh-caret-space { margin-left: auto; }
 /* the chevron belongs on the far right */
 .group-head .gh-caret { margin-left: auto; }
 .gh-label {
@@ -188,7 +186,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   background: none; border: none; border-radius: 8px;
   padding: 6px 6px 6px 2px; min-height: 34px; text-align: left;
 }
-.gh-label.plain { padding: 6px 6px 6px 2px; }
 .gh-caret {
   flex: none; width: 34px; min-height: 34px; padding: 0; border-radius: 8px;
   background: none; border: none; color: inherit; font-size: 15px;
