@@ -17,22 +17,26 @@ Simpler, and nothing jumps around. Same look (palette C).
   saved prices, quantities and budget amount are deleted from your list.
   Need four? Type it in the name: "Eggs 4" or "Eggs x4".
 - **Add box:** a "+" button instead of "Add", and one line under it — H/M/L
-  on the left, stores on the right. The open row uses the same line.
-- **Tapping an item doesn't push the list down any more.** The row keeps
-  its height and its H/M/L and stores float over the rows below. If they
-  would land behind the tabs, the page scrolls just enough.
-- **Swipe right uncovers H / M / L** — tap one to move the item. Ticking is
-  the circle only. On a Bought item, picking one brings it back.
+  on the left, stores on the right — shown only while you're in the box.
+  The open item uses the same line.
+- **Tapping an item doesn't push the list down any more.** The whole item
+  lifts out as one card over the list — name, H/M/L, stores — with its
+  priority stripe down the full height, changing colour as you pick H, M
+  or L. If it would land behind the tabs, the page scrolls just enough.
+  With an item open, a tap anywhere else just closes it.
+- **Swipe right uncovers H / M / L** — three full-height blocks in their
+  own colours; tap one to move the item. Ticking is the circle only. On a
+  Bought item, picking one brings it back.
 - **Low and Bought start folded away**, and remember whether you last
-  opened them.
+  opened them. Tap a heading anywhere along it to open or close it.
 - **Due items go to the top** of their own section (never to another one).
 - **Bought: newest first**, each row says when ("bought 3 days ago").
   Things ticked before v5.0 have no date and sit at the bottom.
 - **Three tabs: Priority, Stores, Aisles.** Aisles groups the whole list by
   aisle across every shop; it replaces the "Group by aisle" switch inside
   Stores. Store and aisle headings are in plain text colour (they were
-  Medium's grey), the whole heading opens them, and the number is what's
-  still to buy.
+  Medium's grey), and the number is what's still to buy; a shop or aisle
+  with nothing left to buy isn't shown.
 - **Lucide icons** for the logo, tabs, arrows and ticks (the tabs were
   emoji). Free icons; their licence notice is in LICENSE-lucide.txt.
 - **Less space** between the title and the add box.
