@@ -328,7 +328,16 @@ let focusPending = false;
 // Opening a row does NOT focus the name field. On iPhone, focusing an input
 // raises the keyboard and scrolls it into view — the row you tapped jumped.
 // Tap the name itself when you want to edit it.
-function openRow(id) { openId = id; render(); }
+// The open row keeps the closed row's exact height (v5.1): its extra
+// controls float over the list below instead of pushing it down.
+let openHeight = 0;
+function openRow(id) {
+  const closed = /** @type {HTMLElement | null} */ (document.querySelector('.row[data-id="' + id + '"]'));
+  openHeight = closed ? closed.offsetHeight : 0;
+  openId = id;
+  render();
+  placePanel(true);
+}
 function closeRow()  { if (openId === null) return; openId = null; render(); }
 
 /* ---------------------------------------------------------------
@@ -346,7 +355,9 @@ function renderTrip() {
     // no separate cart section — the question there is "what did I get where".
     (state.mode === 'store' ? byStoreHtml(onTrip) : byPriorityHtml(pend)) +
     emptyHtml(pend, onTrip) +
-    (state.mode === 'store' ? '' : cartHtml(inCart));
+    (state.mode === 'store' ? '' : cartHtml(inCart)) +
+    openPanelHtml();
+  placePanel(false);
 
   if (focusPending && openId) {
     const input = $('.name-input');
@@ -475,13 +486,11 @@ function rowHtml(item) {
 
 // The expanded row: name becomes editable, and the controls come to you.
 function openRowHtml(item) {
-  const pri = PRIORITIES.map((p) =>
-    '<button class="pri v' + p + (item.priority === p ? ' on' : '') +
-    '" data-act="set-priority" data-value="' + p + '">' + PRI_SHORT[p] + '</button>'
-  ).join('');
-
+  // Same wrapper as a closed row, so the borders — and the height — match.
   return '' +
-    '<div class="row open pri' + item.priority + '" data-id="' + item.id + '">' +
+    '<div class="swipe-wrap">' +
+    '<div class="row open pri' + item.priority + '" data-id="' + item.id + '"' +
+      (openHeight ? ' style="height:' + openHeight + 'px"' : '') + '>' +
       '<div class="open-head">' +
         '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
         '<input class="name-input" data-field="name" value="' + esc(item.name) + '" ' +
@@ -490,13 +499,44 @@ function openRowHtml(item) {
         // A big, obvious way out — tapping empty space to close was fiddly.
         '<button class="info-btn done-btn" data-act="close" aria-label="Done">✓</button>' +
       '</div>' +
-      // One line: H/M/L on the left, stores on the right (v5.1). The chip
-      // box only grows when you actually put more shops in it.
-      '<div class="open-controls">' +
-        '<div class="pri-group">' + pri + '</div>' +
-        chipsHtml(item.stores, 'store-add') +
-      '</div>' +
+    '</div>' +
     '</div>';
+}
+
+/* The open row's controls, drawn once at the end of the list and laid over
+   the rows under the open one — so nothing below it moves (v5.1).
+   One line: H/M/L on the left, stores on the right. The chip box only
+   grows when you actually put more shops in it. */
+function openPanelHtml() {
+  const item = openId && findItem(openId);
+  if (!item) return '';
+  const pri = PRIORITIES.map((p) =>
+    '<button class="pri v' + p + (item.priority === p ? ' on' : '') +
+    '" data-act="set-priority" data-value="' + p + '">' + PRI_SHORT[p] + '</button>'
+  ).join('');
+  return '<div class="open-panel" data-id="' + item.id + '">' +
+    '<div class="open-controls">' +
+      '<div class="pri-group">' + pri + '</div>' +
+      chipsHtml(item.stores, 'store-add') +
+    '</div>' +
+  '</div>';
+}
+
+/* Puts the panel right under the open row, as wide as its card. When the
+   row has just been opened and the panel would end up behind the tab bar,
+   the page scrolls just enough to show it. */
+function placePanel(justOpened) {
+  const panel = /** @type {HTMLElement | null} */ (document.querySelector('.open-panel'));
+  const row = document.querySelector('.row.open');
+  if (!panel || !row) return;
+  const list = $('#trip-list').getBoundingClientRect();
+  const card = (row.closest('.card') || row).getBoundingClientRect();
+  panel.style.top = (row.getBoundingClientRect().bottom - list.top) + 'px';
+  panel.style.left = (card.left - list.left) + 'px';
+  panel.style.width = card.width + 'px';
+  if (!justOpened) return;
+  const hidden = panel.getBoundingClientRect().bottom - ($('.tabs').getBoundingClientRect().top - 8);
+  if (hidden > 0) window.scrollBy({ top: hidden, behavior: 'smooth' });
 }
 
 /* A store chip: the name, and a × that takes it off. */
@@ -738,7 +778,8 @@ function commitOpenRow() {
   if (!openId) return;
   const item = findItem(openId);
   if (!item) return;
-  document.querySelectorAll('.row.open [data-field]').forEach((i) => applyField(item, i));
+  document.querySelectorAll('.row.open [data-field], .open-panel [data-field]')
+    .forEach((i) => applyField(item, i));
   save();
 }
 
@@ -769,7 +810,7 @@ $('#trip-list').addEventListener('keydown', (e) => {
 document.addEventListener('click', (e) => {
   if (!openId) return;
   const target = /** @type {Element} */ (e.target);
-  if (target.closest('.row.open') || target.closest('dialog')) return;
+  if (target.closest('.row.open') || target.closest('.open-panel') || target.closest('dialog')) return;
   if (target.closest('[data-act="open"]')) return;   // handled above
   commitOpenRow();
   closeRow();
