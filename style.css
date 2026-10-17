@@ -233,7 +233,8 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .sw-right .swipe-bg { background: color-mix(in srgb, var(--text) 6%, var(--bg)); }
 .sw-right .swipe-bg { padding-left: 0; }
 /* Three full-height blocks, one per priority, in that priority's colour:
-   the uncovered strip is the picker. The current one has an inner ring. */
+   the uncovered strip is the picker. All three alike — the colour says
+   which is which, so nothing marks the current one. */
 .pick-group { display: flex; align-self: stretch; }
 .pick {
   width: 56px; min-height: 0; padding: 0; border: none; border-radius: 0;
@@ -242,7 +243,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .pick.v1 { background: var(--p1); color: var(--on-p1); }
 .pick.v2 { background: var(--p2); color: var(--on-p2); }
 .pick.v3 { background: var(--p3); color: var(--on-p3, #fff); }
-.pick.on { box-shadow: inset 0 0 0 3px var(--surface); }
 /* While held open, its buttons take taps (the panel ignores them otherwise). */
 .picking .swipe-bg { pointer-events: auto; }
 .sw-left  .swipe-bg { background: #a3202f; }

@@ -471,7 +471,6 @@ function rowHtml(item) {
         // it stays open for a tap (v5.1).
         '<span class="sb-l pick-group" data-id="' + item.id + '">' +
           PRIORITIES.map((p) => '<button class="pick v' + p +
-            (!item.done && item.priority === p ? ' on' : '') +
             '" data-act="pick" data-value="' + p + '" tabindex="-1">' + PRI_SHORT[p] + '</button>').join('') +
         '</span>' +
         '<span class="sb-r">delete</span>' +
