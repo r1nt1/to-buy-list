@@ -138,6 +138,15 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   margin: 0; padding: 0 16px 20px;   /* twice the inner gap: the bar ends with a clear margin */
 }
 .add-more .chips:focus-within { border-color: var(--accent); }
+/* Under the add box only: H/M/L and the store box wear the same light-green
+   outline and tint as "Add an item…", so the three read as one group
+   (v5.1). The open item keeps its plain grey ones. */
+.add-more .pri-group, .add-more .chips {
+  border: 1.5px solid color-mix(in srgb, var(--accent) 32%, var(--line));
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+}
+.add-more .pri + .pri { border-left-color: color-mix(in srgb, var(--accent) 32%, var(--line)); }
+.add-more .pri.on + .pri, .add-more .pri.on { border-left-color: transparent; }
 /* No priority is lit until you tap one — see addFields(). */
 
 .suggest {
