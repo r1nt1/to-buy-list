@@ -341,15 +341,11 @@ let focusPending = false;
 // Opening a row does NOT focus the name field. On iPhone, focusing an input
 // raises the keyboard and scrolls it into view — the row you tapped jumped.
 // Tap the name itself when you want to edit it.
-// The open row keeps the closed row's exact height (v5.1): its extra
-// controls float over the list below instead of pushing it down.
-let openHeight = 0;
+// The open item floats over the list rather than pushing it down (v5.1).
 function openRow(id) {
-  const closed = /** @type {HTMLElement | null} */ (document.querySelector('.row[data-id="' + id + '"]'));
-  openHeight = closed ? closed.offsetHeight : 0;
   openId = id;
   render();
-  placePanel(true);
+  placeFloat(true);
 }
 function closeRow()  { if (openId === null) return; openId = null; render(); }
 
@@ -372,8 +368,8 @@ function renderTrip() {
       : byPriorityHtml(pend)) +
     emptyHtml(pend, onTrip) +
     (state.mode === 'priority' ? cartHtml(inCart) : '') +
-    openPanelHtml();
-  placePanel(false);
+    openFloatHtml();
+  placeFloat(false);
 
   if (focusPending && openId) {
     const input = $('.name-input');
@@ -455,7 +451,9 @@ function byPlaceHtml(items, kind) {
 }
 
 function rowHtml(item) {
-  if (item.id === openId) return openRowHtml(item);
+  // The open item still draws its closed row, invisibly: it holds the
+  // item's place, and the floating card is laid exactly over it.
+  const held = item.id === openId;
 
   // The stores get the whole second line, so all of them fit.
   const bits = [];
@@ -467,7 +465,7 @@ function rowHtml(item) {
   const due = isDue(item);
 
   return '' +
-    '<div class="swipe-wrap">' +
+    '<div class="swipe-wrap' + (held ? ' held' : '') + '">' +
       '<div class="swipe-bg">' +
         // Swipe right uncovers H / M / L, three blocks in their own colours;
         // it stays open for a tap (v5.1).
@@ -501,36 +499,27 @@ function rowHtml(item) {
 }
 
 // The expanded row: name becomes editable, and the controls come to you.
-function openRowHtml(item) {
-  // Same wrapper as a closed row, so the borders — and the height — match.
-  return '' +
-    '<div class="swipe-wrap">' +
-    '<div class="row open pri' + item.priority + '" data-id="' + item.id + '"' +
-      (openHeight ? ' style="height:' + openHeight + 'px"' : '') + '>' +
-      '<div class="open-head">' +
-        '<button class="check" data-act="toggle-done" aria-label="Check off">' + icon('check', 14, 3) + '</button>' +
-        '<input class="name-input" data-field="name" value="' + esc(item.name) + '" ' +
-          'enterkeyhint="done" autocomplete="off">' +
-        '<button class="info-btn" data-act="info" aria-label="More details">i</button>' +
-        // A big, obvious way out — tapping empty space to close was fiddly.
-        '<button class="info-btn done-btn" data-act="close" aria-label="Done">' + icon('check', 18, 2.6) + '</button>' +
-      '</div>' +
-    '</div>' +
-    '</div>';
-}
-
-/* The open row's controls, drawn once at the end of the list and laid over
-   the rows under the open one — so nothing below it moves (v5.1).
-   One line: H/M/L on the left, stores on the right. The chip box only
-   grows when you actually put more shops in it. */
-function openPanelHtml() {
+/* The open item: one card floating over the list, laid exactly over its
+   own row (which stays in place, invisible), with its controls hanging
+   below it — so nothing in the list moves (v5.1). The priority stripe runs
+   down the whole card and changes colour as you pick H, M or L.
+   Its controls are one line: H/M/L on the left, stores on the right. The
+   chip box only grows when you actually put more shops in it. */
+function openFloatHtml() {
   const item = openId && findItem(openId);
   if (!item) return '';
   const pri = PRIORITIES.map((p) =>
     '<button class="pri v' + p + (item.priority === p ? ' on' : '') +
     '" data-act="set-priority" data-value="' + p + '">' + PRI_SHORT[p] + '</button>'
   ).join('');
-  return '<div class="open-panel" data-id="' + item.id + '">' +
+  return '<div class="row open open-float pri' + item.priority + '" data-id="' + item.id + '">' +
+    '<div class="open-head">' +
+      '<input class="name-input" data-field="name" value="' + esc(item.name) + '" ' +
+        'enterkeyhint="done" autocomplete="off">' +
+      '<button class="info-btn" data-act="info" aria-label="More details">i</button>' +
+      // A big, obvious way out — tapping empty space to close was fiddly.
+      '<button class="info-btn done-btn" data-act="close" aria-label="Done">' + icon('check', 18, 2.6) + '</button>' +
+    '</div>' +
     '<div class="open-controls">' +
       '<div class="pri-group">' + pri + '</div>' +
       chipsHtml(item.stores, 'store-add') +
@@ -538,20 +527,26 @@ function openPanelHtml() {
   '</div>';
 }
 
-/* Puts the panel right under the open row, as wide as its card. When the
-   row has just been opened and the panel would end up behind the tab bar,
-   the page scrolls just enough to show it. */
-function placePanel(justOpened) {
-  const panel = /** @type {HTMLElement | null} */ (document.querySelector('.open-panel'));
-  const row = document.querySelector('.row.open');
-  if (!panel || !row) return;
+/* Lays the card over the held row, as wide as its card, so the name sits
+   where it was; the card is always taller than the row. When the row has
+   just been opened and the card would end up behind the tab bar, the page
+   scrolls just enough to show it. */
+function placeFloat(justOpened) {
+  const float = /** @type {HTMLElement | null} */ (document.querySelector('.open-float'));
+  const held = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.held'));
+  if (!float || !held.length) return;
+  // In Stores, an item sold in two shops is drawn twice: the card goes over
+  // the first; the second shows normally.
+  held.forEach((h, i) => { if (i) h.classList.remove('held'); });
+  const anchor = held[0];
   const list = $('#trip-list').getBoundingClientRect();
-  const card = (row.closest('.card') || row).getBoundingClientRect();
-  panel.style.top = (row.getBoundingClientRect().bottom - list.top) + 'px';
-  panel.style.left = (card.left - list.left) + 'px';
-  panel.style.width = card.width + 'px';
+  const card = (anchor.closest('.card') || anchor).getBoundingClientRect();
+  const row = anchor.getBoundingClientRect();
+  float.style.top = (row.top - list.top) + 'px';
+  float.style.left = (card.left - list.left) + 'px';
+  float.style.width = card.width + 'px';
   if (!justOpened) return;
-  const hidden = panel.getBoundingClientRect().bottom - ($('.tabs').getBoundingClientRect().top - 8);
+  const hidden = float.getBoundingClientRect().bottom - ($('.tabs').getBoundingClientRect().top - 8);
   if (hidden > 0) window.scrollBy({ top: hidden, behavior: 'smooth' });
 }
 
@@ -743,6 +738,9 @@ function handleClick(event) {
       save();
       btn.parentElement.querySelectorAll('.pri')
          .forEach((b) => b.classList.toggle('on', b === btn));
+      // ...but the card's stripe takes the new colour straight away.
+      holder.classList.remove('pri1', 'pri2', 'pri3');
+      holder.classList.add('pri' + item.priority);
       break;
 
     case 'toggle-trip':
@@ -809,8 +807,7 @@ function commitOpenRow() {
   if (!openId) return;
   const item = findItem(openId);
   if (!item) return;
-  document.querySelectorAll('.row.open [data-field], .open-panel [data-field]')
-    .forEach((i) => applyField(item, i));
+  document.querySelectorAll('.open-float [data-field]').forEach((i) => applyField(item, i));
   save();
 }
 

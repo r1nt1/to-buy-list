@@ -219,7 +219,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   touch-action: pan-y; user-select: none; -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
-.swipe-wrap .row.open { background: var(--bg); }
 .swipe-bg {
   position: absolute; inset: 0; display: flex; align-items: center;
   justify-content: space-between; padding: 0 18px;
@@ -250,26 +249,25 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .sw-right .sb-r, .sw-left .sb-l { visibility: hidden; }
 /* once you've dragged far enough for it to fire, the panel brightens */
 .sw-armed.sw-left  .swipe-bg { background: #c62a3b; }
-/* Editing: no check circle, and the row keeps the exact height it had
-   closed (set by the script), so nothing under it moves (v5.1). */
-.row.open { background: var(--bg); }
-.row.open .open-head { flex: 1; min-width: 0; }
-.row.open .check { display: none; }
-
-/* The open row's H/M/L and stores, laid over the rows below it rather than
-   pushing them down. Placed by placePanel() in the script. */
+/* The open item: one card floating over the list, laid over its own row
+   (held in place, invisible) by placeFloat() in the script. Its priority
+   stripe runs the full height, controls included, and changes colour with
+   H/M/L (v5.1). Nothing under it moves. */
 #trip-list { position: relative; }
-.open-panel {
-  position: absolute; z-index: 15;
-  /* 16px on the left = the row's 12px padding + its 4px stripe, so the
-     controls start under the name box */
-  padding: 2px 12px 12px 16px;
-  background: var(--bg); border: 1px solid var(--line); border-top: none;
-  border-radius: 0 0 var(--radius) var(--radius);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);   /* one depth style: tight, offset */
+.swipe-wrap.held { visibility: hidden; }
+.row.open-float {
+  position: absolute; z-index: 15; display: block;
+  /* a shade lighter than a row, so it reads as lifted in dark mode too */
+  padding: 0 12px 12px; background: color-mix(in srgb, var(--text) 4%, var(--surface));
+  border: 1px solid var(--line); border-left-width: 4px;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.3);   /* one depth style: tight, offset */
 }
-.open-panel .open-controls { margin-top: 0; }
-.open-panel .chips:focus-within { outline: none; border-color: var(--accent); }
+.open-float .open-head { display: flex; align-items: flex-start; gap: 10px; padding-top: 5px; }
+/* top-aligned at 5px, the name box sits level with the name it replaces,
+   even when the closed row has a stores line under it */
+.open-float .open-controls { margin-top: 8px; }
+.open-float .chips:focus-within { outline: none; border-color: var(--accent); }
 
 .check {
   flex: none; width: 24px; height: 24px; min-height: 24px; padding: 0;
@@ -317,8 +315,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* The name field and the store box are real boxes, the same as under the
    add box. (An underline version was tried first and looked unfinished.)
    .name-input's padding equals .row-main's, so the name doesn't move. */
-.row.open .name-input:focus,
-.row.open .chips:focus-within { outline: none; border-color: var(--accent); }
+.row.open .name-input:focus { outline: none; border-color: var(--accent); }
 .row.open .name-input { font-weight: inherit; }
 .row.open .info-btn { border-color: transparent; background: color-mix(in srgb, var(--text) 7%, transparent); }
 /* inline-flex centres the tick; as a plain inline drawing it sat on the
