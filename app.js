@@ -34,7 +34,8 @@ const NO_STORE   = 'other';   // lowercase like every store; the styling capital
 const ICON_PATHS = {
   check: '<path d="M20 6 9 17l-5-5"/>',
   chevronDown: '<path d="m6 9 6 6 6-6"/>',
-  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  info: '<circle cx="12" cy="12" r="9.5"/><path d="M12 16v-4.5"/><path d="M12 8h.01"/>'
 };
 const icon = (name, size = 16, stroke = 2) =>
   '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="none" ' +
@@ -450,18 +451,27 @@ function byPlaceHtml(items, kind) {
   return html;
 }
 
+/* The lines under an item's name: its stores, "bought …" when it is due
+   or already bought, and its note. The open card leaves the stores out —
+   they are in the dock, where you change them. */
+function rowLinesHtml(item, withStores) {
+  // The stores get the whole second line, so all of them fit.
+  const stores = withStores && state.mode !== 'store' ? item.stores : [];
+  return (stores.length ? '<span class="row-sub">' +
+      stores.map((s) => '<span class="store-name">' + esc(s) + '</span>').join(' · ') + '</span>' : '') +
+    // The reminder gets its own line under the stores, so it never has to
+    // share space with a long list of shop names.
+    (isDue(item) ? '<span class="row-sub row-due">bought ' + ago(item.lastBought) + '</span>' : '') +
+    // In Bought, when — the list's memory of what you got (v5.1).
+    (item.done && item.lastBought ? '<span class="row-sub">bought ' + ago(item.lastBought) + '</span>' : '') +
+    (item.note ? '<span class="row-note">' + esc(item.note) + '</span>' : '');
+}
+
 function rowHtml(item) {
   // The open item still draws its closed row, invisibly: it holds the
   // item's place, and the floating card is laid exactly over it.
   const held = item.id === openId;
 
-  // The stores get the whole second line, so all of them fit.
-  const bits = [];
-  if (item.stores.length && state.mode !== 'store') {
-    bits.push(...item.stores.map((s) => '<span class="store-name">' + esc(s) + '</span>'));
-  }
-  // The reminder gets its own line under the stores, so it never has to
-  // share space with a long list of shop names.
   const due = isDue(item);
 
   return '' +
@@ -487,49 +497,55 @@ function rowHtml(item) {
               (due ? ' <span class="due-pill">⟳ due</span>' : '') +
             '</span>' +
           '</span>' +
-          (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
-          (due ? '<span class="row-sub row-due">bought ' + ago(item.lastBought) + '</span>' : '') +
-          // In Bought, when — the list's memory of what you got (v5.1).
-          (item.done && item.lastBought ? '<span class="row-sub">bought ' + ago(item.lastBought) + '</span>' : '') +
-          (item.note ? '<span class="row-note">' + esc(item.note) + '</span>' : '') +
+          rowLinesHtml(item, true) +
         '</button>' +
       '</div>' +
     '</div>';
 }
 
-// The expanded row: name becomes editable, and the controls come to you.
-/* The open item: one card floating over the list, laid exactly over its
-   own row (which stays in place, invisible), with its controls hanging
-   below it — so nothing in the list moves (v5.1). The priority stripe runs
-   down the whole card and changes colour as you pick H, M or L.
-   Its controls are one line: H/M/L on the left, stores on the right. The
-   chip box only grows when you actually put more shops in it. */
+/* The open item (v5.2, "Dock"): the row lifts where it is, holding only
+   its name (now editable) and its "bought …" and note lines — so it is
+   still recognisably that row, and nothing in the list moves. Everything
+   you change sits in a dock at the bottom of the screen, by the thumb:
+   High / Medium / Low with Done beside it, then the stores and the
+   details button. While the keyboard is up the dock rides just above it
+   (see placeDocks). The add box uses the same dock. */
 function openFloatHtml() {
   const item = openId && findItem(openId);
   if (!item) return '';
-  const pri = PRIORITIES.map((p) =>
-    '<button class="pri v' + p + (item.priority === p ? ' on' : '') +
-    '" data-act="set-priority" data-value="' + p + '">' + PRI_SHORT[p] + '</button>'
-  ).join('');
   return '<div class="row open open-float pri' + item.priority + '" data-id="' + item.id + '">' +
-    '<div class="open-head">' +
-      '<input class="name-input" data-field="name" value="' + esc(item.name) + '" ' +
-        'enterkeyhint="done" autocomplete="off">' +
-      '<button class="info-btn" data-act="info" aria-label="More details">i</button>' +
-      // A big, obvious way out — tapping empty space to close was fiddly.
-      '<button class="info-btn done-btn" data-act="close" aria-label="Done">' + icon('check', 18, 2.6) + '</button>' +
-    '</div>' +
-    '<div class="open-controls">' +
-      '<div class="pri-group">' + pri + '</div>' +
-      chipsHtml(item.stores, 'store-add') +
+    '<input class="name-input" data-field="name" value="' + esc(item.name) + '" ' +
+      'aria-label="Item name" enterkeyhint="done" autocomplete="off">' +
+    rowLinesHtml(item, false) +
+    // Inside the card in the page, so taps in it count as "in the open
+    // item"; position: fixed takes it to the bottom of the screen.
+    '<div class="dock" role="group" aria-label="Edit ' + esc(item.name) + '">' +
+      '<div class="dock-row">' +
+        priGroupHtml(item.priority, 'set-priority') +
+        // A word, not a tick: a green tick is what "bought" looks like.
+        '<button class="dock-main" data-act="close">Done</button>' +
+      '</div>' +
+      '<div class="dock-row">' +
+        chipsHtml(item.stores, 'store-add') +
+        '<button class="dock-info" data-act="info" aria-label="Note, repeat, delete">' + icon('info', 22, 1.8) + '</button>' +
+      '</div>' +
     '</div>' +
   '</div>';
 }
 
-/* Lays the card over the held row, as wide as its card, so the name sits
-   where it was; the card is always taller than the row. When the row has
-   just been opened and the card would end up behind the tab bar, the page
-   scrolls just enough to show it. */
+/* High / Medium / Low as one control of three segments, the chosen one
+   filled in its stripe colour. */
+function priGroupHtml(current, act) {
+  return '<div class="pri-group">' + PRIORITIES.map((p) =>
+    '<button type="button" class="pri v' + p + (current === p ? ' on' : '') +
+    '" data-act="' + act + '" data-value="' + p + '" aria-pressed="' + (current === p) + '">' +
+    PRI_LABEL[p] + '</button>').join('') + '</div>';
+}
+
+/* Lays the card over the held row, as wide as its card and at least as
+   tall as the row, so the name sits where it was and the stripe runs on
+   unbroken. When the row has just been opened and the card would end up
+   behind the dock, the page scrolls just enough to show it. */
 function placeFloat(justOpened) {
   const float = /** @type {HTMLElement | null} */ (document.querySelector('.open-float'));
   const held = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.held'));
@@ -544,8 +560,15 @@ function placeFloat(justOpened) {
   float.style.top = (row.top - list.top) + 'px';
   float.style.left = (card.left - list.left) + 'px';
   float.style.width = card.width + 'px';
-  if (!justOpened) return;
-  const hidden = float.getBoundingClientRect().bottom - ($('.tabs').getBoundingClientRect().top - 8);
+  float.style.minHeight = row.height + 'px';
+  if (justOpened) keepAboveDock(float);
+}
+
+/* Scrolls the page just enough that `el` isn't hidden behind the dock. */
+function keepAboveDock(el) {
+  const dock = document.querySelector('.open-float .dock');
+  if (!dock) return;
+  const hidden = el.getBoundingClientRect().bottom - (dock.getBoundingClientRect().top - 8);
   if (hidden > 0) window.scrollBy({ top: hidden, behavior: 'smooth' });
 }
 
@@ -565,7 +588,7 @@ function chipsHtml(stores, field, id) {
     (id ? ' id="' + id + '"' : '') + '>' +
     stores.map(chipHtml).join('') +
     '<input class="chip-input" data-field="' + field + '" list="store-names" ' +
-    'placeholder="' + (stores.length ? '+ store' : 'store') + '" ' +
+    'placeholder="+ store" aria-label="Add a store" ' +
     'autocomplete="off" autocapitalize="words" enterkeyhint="done"></div>';
 }
 
@@ -596,6 +619,9 @@ function render() {
     (FAKE_TODAY ? ' · pretending today is ' + FAKE_TODAY : '');
 
   renderTrip();
+  // One dock at a time: with an item open, the add box's dock steps aside
+  // (anything typed in the box stays, and its dock comes back after).
+  document.body.classList.toggle('item-open', Boolean(openId));
 
   // Autocomplete for the store box — every store you have ever typed.
   $('#store-names').innerHTML =
@@ -742,8 +768,10 @@ function handleClick(event) {
       // Change state but do NOT redraw — the row would jump away mid-edit.
       item.priority = Number(btn.dataset.value);
       save();
-      btn.parentElement.querySelectorAll('.pri')
-         .forEach((b) => b.classList.toggle('on', b === btn));
+      btn.parentElement.querySelectorAll('.pri').forEach((b) => {
+        b.classList.toggle('on', b === btn);
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
       // ...but the card's stripe takes the new colour straight away.
       holder.classList.remove('pri1', 'pri2', 'pri3');
       holder.classList.add('pri' + item.priority);
@@ -802,7 +830,7 @@ function applyField(item, input) {
   if (input.dataset.field === 'store-add') {
     if (addStore(item, v)) {
       input.insertAdjacentHTML('beforebegin', chipHtml(item.stores[item.stores.length - 1]));
-      input.placeholder = '+ store';
+      showNewestStore(input);
     }
     input.value = '';
   }
@@ -891,20 +919,24 @@ function commitAddStore() {
   if (!name || addStores.includes(name)) return;
   addStores.push(name);
   box.insertAdjacentHTML('beforebegin', chipHtml(name));
-  box.placeholder = '+ store';
+  showNewestStore(box);
+}
+/* The stores in a dock are one line that scrolls sideways, so the dock
+   never changes height; after adding one, scroll so the box is in view. */
+function showNewestStore(input) {
+  const line = input.closest('.chips');
+  if (line) line.scrollLeft = line.scrollWidth;
 }
 function clearAddStores() {
   addStores = [];
   $('#add-stores').querySelectorAll('.chip').forEach((c) => c.remove());
   $('#add-store').value = '';
-  $('#add-store').placeholder = 'store';
 }
 $('#add-stores').addEventListener('click', (e) => {
   const x = e.target.closest('.chip-x');
   if (!x) return;
   addStores = addStores.filter((s) => s !== x.dataset.value.toLowerCase());
   x.closest('.chip').remove();
-  if (!addStores.length) $('#add-store').placeholder = 'store';
 });
 $('#add-store').addEventListener('change', commitAddStore);   // tapping away
 $('#add-store').addEventListener('keydown', (e) => {
@@ -930,7 +962,11 @@ function clearAddBox() {
 
 function setAddPri(p) {
   /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('#add-pri .pri')).forEach((b) =>
-    b.classList.toggle('on', p !== null && Number(b.dataset.addPri) === p));
+    {
+      const on = p !== null && Number(b.dataset.addPri) === p;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
 }
 
 // Bring an item that already exists back onto this trip.
@@ -1053,6 +1089,30 @@ $('#add-pri').addEventListener('click', (e) => {
   // without having to add the item first.
   setAddPri(btn.classList.contains('on') ? null : Number(btn.dataset.addPri));
 });
+
+/* ---------------- the dock and the keyboard ----------------
+   The iPhone draws its keyboard over the page without shrinking it, so a
+   dock fixed to the bottom would sit behind the keyboard. visualViewport is
+   the part of the page you can actually see; the gap between its bottom and
+   the window's bottom is the keyboard (with Safari's up/down/✓ bar), and the
+   dock is lifted by exactly that much (--kb in style.css). */
+function placeDocks(event) {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+  document.documentElement.style.setProperty('--kb', kb + 'px');
+  document.documentElement.classList.toggle('kb-up', kb > 60);
+  // The keyboard just opened over an open item's name: keep the name in
+  // view above the dock. (Only on resize — on scroll it would fight you.)
+  const float = /** @type {HTMLElement | null} */ (document.querySelector('.open-float'));
+  if (event && event.type === 'resize' && float && float.contains(document.activeElement)) {
+    keepAboveDock(float);
+  }
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', placeDocks);
+  window.visualViewport.addEventListener('scroll', placeDocks);
+}
 
 /* ---------------------------------------------------------------
    Suggestions under the add box

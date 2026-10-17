@@ -11,11 +11,15 @@
   --muted:   #6b7280;
   --accent:  #1f9d6f;   /* green: Add, cart bar, ticks */
   --on-accent: #ffffff;
+  /* words on a green button: white on this green is only 3.4:1, so they
+     are dark, as in dark mode (an icon is fine in white) */
+  --on-accent-text: #0b1a14;
   --p1:      #14181d;   /* priority 1 — darkest stripe: priority is brightness, not hue */
   --p2:      #6b7280;   /* priority 2 */
   --p3:      #b6bcc4;   /* priority 3 — faintest */
   --on-p1:   #ffffff;   /* text on a chosen High / Medium chip */
   --on-p2:   #ffffff;
+  --on-p3:   #14181d;   /* white on the faint Low grey was 1.9:1 — unreadable */
   --remind:  #2f6df6;   /* the "due" reminder: a note, not a warning */
   --over:    #d7263d;   /* delete: the only true red */
   --radius:  14px;
@@ -35,13 +39,17 @@
     --p2:      #8d959e;
     --p3:      #4a5158;
     --on-p1:   #14181d;
-    --on-p2:   #ffffff;
+    --on-p2:   #14181d;   /* white on this mid grey was 3.0:1; dark is 6.2:1 */
+    --on-p3:   #ffffff;
     --remind:  #6ea8fe;
       --over:    #f05a5a;
   }
 }
 
 * { box-sizing: border-box; }
+
+/* The browser's own placeholder grey was too faint (3.2:1 in dark). */
+::placeholder { color: var(--muted); opacity: 1; }
 
 /* Nobody nudges "every 30 days" one at a time — you type the number.
    These three rules remove the little up/down arrows. */
@@ -112,7 +120,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 /* Solid, the same dark as the page. (A frosted-glass version was tried and
    looked like a shiny box sliding over the list — see CHANGELOG v4.2.) */
-.add-wrap, .add-wrap .add-more { background: var(--bar); }
+.add-wrap { background: var(--bar); }
 .add-wrap.stuck::before {
   content: ""; position: absolute; left: 0; right: 0; bottom: 100%;
   height: env(safe-area-inset-top, 0px); background: var(--bar);
@@ -123,31 +131,13 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .add { display: flex; gap: 8px; }
 /* A soft edge under the box, so rows fade out as they slide beneath it
    instead of being cut off by a hard line. */
-.add-wrap::after, .add-more::after {
+.add-wrap::after {
   content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px;
   pointer-events: none;
   background: linear-gradient(color-mix(in srgb, var(--bar) 70%, transparent),
                               color-mix(in srgb, var(--bar) 0%, transparent));
 }
 
-/* The optional detail row hangs BELOW the box rather than sitting inside it.
-   Inside, it made the sticky box taller every time it appeared, and the
-   whole list shifted down by that much — then back up when it went away. */
-.add-wrap .add-more {   /* outranks .open-controls' own margin-top below */
-  position: absolute; left: 0; right: 0; top: calc(100% - 1px); z-index: 20;
-  margin: 0; padding: 0 16px 20px;   /* twice the inner gap: the bar ends with a clear margin */
-}
-.add-more .chips:focus-within { border-color: var(--accent); }
-/* Under the add box only: H/M/L and the store box wear the same light-green
-   outline and tint as "Add an item…", so the three read as one group
-   (v5.1). The open item keeps its plain grey ones. */
-.add-more .pri-group, .add-more .chips {
-  border: 1.5px solid color-mix(in srgb, var(--accent) 32%, var(--line));
-  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
-}
-.add-more .pri + .pri { border-left-color: color-mix(in srgb, var(--accent) 32%, var(--line)); }
-.add-more .pri.on + .pri, .add-more .pri.on { border-left-color: transparent; }
-/* No priority is lit until you tap one — see addFields(). */
 
 .suggest {
   position: absolute; top: calc(100% - 2px); left: 16px; right: 16px; z-index: 60;
@@ -171,10 +161,8 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   background: color-mix(in srgb, var(--accent) 6%, var(--surface));
 }
 .add input:focus { border-color: var(--accent); outline: none; }
-/* A square "+" rather than the word Add (v5.1). */
-.add button { flex: none; width: 50px; min-height: 50px; padding: 0; border-radius: 12px;
-              display: inline-flex; align-items: center; justify-content: center;
-              background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+/* No "+" beside it any more: the box runs the full width, and Add is in
+   the dock at the bottom (v5.2). */
 
 
 /* ---------------- list ---------------- */
@@ -253,33 +241,63 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 .pick.v1 { background: var(--p1); color: var(--on-p1); }
 .pick.v2 { background: var(--p2); color: var(--on-p2); }
-.pick.v3 { background: var(--p3); color: var(--on-p3, #fff); }
+.pick.v3 { background: var(--p3); color: var(--on-p3); }
 /* While held open, its buttons take taps (the panel ignores them otherwise). */
 .picking .swipe-bg { pointer-events: auto; }
 .sw-left  .swipe-bg { background: #a3202f; }
 .sw-right .sb-r, .sw-left .sb-l { visibility: hidden; }
 /* once you've dragged far enough for it to fire, the panel brightens */
 .sw-armed.sw-left  .swipe-bg { background: #c62a3b; }
-/* The open item: one card floating over the list, laid over its own row
-   (held in place, invisible) by placeFloat() in the script. Its priority
-   stripe runs the full height, controls included, and changes colour with
-   H/M/L (v5.1). Nothing under it moves. */
+/* The open item (v5.2): the row lifts where it is — a shade lighter, with
+   a shadow — holding only its name and its "bought …" / note lines, laid
+   over its own row (held in place, invisible) by placeFloat(). Its stripe
+   changes colour with High / Medium / Low. The controls are in the dock. */
 #trip-list { position: relative; }
 .swipe-wrap.held { visibility: hidden; }
 .row.open-float {
   position: absolute; z-index: 15; display: block;
-  /* a shade lighter than a row, so it reads as lifted in dark mode too */
-  padding: 0 12px 12px; background: color-mix(in srgb, var(--text) 4%, var(--surface));
-  /* no outline, like the list: just the stripe, and the shadow lifts it */
+  padding: 5px 12px 8px 46px;   /* 46 keeps the name where it was, over the tick's column */
+  background: color-mix(in srgb, var(--text) 4%, var(--surface));
   border: none; border-left: 4px solid transparent;
   border-radius: 0 var(--radius) var(--radius) 0;   /* square on the stripe side */
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.3);   /* one depth style: tight, offset */
 }
-.open-float .open-head { display: flex; align-items: flex-start; gap: 10px; padding-top: 5px; }
-/* top-aligned at 5px, the name box sits level with the name it replaces,
-   even when the closed row has a stores line under it */
-.open-float .open-controls { margin-top: 8px; }
-.open-float .chips:focus-within { outline: none; border-color: var(--accent); }
+/* a filled field rather than an outlined one, so the name stays the
+   brightest thing on the card */
+.open-float .name-input {
+  display: block; width: 100%; min-height: 44px; border-radius: 10px;
+  /* padding and border match .row-main exactly, so the name doesn't move */
+  padding: 8px 10px; font: inherit; color: var(--text);
+  border: 1px solid transparent; background: color-mix(in srgb, var(--text) 7%, transparent);
+}
+.open-float .name-input:focus { outline: none; border-color: var(--accent); }
+.open-float .row-sub, .open-float .row-note { padding-left: 11px; }
+
+/* ---------------- the dock ----------------
+   Where an item is edited — the open item's and the add box's — fixed to
+   the bottom of the screen, over the tab bar, by the thumb. --kb is the
+   keyboard's height (set by placeDocks in the script), so while you type
+   the dock rides just above the keyboard. */
+.dock {
+  position: fixed; left: 0; right: 0; bottom: var(--kb, 0px); z-index: 40;
+  display: grid; gap: 10px; margin: 0;
+  padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+  background: var(--surface); border-radius: 18px 18px 0 0;
+  box-shadow: 0 -4px 18px rgb(0 0 0 / 0.28);   /* the same depth, facing up */
+}
+/* with the keyboard up, the home-indicator strip is under the keyboard */
+.kb-up .dock { padding-bottom: 12px; }
+.dock.hidden, .item-open .add-more { display: none; }
+.dock-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+/* the dock's one big button says what it does: Add, or Done */
+.dock-main {
+  flex: none; width: 96px; min-height: 48px; padding: 0; border: none; border-radius: 12px;
+  background: var(--accent); color: var(--on-accent-text); font-size: 17px; font-weight: 600;
+}
+.dock-info {
+  flex: none; width: 44px; min-height: 44px; padding: 0; border: none; background: none;
+  color: var(--muted); display: inline-flex; align-items: center; justify-content: center;
+}
 
 .check {
   flex: none; width: 24px; height: 24px; min-height: 24px; padding: 0;
@@ -320,52 +338,20 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .row.pri3 { border-left-color: var(--p3); }
 .row.done { border-left-color: transparent; }
 
-/* ---------------- expanded row ----------------
-   Flat fields: no boxes, just an underline that brightens while you're in
-   it. The open row then looks like a closed row with its controls shown,
-   not like a form dropped into the list. */
-/* The name field and the store box are real boxes, the same as under the
-   add box. (An underline version was tried first and looked unfinished.)
-   .name-input's padding equals .row-main's, so the name doesn't move. */
-.row.open .name-input:focus { outline: none; border-color: var(--accent); }
-.row.open .name-input { font-weight: inherit; }
-.row.open .info-btn { border-color: transparent; background: color-mix(in srgb, var(--text) 7%, transparent); }
-/* inline-flex centres the tick; as a plain inline drawing it sat on the
-   text baseline, 3px high */
-.row.open .done-btn { display: inline-flex; align-items: center; justify-content: center;
-                      background: var(--accent); color: var(--on-accent); font-style: normal; font-family: inherit; }
-
-.open-head { display: flex; align-items: center; gap: 10px; }
-.name-input {
-  flex: 1; min-width: 0; font: inherit;
-  padding: 8px 10px; min-height: 40px;
-  border: 1px solid var(--line); border-radius: 8px;
-  background: var(--surface); color: var(--text);
-}
-/* One line: H/M/L on the left, the stores filling the rest on the right,
-   under the thumb — priority is mostly set by swiping right now (v5.1).
-   With prices and quantities gone there is room for a couple of shops; the
-   chip box wraps inside itself when there are more. */
-.open-controls {
-  display: flex; align-items: center; gap: 8px; margin-top: 10px;
-}
-.open-controls .chips { flex: 1 1 auto; }
-
-/* One control with three segments, the chosen one filled — rather than
-   three separate buttons, so it reads as a single decision. */
+/* One control with three segments, the chosen one filled in its stripe
+   colour — rather than three separate buttons, so it reads as a single
+   decision. Nothing is lit under the add box until you tap one. */
 .pri-group {
-  display: inline-flex; flex: none; overflow: hidden;
-  border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface);
+  display: flex; flex: 1; min-width: 0; height: 48px; overflow: hidden;
+  border-radius: 12px; background: color-mix(in srgb, var(--text) 8%, transparent);
 }
 .pri {
-  width: 36px; min-height: 38px; padding: 0; font-size: 15px; font-weight: 700;
-  border: none; border-radius: 0; background: transparent; color: var(--muted);
+  flex: 1; min-width: 0; min-height: 48px; padding: 0; border: none; border-radius: 0;
+  background: transparent; color: var(--muted); font-size: 16px; font-weight: 600;
 }
-.pri + .pri { border-left: 1px solid var(--line); }
-.pri.on + .pri, .pri.on { border-left-color: transparent; }
-.pri.on.v1 { background: var(--p1); border-color: var(--p1); color: var(--on-p1); }
-.pri.on.v2 { background: var(--p2); border-color: var(--p2); color: var(--on-p2); }
-.pri.on.v3 { background: var(--p3); border-color: var(--p3); color: #fff; }
+.pri.on.v1 { background: var(--p1); color: var(--on-p1); }
+.pri.on.v2 { background: var(--p2); color: var(--on-p2); }
+.pri.on.v3 { background: var(--p3); color: var(--on-p3); }
 
 /* 16px is the magic number: iOS Safari zooms the page in whenever you focus
    an input whose text is smaller than 16px. Never go below it. */
@@ -376,11 +362,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   background: var(--surface); color: var(--text);
 }
 .field-store { flex: 1; }
-.info-btn {
-  flex: none; width: 36px; min-height: 36px; padding: 0;
-  border-radius: 50%; border: 1.5px solid var(--line);
-  color: var(--muted); font-style: italic; font-weight: 700; font-family: Georgia, serif;
-}
 
 
 .empty { color: var(--muted); text-align: center; padding: 28px 12px; font-size: 15px; }
@@ -400,21 +381,19 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .repeat-days input { max-width: 150px; }
 
 /* ---------------- store chips ----------------
-   One item can be sold in several shops, so the store field is a row of
-   chips with a text box on the end. The box grows to fill whatever space
-   is left on the line and wraps onto a new one when there isn't any. */
+   One item can be sold in several shops, so the stores are a row of chips
+   with a text box on the end. In the dock it is one line that scrolls
+   sideways (the dock never changes height); a new chip scrolls into view. */
 .chips {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  flex: 1 1 110px; min-width: 0;
-  padding: 6px 8px; min-height: 44px;
-  border: 1px solid var(--line); border-radius: 9px; background: var(--surface);
+  display: flex; flex: 1; flex-wrap: nowrap; align-items: center; gap: 8px; min-width: 0;
+  min-height: 44px; overflow-x: auto; scrollbar-width: none;
 }
+.chips::-webkit-scrollbar { display: none; }
 .chip {
-  display: inline-flex; align-items: center; gap: 2px; text-transform: capitalize;
-  padding: 4px 4px 4px 11px; border-radius: 999px; font-size: 14px;
-  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
-  color: var(--text); white-space: nowrap;
+  flex: none; display: inline-flex; align-items: center; gap: 2px; height: 44px;
+  padding: 0 4px 0 13px; border-radius: 10px; font-size: 16px; white-space: nowrap;
+  text-transform: capitalize; color: var(--text);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
 }
 /* 28px is under the usual 44px target, but it sits inside a chip you can
    see the edges of, and getting it wrong only re-adds a store. */
@@ -423,12 +402,14 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   border: none; background: none; color: var(--muted); font-size: 17px;
   line-height: 1; display: inline-flex; align-items: center; justify-content: center;
 }
+/* the empty box looks like a chip still to be filled in */
 .chip-input {
-  flex: 1 1 60px; min-width: 60px; border: none; background: none; outline: none;
+  flex: 1 0 104px; min-width: 0; height: 44px; padding: 0 13px; outline: none;
   font-size: 16px;              /* below 16px and iOS zooms the page in */
-  line-height: 1.3; font-family: inherit; color: var(--text);
-  padding: 6px 6px; min-height: 32px;
+  font-family: inherit; color: var(--text); background: none;
+  border: 1.5px dashed color-mix(in srgb, var(--text) 24%, transparent); border-radius: 10px;
 }
+.chip-input:focus { border-style: solid; border-color: var(--accent); }
 
 /* inside the details sheet the box is on the sheet's own background */
 

@@ -15,7 +15,7 @@
      files change, including while testing a version that hasn't shipped
      yet. Leaving it still during a testing session means the phone keeps
      showing the fix you just made as if it never happened. -->
-<link rel="stylesheet" href="style.css?v=5.1">
+<link rel="stylesheet" href="style.css?v=20261017181708">
 </head>
 <body>
 
@@ -46,34 +46,34 @@
 
     <div class="safe-probe" id="safe-probe"></div>
     <div class="add-wrap">
+      <!-- No + up here any more (v5.2): the Add button is in the dock at
+           the bottom, by the thumb, and the keyboard's Done key adds too. -->
       <form class="add" id="add-form">
         <input id="add-input" placeholder="Add an item…" autocomplete="off"
-               enterkeyhint="done">
-        <button type="submit" aria-label="Add">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
-               stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14"/><path d="M12 5v14"/>
-          </svg>
-        </button>
+               aria-label="Add an item" enterkeyhint="done">
       </form>
-      <!-- Always visible. None of it has to be filled in — typing a name and
-           pressing Add still works on its own — but when you do want an item
-           to go straight to High, it's already in front of you. -->
-      <!-- Hidden until you tap into the box, so the home screen stays
-           clean. It stays while you're typing, and goes again once the box
-           is empty and you've tapped elsewhere. -->
-      <!-- the same line as an open row: H/M/L left, stores right -->
-      <div class="add-more open-controls hidden" id="add-more">
-        <div class="pri-group" id="add-pri">
-          <button type="button" class="pri v1" data-add-pri="1">H</button>
-          <button type="button" class="pri v2" data-add-pri="2">M</button>
-          <button type="button" class="pri v3" data-add-pri="3">L</button>
+      <!-- The dock: hidden until you tap into the box, so the home screen
+           stays clean. It stays while you're typing, and goes again once
+           the box is empty and you've tapped elsewhere. None of it has to be
+           filled in. The same dock as an open item. Fixed to the bottom of
+           the screen, but it lives in here so a tap in it counts as "in the
+           add box". -->
+      <div class="add-more dock hidden" id="add-more" role="group" aria-label="New item">
+        <div class="dock-row">
+          <div class="pri-group" id="add-pri">
+            <button type="button" class="pri v1" data-add-pri="1" aria-pressed="false">High</button>
+            <button type="button" class="pri v2" data-add-pri="2" aria-pressed="false">Medium</button>
+            <button type="button" class="pri v3" data-add-pri="3" aria-pressed="false">Low</button>
+          </div>
+          <button type="submit" form="add-form" class="dock-main">Add</button>
         </div>
-        <!-- the same chip box as an open row: Enter, comma or tapping away
+        <!-- the same chip box as an open item: Enter, comma or tapping away
              makes a chip; × removes one; several stores per item -->
-        <div class="chips" id="add-stores">
-          <input class="chip-input" id="add-store" list="store-names" placeholder="store"
-                 autocomplete="off" autocapitalize="words" enterkeyhint="done">
+        <div class="dock-row">
+          <div class="chips" id="add-stores">
+            <input class="chip-input" id="add-store" list="store-names" placeholder="+ store"
+                   aria-label="Add a store" autocomplete="off" autocapitalize="words" enterkeyhint="done">
+          </div>
         </div>
       </div>
       <!-- our own suggestion list. The browser's built-in one is drawn
@@ -240,8 +240,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"
         integrity="sha384-Rj26LVGvoeRVR6+mwQmFfcR3QOBEwT+ZmuCWpuiqeTzJpCs0ER4ITAWGb4Hiy3Ok"
         crossorigin="anonymous"></script>
-<script src="aisles.js?v=5.1"></script>
-<script src="sync.js?v=5.1"></script>
-<script src="app.js?v=5.1"></script>
+<script src="aisles.js?v=20261017181708"></script>
+<script src="sync.js?v=20261017181708"></script>
+<script src="app.js?v=20261017181708"></script>
 </body>
 </html>
