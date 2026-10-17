@@ -200,8 +200,10 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .caret { display: inline-block; transition: transform .15s; }
 .collapsed .caret { transform: rotate(-90deg); }
 
+/* Square on the left, where the priority stripe runs; rounded on the
+   right (v5.1). */
 .card { background: var(--surface); border: 1px solid var(--line);
-        border-radius: var(--radius); overflow: hidden; }
+        border-radius: 0 var(--radius) var(--radius) 0; overflow: hidden; }
 
 .row { display: flex; align-items: center; gap: 10px; padding: 5px 12px;
        border-top: 1px solid var(--line); }
@@ -260,7 +262,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   /* a shade lighter than a row, so it reads as lifted in dark mode too */
   padding: 0 12px 12px; background: color-mix(in srgb, var(--text) 4%, var(--surface));
   border: 1px solid var(--line); border-left-width: 4px;
-  border-radius: var(--radius);
+  border-radius: 0 var(--radius) var(--radius) 0;   /* square on the stripe side, like the cards */
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.3);   /* one depth style: tight, offset */
 }
 .open-float .open-head { display: flex; align-items: flex-start; gap: 10px; padding-top: 5px; }
