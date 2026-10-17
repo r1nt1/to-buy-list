@@ -439,7 +439,9 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   flex: none; min-height: 44px; padding: 0 16px; border: none; background: none;
   color: var(--accent); font: inherit; font-weight: 700;
 }
-.tab-icon { font-size: 20px; line-height: 1; }
+.tab-icon { line-height: 1; }
+.tab-icon svg, .caret svg, .check svg { display: block; }
+.check svg { margin: auto; }
 
 /* ---------------- details sheet ---------------- */
 dialog {

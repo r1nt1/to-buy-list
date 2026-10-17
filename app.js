@@ -29,6 +29,18 @@ const PRI_LABEL  = { 1: 'High', 2: 'Medium', 3: 'Low' };
 const PRI_SHORT  = { 1: 'H', 2: 'M', 3: 'L' };
 const NO_STORE   = 'other';   // lowercase like every store; the styling capitalises
 
+/* Icons from Lucide (lucide.dev, ISC licence — see LICENSE-lucide.txt),
+   copied in as drawings rather than loaded, so they work offline. */
+const ICON_PATHS = {
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  chevronDown: '<path d="m6 9 6 6 6-6"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'
+};
+const icon = (name, size = 16, stroke = 2) =>
+  '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="none" ' +
+  'stroke="currentColor" stroke-width="' + stroke + '" stroke-linecap="round" ' +
+  'stroke-linejoin="round" aria-hidden="true">' + ICON_PATHS[name] + '</svg>';
+
 /* ---------------------------------------------------------------
    1. State
    --------------------------------------------------------------- */
@@ -383,7 +395,7 @@ function groupHeadHtml({ attr, key, label, count, open, tone = '', whole = false
     '<button class="gh-label" ' + attr + '="' + esc(key) + '">' +
       esc(label) + ' · ' + count + '</button>' +
     '<button class="gh-caret" ' + attr + '="' + esc(key) + '" aria-label="' +
-      (open ? 'Collapse ' : 'Expand ') + esc(label) + '"><span class="caret">⌄</span></button>' +
+      (open ? 'Collapse ' : 'Expand ') + esc(label) + '"><span class="caret">' + icon('chevronDown', 17, 2.2) + '</span></button>' +
   '</div>';
 }
 
@@ -469,7 +481,7 @@ function rowHtml(item) {
       // number — a "1" next to Chicken read like "buy one chicken".
       '<div class="row pri' + item.priority + (item.done ? ' done' : '') +
         '" data-id="' + item.id + '">' +
-        '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
+        '<button class="check" data-act="toggle-done" aria-label="Check off">' + icon('check', 14, 3) + '</button>' +
         '<button class="row-main" data-act="open">' +
           '<span class="row-line">' +
             '<span class="row-name">' + esc(item.name) +
@@ -495,12 +507,12 @@ function openRowHtml(item) {
     '<div class="row open pri' + item.priority + '" data-id="' + item.id + '"' +
       (openHeight ? ' style="height:' + openHeight + 'px"' : '') + '>' +
       '<div class="open-head">' +
-        '<button class="check" data-act="toggle-done" aria-label="Check off">✓</button>' +
+        '<button class="check" data-act="toggle-done" aria-label="Check off">' + icon('check', 14, 3) + '</button>' +
         '<input class="name-input" data-field="name" value="' + esc(item.name) + '" ' +
           'enterkeyhint="done" autocomplete="off">' +
         '<button class="info-btn" data-act="info" aria-label="More details">i</button>' +
         // A big, obvious way out — tapping empty space to close was fiddly.
-        '<button class="info-btn done-btn" data-act="close" aria-label="Done">✓</button>' +
+        '<button class="info-btn done-btn" data-act="close" aria-label="Done">' + icon('check', 18, 2.6) + '</button>' +
       '</div>' +
     '</div>' +
     '</div>';
@@ -546,7 +558,7 @@ function placePanel(justOpened) {
 function chipHtml(name) {
   return '<span class="chip">' + esc(name) +
          '<button type="button" class="chip-x" data-act="chip-remove" ' +
-         'data-value="' + esc(name) + '" aria-label="Remove ' + esc(name) + '">×</button></span>';
+         'data-value="' + esc(name) + '" aria-label="Remove ' + esc(name) + '">' + icon('x', 15, 2.2) + '</button></span>';
 }
 
 /* The whole box: the chips already on, then a text box for the next one.
