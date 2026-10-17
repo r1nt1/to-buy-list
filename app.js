@@ -438,9 +438,12 @@ function byPlaceHtml(items, kind) {
     // An item tagged with two shops appears under both.
     const group = items.filter((i) => keysOf(i).includes(key))
                        .sort((a, b) => a.done - b.done || a.priority - b.priority || dueFirst(a, b));
+    // A shop or aisle with nothing left to buy there isn't shown at all.
+    const toBuy = group.filter((i) => !i.done).length;
+    if (!toBuy) continue;
     const isOpen = open.includes(key);
     html += groupHeadHtml({ attr: kind === 'store' ? 'data-store' : 'data-aisle', key, label: key,
-                            count: group.filter((i) => !i.done).length, open: isOpen,
+                            count: toBuy, open: isOpen,
                             tone: 'gh-place' });
     if (isOpen) html += '<div class="card">' + group.map(rowHtml).join('') + '</div>';
   }
