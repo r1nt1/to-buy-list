@@ -9,19 +9,16 @@
   --line:    #e3e6ea;
   --text:    #14181d;
   --muted:   #6b7280;
-  /* Palette B, "warm ramp" (2026-10-01): priority runs hot to cool —
-     coral, amber, grey. Palette C (greys) and A are kept in IDEAS.md. */
-  --accent:  #1a8fb5;   /* blue: Add, cart bar, ticks */
-  --on-accent: #14181d; /* dark text on every filled colour: white was under 4.5:1 */
-  --p1:      #e2542f;   /* priority 1 — coral */
-  --p2:      #b8860b;   /* priority 2 — amber */
-  --p3:      #7b8794;   /* priority 3 — grey */
-  --on-p1:   #14181d;   /* text on a chosen High / Medium / Low chip */
-  --on-p2:   #14181d;
-  --on-p3:   #14181d;
-  --remind:  #6b4fd6;   /* the "due" reminder: a note, not a warning */
-  --warn:    #c9971a;   /* budget nearly spent */
-  --over:    #c62f35;   /* budget over, delete */
+  --accent:  #1f9d6f;   /* green: Add, cart bar, ticks */
+  --on-accent: #ffffff;
+  --p1:      #14181d;   /* priority 1 — darkest stripe: priority is brightness, not hue */
+  --p2:      #6b7280;   /* priority 2 */
+  --p3:      #b6bcc4;   /* priority 3 — faintest */
+  --on-p1:   #ffffff;   /* text on a chosen High / Medium chip */
+  --on-p2:   #ffffff;
+  --remind:  #2f6df6;   /* the "due" reminder: a note, not a warning */
+  --warn:    #b8860b;   /* budget nearly spent */
+  --over:    #d7263d;   /* budget over, delete: the only true red */
   --radius:  14px;
 }
 
@@ -33,17 +30,16 @@
     --line:    #2b313a;
     --text:    #eef1f5;
     --muted:   #939ba6;
-    --accent:  #4fc3e8;
-    --on-accent: #0b1a20;
-    --p1:      #ff7a5c;
-    --p2:      #efc05c;
-    --p3:      #7b8794;
+    --accent:  #5bd9a6;
+    --on-accent: #0b1a14;
+    --p1:      #e6e9ec;
+    --p2:      #8d959e;
+    --p3:      #4a5158;
     --on-p1:   #14181d;
-    --on-p2:   #14181d;
-    --on-p3:   #14181d;
-    --remind:  #a98bff;
+    --on-p2:   #ffffff;
+    --remind:  #6ea8fe;
     --warn:    #efc05c;
-    --over:    #e04a50;
+    --over:    #f05a5a;
   }
 }
 
@@ -399,7 +395,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .pri.on + .pri, .pri.on { border-left-color: transparent; }
 .pri.on.v1 { background: var(--p1); border-color: var(--p1); color: var(--on-p1); }
 .pri.on.v2 { background: var(--p2); border-color: var(--p2); color: var(--on-p2); }
-.pri.on.v3 { background: var(--p3); border-color: var(--p3); color: var(--on-p3); }
+.pri.on.v3 { background: var(--p3); border-color: var(--p3); color: #fff; }
 
 /* 16px is the magic number: iOS Safari zooms the page in whenever you focus
    an input whose text is smaller than 16px. Never go below it. */
