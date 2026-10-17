@@ -193,6 +193,10 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .gh1 { color: var(--p1); }
 .gh2 { color: var(--p2); }
 .gh3 { color: var(--p3); }
+/* Store and aisle headings are places, not priorities: plain text colour
+   (white in dark mode). They used to borrow Medium's grey. */
+.gh-place { color: var(--text); }
+.group-head[data-store], .group-head[data-aisle] { cursor: pointer; }
 .caret { display: inline-block; transition: transform .15s; }
 .collapsed .caret { transform: rotate(-90deg); }
 
@@ -358,26 +362,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 
 .empty { color: var(--muted); text-align: center; padding: 28px 12px; font-size: 15px; }
 
-/* ---------------- group by aisle ---------------- */
-.list-tools { display: flex; justify-content: flex-end; margin: 4px 2px 4px; }
-.list-tools { margin-bottom: 12px; }   /* air between the switch and the due line */
-.tool {
-  min-height: 34px; padding: 5px 12px; border-radius: 999px;
-  border: 1px solid var(--line); background: transparent;
-  font-size: 13px; color: var(--muted);
-}
-.tool.on {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
-  color: var(--accent);
-}
-/* aisle headings inside an open shop — quieter than a top-level heading,
-   because the shop above them is the thing you're really looking at */
-.sub-head {
-  margin: 14px 4px 6px; font-size: 12px; font-weight: 600;
-  letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
-}
-.sub-head:first-child { margin-top: 4px; }
 
 .fake-today { margin: 4px 2px 8px; font-size: 13px; color: var(--muted); text-align: center; }
 

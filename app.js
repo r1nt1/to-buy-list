@@ -113,11 +113,11 @@ function seedState() {
   return {
     schema: 2, mode: 'priority',
     expanded: [],        // which store groups are open — none, to begin with
+    expandedAisles: [],  // the same for the Aisles tab
     // Which sections are shut: Low (the parking bay) and Bought (which never
     // empties) start shut, and after that it's whatever you last did.
     collapsedPri: [3, 'bought'],
     collapseDefaults: true,
-    byAisle: false,      // group by aisle? off unless you switch it on
     skipAsk: {},         // confirmations you've ticked "don't ask me again" on
     items: [
       newItem('Rice',      { priority: 1 }),
@@ -138,8 +138,8 @@ function migrateFromV1(old) {
     schema: 2,
     mode: 'priority',
     expanded: [],
+    expandedAisles: [],
     collapsedPri: [],
-    byAisle: false,
     skipAsk: {},
     items: (old.items || []).map((i) => normaliseItem({
       ...newItem(i.name),
@@ -172,7 +172,8 @@ function load() {
         parsed.expanded = parsed.expanded.map((s) => String(s).toLowerCase());
         if (!Array.isArray(parsed.collapsedPri)) parsed.collapsedPri = [];
         collapseDefaults(parsed);
-        if (typeof parsed.byAisle !== 'boolean') parsed.byAisle = false;
+        if (!Array.isArray(parsed.expandedAisles)) parsed.expandedAisles = [];
+        delete parsed.byAisle;   // the Group by aisle switch went in v5.1
         if (!parsed.skipAsk || typeof parsed.skipAsk !== 'object') parsed.skipAsk = {};
         delete parsed.budget;   // the budget went in v5.1
         parsed.items.forEach(normaliseItem);
@@ -351,11 +352,14 @@ function renderTrip() {
 
   $('#trip-list').innerHTML =
     fakeTodayHtml() +
-    // Stores tab: bought things stay in their shop, greyed out, and there is
-    // no separate cart section — the question there is "what did I get where".
-    (state.mode === 'store' ? byStoreHtml(onTrip) : byPriorityHtml(pend)) +
+    // Stores and Aisles tabs: bought things stay in their group, greyed
+    // out, and there is no separate Bought section — the question there is
+    // "what did I get here".
+    (state.mode === 'store' ? byPlaceHtml(onTrip, 'store')
+      : state.mode === 'aisle' ? byPlaceHtml(onTrip, 'aisle')
+      : byPriorityHtml(pend)) +
     emptyHtml(pend, onTrip) +
-    (state.mode === 'store' ? '' : cartHtml(inCart)) +
+    (state.mode === 'priority' ? cartHtml(inCart) : '') +
     openPanelHtml();
   placePanel(false);
 
@@ -370,9 +374,12 @@ function renderTrip() {
    chevron on the right. The space between is deliberately dead,
    because that gap is how you dismiss an open row — if the whole heading were
    one button, tapping the blank part would collapse the section instead. */
-function groupHeadHtml({ attr, key, label, count, open, tone = '' }) {
+function groupHeadHtml({ attr, key, label, count, open, tone = '', whole = false }) {
+  // whole: the entire heading opens and closes it (Stores and Aisles tabs,
+  // where the list is a column of shut headings to pick from).
   return '<div class="group-head' + (open ? '' : ' collapsed') +
-           (tone ? ' ' + tone : '') + '">' +
+           (tone ? ' ' + tone : '') + '"' +
+           (whole ? ' ' + attr + '="' + esc(key) + '"' : '') + '>' +
     '<button class="gh-label" ' + attr + '="' + esc(key) + '">' +
       esc(label) + ' · ' + count + '</button>' +
     '<button class="gh-caret" ' + attr + '="' + esc(key) + '" aria-label="' +
@@ -400,46 +407,37 @@ function byPriorityHtml(pend) {
   return html;
 }
 
-/* Aisles inside one shop — the only place aisles group anything.
+/* The Stores and Aisles tabs: the same list, regrouped by where you buy
+   it or by what kind of thing it is. Every group starts shut; tap a heading
+   to open it.
 
-   Grouping the *priority* list by aisle was built and then taken out: with a
-   real list it fell into a dozen groups of one. Walking order only matters
-   once you are standing in a shop anyway.
-
-   These headings don't collapse — the store above them already does, and two
-   levels of folding is one too many. */
-function aisleSubHtml(group) {
-  let html = '';
-  for (const aisle of AISLES) {
-    const sub = group.filter((i) => aisleOf(i) === aisle);
-    if (!sub.length) continue;
-    html += '<div class="sub-head">' + esc(aisle) + '</div>' +
-            '<div class="card">' + sub.map(rowHtml).join('') + '</div>';
+   Aisles never group the *priority* list: with a real list that fell into
+   a dozen groups of one. The Aisles tab (v5.1) is its own arrangement, and
+   replaced the old "Group by aisle" switch inside a store. */
+function byPlaceHtml(items, kind) {
+  const keysOf = kind === 'store' ? storesOf : (i) => [aisleOf(i)];
+  const open = kind === 'store' ? state.expanded : state.expandedAisles;
+  const keys = [...new Set(items.flatMap(keysOf))];
+  // Stores alphabetically, "Other" last; aisles in the dictionary's order,
+  // which ends with Other too.
+  if (kind === 'store') {
+    keys.sort((a, b) => Number(a === NO_STORE) - Number(b === NO_STORE) || a.localeCompare(b));
+  } else {
+    keys.sort((a, b) => AISLES.indexOf(a) - AISLES.indexOf(b));
   }
-  return html;
-}
-
-function byStoreHtml(pend) {
-  // Real stores alphabetically, "Other" always last.
-  const stores = [...new Set(pend.flatMap(storesOf))]
-    .sort((a, b) => Number(a === NO_STORE) - Number(b === NO_STORE) || a.localeCompare(b));
 
   let html = '';
-  for (const store of stores) {
-    // Inside a store, the most urgent things come first — same order as the
-    // priority view, so a 1 is never buried under a 2.
+  for (const key of keys) {
+    // Inside a group, the most urgent things come first — same order as the
+    // priority view, so a 1 is never buried under a 2. Bought things last.
     // An item tagged with two shops appears under both.
-    const group = pend.filter((i) => storesOf(i).includes(store))
-                      .sort((a, b) => a.done - b.done || a.priority - b.priority || dueFirst(a, b));
-    const isOpen = state.expanded.includes(store);
-
-    html += groupHeadHtml({ attr: 'data-store', key: store, label: store,
-                            count: group.length, open: isOpen });
-
-    if (isOpen) {
-      html += state.byAisle ? aisleSubHtml(group)
-                            : '<div class="card">' + group.map(rowHtml).join('') + '</div>';
-    }
+    const group = items.filter((i) => keysOf(i).includes(key))
+                       .sort((a, b) => a.done - b.done || a.priority - b.priority || dueFirst(a, b));
+    const isOpen = open.includes(key);
+    html += groupHeadHtml({ attr: kind === 'store' ? 'data-store' : 'data-aisle', key, label: key,
+                            count: group.filter((i) => !i.done).length, open: isOpen,
+                            tone: 'gh-place', whole: true });
+    if (isOpen) html += '<div class="card">' + group.map(rowHtml).join('') + '</div>';
   }
   return html;
 }
@@ -587,12 +585,6 @@ function cartHtml(inCart) {
 function render() {
   /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.tab')).forEach((b) =>
     b.classList.toggle('active', b.dataset.mode === state.mode));
-  // Aisles only mean something inside one shop, so the switch only exists
-  // in the tab where shops do.
-  $('.list-tools').classList.toggle('hidden', state.mode !== 'store');
-  $('#aisle-toggle').classList.toggle('on', state.byAisle);
-  $('#aisle-toggle').setAttribute('aria-pressed', String(state.byAisle));
-  $('#aisle-toggle').textContent = state.byAisle ? 'Grouped by aisle' : 'Group by aisle';
   $('#version').textContent = 'version ' + VERSION +
     (FAKE_TODAY ? ' · pretending today is ' + FAKE_TODAY : '');
 
@@ -677,6 +669,17 @@ function handleClick(event) {
       state.expanded = state.expanded.includes(store)
         ? state.expanded.filter((s) => s !== store)
         : [...state.expanded, store];
+    });
+    return;
+  }
+
+  const aisleHead = event.target.closest('[data-aisle]');
+  if (aisleHead) {                             // collapse / expand an aisle group
+    const aisle = aisleHead.dataset.aisle;
+    update(() => {
+      state.expandedAisles = state.expandedAisles.includes(aisle)
+        ? state.expandedAisles.filter((a) => a !== aisle)
+        : [...state.expandedAisles, aisle];
     });
     return;
   }
@@ -1098,13 +1101,6 @@ document.addEventListener('click', (e) => {
   if (!(/** @type {Element} */ (e.target)).closest('.add-wrap')) suggestBox.classList.add('hidden');
 });
 
-/* ---------------- group by aisle ---------------- */
-$('#aisle-toggle').addEventListener('click', () => {
-  commitOpenRow();
-  update(() => { state.byAisle = !state.byAisle; openId = null; });
-  window.scrollTo(0, 0);
-});
-
 /* ---------------- view toggle ---------------- */
 
 
@@ -1144,7 +1140,9 @@ function needAgain(item) {
     update(() => {
       state.mode = tab.dataset.mode;
       openId = null;
-      if (state.mode === 'store') state.expanded = [];   // arrive with all stores shut
+      // arrive with every group shut
+      if (state.mode === 'store') state.expanded = [];
+      if (state.mode === 'aisle') state.expandedAisles = [];
     });
     window.scrollTo(0, 0);
   });
@@ -1474,7 +1472,8 @@ function adoptFromCloud(data) {
   if (!Array.isArray(state.expanded))  state.expanded  = [];
   if (!Array.isArray(state.collapsedPri)) state.collapsedPri = [];
   collapseDefaults(state);
-  if (typeof state.byAisle !== 'boolean') state.byAisle = false;
+  if (!Array.isArray(state.expandedAisles)) state.expandedAisles = [];
+  delete state.byAisle;
   if (!state.skipAsk || typeof state.skipAsk !== 'object') state.skipAsk = {};
   delete state.budget;
   state.items.forEach(normaliseItem);
