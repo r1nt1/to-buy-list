@@ -22,9 +22,6 @@ const VERSION = ((/** @type {HTMLScriptElement | null} */ (document.querySelecto
 const STORAGE_KEY = 'groceries.v2';
 const OLD_KEY     = 'groceries.v1';   // read once, to carry old data forward
 
-// Change this if you want a different currency, e.g. '$' or '€'.
-const CURRENCY = 'S/';
-
 const PRIORITIES = [1, 2, 3];
 // 3 (Low) doubles as the parking bay: things you want eventually but are
 // not buying on this trip. Swiping a row left drops it here.
@@ -42,8 +39,6 @@ function newItem(name, extra = {}) {
     name,
     stores: [],         // free text, and more than one — rice is sold in both
     priority: 2,
-    price: null,        // null means "haven't said what it costs"
-    qty: 1,
     note: '',
     inTrip: true,
     done: false,
@@ -69,6 +64,10 @@ function normaliseItem(i) {
   // into one, which used to give two headings in the Stores tab.
   i.stores = [...new Set(i.stores.map((s) => String(s).trim().toLowerCase()).filter(Boolean))];
   delete i.store;
+  // Prices and quantities went in v5.1 — deleted, not hidden (Alex's
+  // call). Need four? Type "Eggs 4" in the name.
+  delete i.price;
+  delete i.qty;
   if (typeof i.repeatDays !== 'number' || !(i.repeatDays > 0)) i.repeatDays = null;
   // Guessed once, then stored — so whatever you set by hand is never
   // silently overwritten by the dictionary later on.
@@ -85,35 +84,34 @@ function demoState() {
   const it = (name, priority, extra = {}) => newItem(name, { priority, inTrip: true, ...extra });
   return {
     ...seedState(),
-    budget: 250,
     items: [
-      it('Chicken thighs', 1, { stores: ['metro'], price: 24 }),
-      it('Rice', 1, { stores: ['metro', 'plaza vea'], price: 12, qty: 2, repeatDays: 30, lastBought: d(95), timesBought: 6 }),
-      it('Eggs', 1, { stores: ['metro'], price: 14, repeatDays: 7, lastBought: d(9), timesBought: 22 }),
-      it('Milk', 1, { stores: ['metro', 'wong'], price: 5.5, qty: 3 }),
-      it('Bread', 1, { price: 4, done: true, lastBought: d(0), timesBought: 30 }),
-      it('Onions', 1, { stores: ['plaza vea'], price: 3 }),
-      it('Tomatoes', 1, { stores: ['plaza vea'], price: 6 }),
-      it('Olive oil', 2, { stores: ['wong'], price: 38, note: 'the big bottle, not the small one' }),
-      it('Coffee', 2, { stores: ['metro'], price: 30, repeatDays: 14, lastBought: d(20), timesBought: 9 }),
-      it('Bananas', 2, { price: 6, done: true, lastBought: d(0), timesBought: 12 }),
-      it('Dish soap', 2, { stores: ['plaza vea'], price: 9, repeatDays: 60, lastBought: d(30), timesBought: 4 }),
-      it('Yogurt', 2, { stores: ['wong'], price: 7, qty: 4 }),
-      it('Pasta', 2, { stores: ['metro', 'plaza vea'], price: 5 }),
-      it('Toilet paper', 2, { stores: ['plaza vea'], price: 22, repeatDays: 30, lastBought: d(40), timesBought: 8 }),
-      it('Cheese', 2, { stores: ['wong'], price: 18, note: 'edam' }),
-      it('Light bulbs', 3, { stores: ['sodimac'], price: 15 }),
-      it('Treadmill', 3, { stores: ['sodimac'], price: 1400 }),
-      it('Ice cream', 3, { stores: ['wong'], price: 16 }),
-      it('Batteries AA', 3, { stores: ['sodimac', 'metro'], price: 12 }),
-      it('Candles', 3, { price: 8 })
+      it('Chicken thighs', 1, { stores: ['metro'] }),
+      it('Rice x2', 1, { stores: ['metro', 'plaza vea'], repeatDays: 30, lastBought: d(95), timesBought: 6 }),
+      it('Eggs', 1, { stores: ['metro'], repeatDays: 7, lastBought: d(9), timesBought: 22 }),
+      it('Milk x3', 1, { stores: ['metro', 'wong'] }),
+      it('Bread', 1, { done: true, lastBought: d(0), timesBought: 30 }),
+      it('Onions', 1, { stores: ['plaza vea'] }),
+      it('Tomatoes', 1, { stores: ['plaza vea'] }),
+      it('Olive oil', 2, { stores: ['wong'], note: 'the big bottle, not the small one' }),
+      it('Coffee', 2, { stores: ['metro'], repeatDays: 14, lastBought: d(20), timesBought: 9 }),
+      it('Bananas', 2, { done: true, lastBought: d(0), timesBought: 12 }),
+      it('Dish soap', 2, { stores: ['plaza vea'], repeatDays: 60, lastBought: d(30), timesBought: 4 }),
+      it('Yogurt 4', 2, { stores: ['wong'] }),
+      it('Pasta', 2, { stores: ['metro', 'plaza vea'] }),
+      it('Toilet paper', 2, { stores: ['plaza vea'], repeatDays: 30, lastBought: d(40), timesBought: 8 }),
+      it('Cheese', 2, { stores: ['wong'], note: 'edam' }),
+      it('Light bulbs', 3, { stores: ['sodimac'] }),
+      it('Treadmill', 3, { stores: ['sodimac'] }),
+      it('Ice cream', 3, { stores: ['wong'] }),
+      it('Batteries AA', 3, { stores: ['sodimac', 'metro'] }),
+      it('Candles', 3, {})
     ]
   };
 }
 
 function seedState() {
   return {
-    schema: 2, budget: 0, mode: 'priority',
+    schema: 2, mode: 'priority',
     expanded: [],        // which store groups are open — none, to begin with
     collapsedPri: [],    // which priority sections are shut — none, to begin with
     byAisle: false,      // group by aisle? off unless you switch it on
@@ -135,7 +133,6 @@ function migrateFromV1(old) {
   const map = { must: 1, should: 2, maybe: 3 };
   return {
     schema: 2,
-    budget: old.budget || 0,
     mode: 'priority',
     expanded: [],
     collapsedPri: [],
@@ -146,8 +143,6 @@ function migrateFromV1(old) {
       id: i.id,
       stores: [],
       priority: map[i.priority] || 2,
-      price: i.price ?? null,
-      qty: i.qty || 1,
       note: i.category && i.category !== 'Other' ? 'was category: ' + i.category : '',
       inTrip: !!i.inTrip,
       done: !!i.done,
@@ -175,6 +170,7 @@ function load() {
         if (!Array.isArray(parsed.collapsedPri)) parsed.collapsedPri = [];
         if (typeof parsed.byAisle !== 'boolean') parsed.byAisle = false;
         if (!parsed.skipAsk || typeof parsed.skipAsk !== 'object') parsed.skipAsk = {};
+        delete parsed.budget;   // the budget went in v5.1
         parsed.items.forEach(normaliseItem);
         return parsed;
       }
@@ -210,7 +206,6 @@ let state = DEMO ? demoState() : load();
    --------------------------------------------------------------- */
 
 const $ = (sel) => document.querySelector(sel);
-const money = (n) => CURRENCY + (Math.round(n * 100) / 100).toFixed(2);
 
 function esc(str) {
   return String(str).replace(/[&<>"']/g, (c) => (
@@ -288,7 +283,6 @@ function isDue(item) {
   return since !== null && since >= item.repeatDays;
 }
 
-const lineTotal = (item) => (item.price || 0) * (item.qty || 1);
 const byName    = (a, b) => a.name.localeCompare(b.name);
 const findItem  = (id) => state.items.find((i) => i.id === id);
 const tripItems = () => state.items.filter((i) => i.inTrip);
@@ -327,18 +321,14 @@ function renderTrip() {
   const onTrip  = tripItems();
   const inCart  = onTrip.filter((i) => i.done).sort(byName);
   const pend    = onTrip.filter((i) => !i.done);
-  const cartSum = inCart.reduce((s, i) => s + lineTotal(i), 0);
-
-  renderBudget(cartSum);
 
   $('#trip-list').innerHTML =
     fakeTodayHtml() +
     // Stores tab: bought things stay in their shop, greyed out, and there is
-    // no separate cart section — the question there is "what did I get
-    // where, and what did it cost", so a store's total keeps counting them.
+    // no separate cart section — the question there is "what did I get where".
     (state.mode === 'store' ? byStoreHtml(onTrip) : byPriorityHtml(pend)) +
     emptyHtml(pend, onTrip) +
-    (state.mode === 'store' ? '' : cartHtml(inCart, cartSum));
+    (state.mode === 'store' ? '' : cartHtml(inCart));
 
   if (focusPending && openId) {
     const input = $('.name-input');
@@ -347,16 +337,15 @@ function renderTrip() {
   focusPending = false;
 }
 
-/* A section heading with three tap targets: the label on the left, the
-   total and the chevron on the right. The space between is deliberately dead,
+/* A section heading with two tap targets: the label on the left and the
+   chevron on the right. The space between is deliberately dead,
    because that gap is how you dismiss an open row — if the whole heading were
    one button, tapping the blank part would collapse the section instead. */
-function groupHeadHtml({ attr, key, label, count, sum, open, tone = '' }) {
+function groupHeadHtml({ attr, key, label, count, open, tone = '' }) {
   return '<div class="group-head' + (open ? '' : ' collapsed') +
            (tone ? ' ' + tone : '') + '">' +
     '<button class="gh-label" ' + attr + '="' + esc(key) + '">' +
       esc(label) + ' · ' + count + '</button>' +
-    (sum > 0 ? '<button class="sum" ' + attr + '="' + esc(key) + '">' + money(sum) + '</button>' : '') +
     '<button class="gh-caret" ' + attr + '="' + esc(key) + '" aria-label="' +
       (open ? 'Collapse ' : 'Expand ') + esc(label) + '"><span class="caret">⌄</span></button>' +
   '</div>';
@@ -369,19 +358,14 @@ function fakeTodayHtml() {
     ? '<div class="fake-today">Pretending today is ' + esc(FAKE_TODAY) + '</div>' : '';
 }
 
-/* There used to be a "budget runs out here" line drawn across the list.
-   It went: within a section the items are alphabetical, so the line cut
-   through things you fully intended to buy just because their names came
-   late. The bar at the top does the job honestly instead. */
 function byPriorityHtml(pend) {
   let html = '';
   for (const p of PRIORITIES) {
     const group = pend.filter((i) => i.priority === p).sort(byName);
     if (!group.length) continue;
-    const sum  = group.reduce((s, i) => s + lineTotal(i), 0);
     const open = !state.collapsedPri.includes(p);
     html += groupHeadHtml({ attr: 'data-pri', key: p, label: PRI_LABEL[p],
-                            count: group.length, sum, open, tone: 'gh' + p });
+                            count: group.length, open, tone: 'gh' + p });
     if (open) html += '<div class="card">' + group.map(rowHtml).join('') + '</div>';
   }
   return html;
@@ -415,16 +399,13 @@ function byStoreHtml(pend) {
   for (const store of stores) {
     // Inside a store, the most urgent things come first — same order as the
     // priority view, so a 1 is never buried under a 2.
-    // An item tagged with two shops appears under both. Each heading's
-    // total therefore answers "if I buy everything here, what does it cost" —
-    // the figure at the top of the screen still counts each item once.
+    // An item tagged with two shops appears under both.
     const group = pend.filter((i) => storesOf(i).includes(store))
                       .sort((a, b) => a.done - b.done || a.priority - b.priority || byName(a, b));
     const isOpen = state.expanded.includes(store);
-    const sum = group.reduce((s, i) => s + lineTotal(i), 0);
 
     html += groupHeadHtml({ attr: 'data-store', key: store, label: store,
-                            count: group.length, sum, open: isOpen });
+                            count: group.length, open: isOpen });
 
     if (isOpen) {
       html += state.byAisle ? aisleSubHtml(group)
@@ -437,8 +418,7 @@ function byStoreHtml(pend) {
 function rowHtml(item) {
   if (item.id === openId) return openRowHtml(item);
 
-  // The price sits on the name's line, hard right under the section total.
-  // That leaves the whole second line for the stores, so all of them fit.
+  // The stores get the whole second line, so all of them fit.
   const bits = [];
   if (item.stores.length && state.mode !== 'store') {
     bits.push(...item.stores.map((s) => '<span class="store-name">' + esc(s) + '</span>'));
@@ -461,11 +441,9 @@ function rowHtml(item) {
         '<button class="row-main" data-act="open">' +
           '<span class="row-line">' +
             '<span class="row-name">' + esc(item.name) +
-              (item.qty > 1 ? ' <span class="row-qty">×' + item.qty + '</span>' : '') +
               // A marker only. Deciding it is worth buying stays your job.
               (due ? ' <span class="due-pill">⟳ due</span>' : '') +
             '</span>' +
-            (item.price ? '<span class="row-price">' + money(lineTotal(item)) + '</span>' : '') +
           '</span>' +
           (bits.length ? '<span class="row-sub">' + bits.join(' · ') + '</span>' : '') +
           (due ? '<span class="row-sub row-due">bought ' + ago(item.lastBought) + '</span>' : '') +
@@ -496,20 +474,7 @@ function openRowHtml(item) {
       // only grows when you actually put a second shop in it.
       '<div class="open-controls">' +
         '<div class="pri-group">' + pri + '</div>' +
-        // Quantity lives here because it's the thing you change most while
-        // shopping. Reminders and notes are set once, so they stay in the sheet.
-        '<div class="qty-step">' +
-          '<button class="qty-btn" data-act="qty" data-delta="-1" aria-label="One fewer">−</button>' +
-          '<span class="qty-val">' + (item.qty || 1) + '</span>' +
-          '<button class="qty-btn" data-act="qty" data-delta="1" aria-label="One more">+</button>' +
-        '</div>' +
         chipsHtml(item.stores, 'store-add') +
-        // A capsule like the other two, so the three read as one family.
-        '<label class="price-wrap"><span class="price-cur">' + CURRENCY + '</span>' +
-          '<input class="field field-price" data-field="price" type="number" min="0" ' +
-            'step="0.01" inputmode="decimal" enterkeyhint="done" placeholder="price" ' +
-            'value="' + (item.price ?? '') + '">' +
-        '</label>' +
       '</div>' +
     '</div>';
 }
@@ -537,48 +502,17 @@ function chipsHtml(stores, field, id) {
 function emptyHtml(pend, onTrip) {
   if (pend.length) return '';
   return '<p class="empty">' + (onTrip.length
-    ? 'Everything is bought. 🎉<br>When you need something again, type it above —<br>it comes back with its store and price.'
+    ? 'Everything is bought. 🎉<br>When you need something again, type it above —<br>it comes back with its store and priority.'
     : 'Nothing on your list yet.<br>Start typing above — the box remembers everything<br>you have bought before.')
     + '</p>';
 }
 
-function cartHtml(inCart, cartSum) {
+function cartHtml(inCart) {
   if (!inCart.length) return '';
   return '<div class="group-head"><span class="gh-label plain">Bought · ' +
          inCart.length + '</span>' +
-         (cartSum > 0 ? '<span class="sum">' + money(cartSum) + '</span>' : '') +
-         // no chevron here, but keep its width so the total lines up with
-         // the totals of the sections above it
          '<span class="gh-caret-space"></span></div>' +
          '<div class="card">' + inCart.map(rowHtml).join('') + '</div>';
-}
-
-/* The budget block stays hidden until at least one item has a price, so
-   the app is useful from the very first item you type. It is two lines: the
-   budget you typed, and a bar that fills as you check things off. */
-function renderBudget(cartSum) {
-  const anyPrice = tripItems().some((i) => i.price);
-  $('#budget').classList.toggle('hidden', !anyPrice);
-  if (!anyPrice) return;
-
-  const budget = Number(state.budget) || 0;
-  $('.budget-cur').textContent = CURRENCY;
-  if (document.activeElement !== $('#budget-input')) $('#budget-input').value = budget || '';
-
-  const over = budget > 0 && cartSum > budget;
-  const share = budget > 0 ? cartSum / budget : 0;
-  $('#bar-cart').style.transform = 'scaleX(' + Math.min(1, share) + ')';
-  // Amber from 80% as a heads-up; red is kept for actually being over, so
-  // that red still means something when it appears.
-  $('#bar-cart').classList.toggle('warn', !over && share >= 0.8);
-  $('#bar-cart').classList.toggle('over', over);
-  $('.bar').classList.toggle('idle', !budget);
-
-  // Just what's in the cart — the bar and its colour say how that compares
-  // to the budget, so no "left"/"over" arithmetic.
-  $('#budget-note').innerHTML = '<span class="budget-amount">' + money(cartSum) + '</span>' +
-    '<span class="budget-label">Bought</span>';
-  $('#budget-note').classList.toggle('over', over);
 }
 
 /* ---------------------------------------------------------------
@@ -725,13 +659,6 @@ function handleClick(event) {
       });
       break;
 
-    case 'qty':
-      // Like priority: change and save, but don't redraw under your finger.
-      item.qty = Math.max(1, (item.qty || 1) + Number(btn.dataset.delta));
-      save();
-      btn.parentElement.querySelector('.qty-val').textContent = item.qty;
-      break;
-
     case 'chip-remove': {
       const gone = btn.dataset.value.toLowerCase();
       // Take the name out first so a half-typed one in the box isn't
@@ -781,10 +708,6 @@ function applyField(item, input) {
       input.placeholder = '+ store';
     }
     input.value = '';
-  }
-  if (input.dataset.field === 'price') {
-    const n = parseFloat(v);
-    item.price = Number.isFinite(n) && n >= 0 ? n : null;
   }
 }
 
@@ -890,20 +813,15 @@ $('#add-store').addEventListener('keydown', (e) => {
 
 function addFields() {
   const on = $('#add-pri .on');
-  const price = parseFloat($('#add-price').value);
   commitAddStore();   // a half-typed store counts too
   return {
     pri: on ? Number(on.dataset.addPri) : null,
-    qty: Math.max(1, parseInt($('#add-qty-val').textContent, 10) || 1),   // 1 = "not said"
-    stores: [...addStores],
-    price: Number.isFinite(price) && price >= 0 ? price : null
+    stores: [...addStores]
   };
 }
 
 function clearAddBox() {
   $('#add-input').value = '';
-  $('#add-price').value = '';       // a price belongs to one item, never the next
-  $('#add-qty-val').textContent = '1';
   clearAddStores();                 // stores belong to that item, not the next one
   setAddPri(null);                  // back to "haven't said"
   renderSuggestions();
@@ -921,9 +839,7 @@ function reviveExisting(item, f) {
     item.inTrip = true;
     needAgain(item);
     if (f.pri !== null)  item.priority = f.pri;
-    if (f.qty > 1)       item.qty = f.qty;
     f.stores.forEach((st) => addStore(item, st));
-    if (f.price !== null) item.price = f.price;
   });
 }
 
@@ -932,10 +848,8 @@ function reviveExisting(item, f) {
 function changeList(item, f) {
   const bits = [];
   if (f.pri !== null && f.pri !== item.priority) bits.push('move it to ' + PRI_LABEL[f.pri]);
-  if (f.qty > 1 && f.qty !== item.qty)           bits.push('set the quantity to ' + f.qty);
   const newStores = f.stores.filter((st) => !item.stores.includes(st));
   if (newStores.length) bits.push('add ' + newStores.join(' and ') + ' to its stores');
-  if (f.price !== null && f.price !== item.price) bits.push('set its price to ' + money(f.price));
   if (item.done)                                  bits.push('take it out of Bought');
   return bits;
 }
@@ -990,9 +904,7 @@ $('#add-form').addEventListener('submit', async (e) => {
   update(() => {
     state.items.push(newItem(name, {
       priority: f.pri ?? 2,
-      qty: f.qty,
-      stores: f.stores,
-      price: f.price
+      stores: f.stores
     }));
   });
   // Deliberately does NOT open the new row or scroll to it — you should be
@@ -1001,7 +913,6 @@ $('#add-form').addEventListener('submit', async (e) => {
 });
 
 /* ---------------- the detail row ---------------- */
-document.querySelectorAll('.price-cur').forEach((el) => { el.textContent = CURRENCY; });
 
 /* Shown while you're in the add box — the box has focus, or there's text in
    it, or you're on one of its own controls. When you leave with the box
@@ -1015,9 +926,7 @@ function syncAddMore() {
   const more  = $('#add-more');
   if (!show && !more.classList.contains('hidden')) {
     setAddPri(null);
-    $('#add-qty-val').textContent = '1';
     clearAddStores();
-    $('#add-price').value = '';
   }
   more.classList.toggle('hidden', !show);
 }
@@ -1026,13 +935,6 @@ $('.add-wrap').addEventListener('focusin',  () => setTimeout(syncAddMore, 0));
 $('.add-wrap').addEventListener('focusout', () => setTimeout(syncAddMore, 0));
 $('.add-wrap').addEventListener('click',    () => setTimeout(syncAddMore, 0));
 $('#add-input').addEventListener('input',   syncAddMore);
-
-$('#add-qty').addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-delta]');
-  if (!btn) return;
-  const el = $('#add-qty-val');
-  el.textContent = Math.max(1, (parseInt(el.textContent, 10) || 1) + Number(btn.dataset.delta));
-});
 
 $('#add-pri').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-add-pri]');
@@ -1123,18 +1025,6 @@ $('#aisle-toggle').addEventListener('click', () => {
   commitOpenRow();
   update(() => { state.byAisle = !state.byAisle; openId = null; });
   window.scrollTo(0, 0);
-});
-
-/* ---------------- budget ---------------- */
-$('#budget-input').addEventListener('input', (e) => {
-  state.budget = Number(e.target.value) || 0;
-  save();
-  renderTrip();
-});
-// Enter (the keyboard's Done) puts the keyboard away. The number was already
-// applied as you typed — on the phone it just wasn't visible behind the keys.
-$('#budget-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
 });
 
 /* ---------------- view toggle ---------------- */
@@ -1479,6 +1369,7 @@ function adoptFromCloud(data) {
   if (!Array.isArray(state.collapsedPri)) state.collapsedPri = [];
   if (typeof state.byAisle !== 'boolean') state.byAisle = false;
   if (!state.skipAsk || typeof state.skipAsk !== 'object') state.skipAsk = {};
+  delete state.budget;
   state.items.forEach(normaliseItem);
 
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }

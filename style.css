@@ -17,8 +17,7 @@
   --on-p1:   #ffffff;   /* text on a chosen High / Medium chip */
   --on-p2:   #ffffff;
   --remind:  #2f6df6;   /* the "due" reminder: a note, not a warning */
-  --warn:    #b8860b;   /* budget nearly spent */
-  --over:    #d7263d;   /* budget over, delete: the only true red */
+  --over:    #d7263d;   /* delete: the only true red */
   --radius:  14px;
 }
 
@@ -38,14 +37,13 @@
     --on-p1:   #14181d;
     --on-p2:   #ffffff;
     --remind:  #6ea8fe;
-    --warn:    #efc05c;
-    --over:    #f05a5a;
+      --over:    #f05a5a;
   }
 }
 
 * { box-sizing: border-box; }
 
-/* Nobody nudges a price from 0.1 to 0.2 — you type the whole number.
+/* Nobody nudges "every 30 days" one at a time — you type the number.
    These three rules remove the little up/down arrows. */
 input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
 input[type="number"]::-webkit-outer-spin-button,
@@ -91,41 +89,6 @@ button {
 button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 button.ghost   { background: transparent; border-color: var(--line); color: var(--muted); }
 button.danger  { background: transparent; border-color: transparent; color: var(--over); }
-
-/* ---------------- budget ----------------
-   Two lines. The budget is typed straight into the headline — it IS the
-   headline — and the bar underneath fills as things go into the cart. */
-/* One line — BUDGET S/250 on the left in the label's own small type,
-   S/100 IN CART hard right — and the bar beneath. */
-.budget {
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 8px 14px 15px; margin-bottom: 12px;
-}
-.budget-row { display: flex; align-items: baseline; gap: 4px; }
-.budget-label { color: var(--muted); font-size: 13px; font-weight: 600;
-                text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
-.budget-cur { font-size: 13px; font-weight: 600; color: var(--muted); }
-.budget-input {
-  flex: 0 1 72px; min-width: 0; font: inherit; font-size: 13px; font-weight: 600;
-  padding: 2px 0; border: none; border-bottom: 1px solid transparent;
-  background: transparent; color: var(--muted); outline: none;
-}
-.budget-input:focus { border-bottom-color: var(--accent); }
-.budget-input::placeholder { font-weight: 400; color: var(--muted); }
-.budget-note { margin-left: auto; white-space: nowrap; }   /* hard right */
-.budget-note .budget-label { margin: 0 0 0 6px; }
-.budget-amount { font-size: 13px; font-weight: 600; color: var(--text); }
-.budget-note.over .budget-amount { color: var(--over); }
-.bar { position: relative; height: 7px; border-radius: 4px; background: var(--line);
-       margin: 8px 0 0; overflow: hidden; }
-.bar.idle { opacity: .45; }               /* no budget yet: nothing to fill against */
-/* Grows by scaling, not by width: a width change makes the browser redo
-   the layout every frame; a scale is drawn by the GPU and stays smooth. */
-.bar-cart { position: absolute; left: 0; top: 0; height: 100%; width: 100%;
-            transform: scaleX(0); transform-origin: left center;
-            background: var(--accent); transition: transform .2s ease-out; }
-.bar-cart.warn { background: var(--warn); }
-.bar-cart.over { background: var(--over); }
 
 /* ---------------- add box ---------------- */
 /* The add box follows you down the page. env(safe-area-inset-top) is the
@@ -174,8 +137,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 .add-more .chips { order: 2; flex-basis: 100%; }
 .add-more .chips:focus-within { border-color: var(--accent); }
-/* Nothing is preselected, so the three sit level as "not said yet". */
-.add-more .field-price { width: 74px; }
 /* No priority is lit until you tap one — see addFields(). */
 
 .suggest {
@@ -215,18 +176,10 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* With nothing due, the first heading sits right under the add box: same
    27px as everywhere else (20 of bar + 7), not its usual 22px section gap. */
 #trip-list > .group-head:first-child { margin-top: 7px; }
-.group-head .sum {
-  text-transform: none; letter-spacing: 0; font-weight: 400; font-size: inherit;
-  font-family: inherit; color: inherit; background: none; border: none;
-  padding: 6px 4px; min-height: 34px; border-radius: 8px;
-  margin-left: auto; white-space: nowrap;
-}
 .group-head .gh-caret-space { flex: none; width: 34px; }
-.group-head .sum + .gh-caret-space { margin-left: 0; }
 .group-head .gh-caret-space:first-child, .group-head .gh-label + .gh-caret-space { margin-left: auto; }
-/* with no total to show, the chevron still belongs on the far right */
+/* the chevron belongs on the far right */
 .group-head .gh-caret { margin-left: auto; }
-.group-head .sum + .gh-caret { margin-left: 0; }
 .gh-label {
   font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit;
   background: none; border: none; border-radius: 8px;
@@ -305,11 +258,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 }
 .row-line { display: flex; align-items: baseline; gap: 10px; }
 .row-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* 21px of right padding lines the price up under the section total, which
-   sits to the left of the heading's chevron */
-.row-price { flex: none; font-size: 15px; color: var(--muted); padding-right: 21px; }
-.row-qty { font-size: 14px; color: var(--muted); font-weight: 500; }
-.row.done .row-price { text-decoration: line-through; }
 .row-sub  { display: block; font-size: 13px; color: var(--muted); }
 .store-name { text-transform: capitalize; }   /* stores are stored lowercase */
 .row-due  { color: var(--remind); }
@@ -352,29 +300,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px 8px; margin-top: 10px;
   justify-content: space-between;   /* price left, quantity middle, priority right */
 }
-.price-wrap {
-  display: inline-flex; align-items: center; flex: none;
-  border: 1.5px solid var(--line); border-radius: 10px; padding-left: 10px;
-  background: var(--surface);
-}
-.price-cur { color: var(--muted); font-size: 14px; font-weight: 600; }
-.price-wrap .field-price {
-  width: 58px; border: none; background: transparent; border-radius: 0;
-  padding: 0 8px 0 4px; min-height: 38px; text-align: right;   /* same height as its siblings */
-}
-.price-wrap:focus-within { border-color: var(--accent); }
-.price-wrap .field-price:focus { outline: none; }
-/* order, not markup order. Priority is on the RIGHT, under a right thumb —
-   it's the control used most (2026-10-01, for one-handed use). The price
-   moved to the left in exchange. The stores still drop to their own line. */
-.open-controls .price-wrap { order: 0; }
-.qty-step {
-  order: 1; display: inline-flex; align-items: center; flex: none;
-  border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden;
-}
-.qty-btn { width: 30px; min-height: 38px; padding: 0; border: none; border-radius: 0;
-           background: transparent; color: var(--muted); font-size: 18px; }
-.qty-val { min-width: 24px; text-align: center; font-weight: 600; font-size: 15px; }
 .open-controls .pri-group { order: 2; }
 /* The stores always get their own line. Sharing the first line with the
    priority and price left a box too narrow for two shops, so a second chip
@@ -406,7 +331,6 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   background: var(--surface); color: var(--text);
 }
 .field-store { flex: 1; }
-.field-price { flex: none; width: 66px; text-align: right; }
 .info-btn {
   flex: none; width: 36px; min-height: 36px; padding: 0;
   border-radius: 50%; border: 1.5px solid var(--line);

@@ -47,21 +47,6 @@
       </div>
     </header>
 
-    <!-- Hidden until at least one item has a price. Two lines: the budget
-         you type, and a bar that fills as you check things off. There is
-         deliberately no "whole list" total — it would count Low, which is
-         the parking bay, and the section headings already total each tier. -->
-    <div class="budget hidden" id="budget">
-      <div class="budget-row">
-        <label class="budget-label" for="budget-input">Budget</label>
-        <span class="budget-cur"></span>
-        <input class="budget-input" type="number" id="budget-input" min="0" step="1"
-               inputmode="decimal" placeholder="none" enterkeyhint="done">
-        <!-- what's in the cart, on the same line, hard right -->
-        <span class="budget-note" id="budget-note"></span>
-      </div>
-      <div class="bar"><div class="bar-cart" id="bar-cart"></div></div>
-    </div>
 
     <div class="safe-probe" id="safe-probe"></div>
     <div class="add-wrap">
@@ -83,15 +68,6 @@
           <button type="button" class="pri v2" data-add-pri="2">M</button>
           <button type="button" class="pri v3" data-add-pri="3">L</button>
         </div>
-        <div class="qty-step" id="add-qty">
-          <button type="button" class="qty-btn" data-delta="-1" aria-label="One fewer">−</button>
-          <span class="qty-val" id="add-qty-val">1</span>
-          <button type="button" class="qty-btn" data-delta="1" aria-label="One more">+</button>
-        </div>
-        <label class="price-wrap"><span class="price-cur"></span>
-          <input class="field field-price" id="add-price" type="number" min="0"
-                 step="0.01" inputmode="decimal" enterkeyhint="done" placeholder="price">
-        </label>
         <!-- the same chip box as an open row: Enter, comma or tapping away
              makes a chip; × removes one; several stores per item -->
         <div class="chips" id="add-stores">
