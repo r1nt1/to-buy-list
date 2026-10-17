@@ -10,14 +10,18 @@ everything else. The running version shows at the bottom of the list.
 
 ## v5.1 — 2026-10-16
 
-Simpler, and nothing jumps around. Same look (palette C).
+Simpler, and nothing jumps around. Same colours (palette C).
+
+- **No boxes, no lines.** The list sits straight on the page, like Apple
+  Reminders; the priority stripe down the left groups each section.
 
 - **No prices, no quantities, no budget.** The price box, the quantity
   buttons, the budget bar and the totals on the headings are gone, and the
   saved prices, quantities and budget amount are deleted from your list.
   Need four? Type it in the name: "Eggs 4" or "Eggs x4".
 - **Add box:** a "+" button instead of "Add", and one line under it — H/M/L
-  on the left, stores on the right — shown only while you're in the box.
+  on the left, stores on the right — shown only while you're in the box,
+  with the same green outline as the box itself.
   The open item uses the same line.
 - **Tapping an item doesn't push the list down any more.** The whole item
   lifts out as one card over the list — name, H/M/L, stores — with its
