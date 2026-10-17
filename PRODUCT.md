@@ -30,7 +30,7 @@ buys them, and the list is right again — with no housekeeping.
 **A list that never empties.** Most list apps treat an item as a one-off
 task that disappears when done. Here every item is permanent: the list is a
 standing record of what you buy, sorted by what matters, and anything
-bought before comes back in one tap with its store, priority and price.
+bought before comes back in one tap with its store and priority.
 
 ## Operating Context
 
@@ -45,20 +45,20 @@ bought before comes back in one tap with its store, priority and price.
 ## Capabilities and Constraints
 
 - Priority: High / Medium / Low; Low is a parking bay ("not this trip").
-- Stores tab regroups the same list by shop; inside a shop, optional
-  grouping by aisle from a built-in ES/EN dictionary (no AI call).
-- Optional prices and quantity; an optional budget bar. **Prices are
-  estimates, not facts.** The budget stays as it is for now; its meaning
-  is open for v5.0 (see IDEAS.md).
+- Three tabs: Priority; Stores regroups the same list by shop; Aisles by
+  aisle, from a built-in ES/EN dictionary (no AI call).
+- No prices, quantities or budget (removed in v5.1 to keep it simple;
+  a quantity goes in the name, "Eggs 4"). Prices may return one day as
+  a spending record — see IDEAS.md.
 - Optional repeat reminders that flag an item as due; they never move it.
-- Swipe left deletes any item, with Undo. Swipe right marks bought (to
-  become an H/M/L picker in v5.0). Every gesture also has a visible
-  button.
+- Swipe left deletes any item, with Undo. Swipe right uncovers an H/M/L
+  picker. Every gesture also has a visible button. Opening a row never
+  moves the list: its controls float over it.
 - Optional cloud backup (Supabase, email sign-in); the phone's copy is the
   live one.
 - **Must keep:** works offline and free — no AI calls, no paid services,
   no keys in the public code. One-handed on iPhone: the thumb reaches what
-  is used most. Items in Spanish and English, prices in S/; the app's own
+  is used most. Items in Spanish and English; the app's own
   words stay English. Plain HTML/CSS/JS files on GitHub Pages, no build
   step (revisit only if it ever ships to strangers).
 - Terminology: "High / Medium / Low", "Bought" (was "In cart" until

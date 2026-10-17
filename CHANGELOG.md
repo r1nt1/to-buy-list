@@ -8,6 +8,37 @@ everything else. The running version shows at the bottom of the list.
 
 ---
 
+## v5.1 — 2026-10-16
+
+Simpler, and nothing jumps around. Same look (palette C).
+
+- **No prices, no quantities, no budget.** The price box, the quantity
+  buttons, the budget bar and the totals on the headings are gone, and the
+  saved prices, quantities and budget amount are deleted from your list.
+  Need four? Type it in the name: "Eggs 4" or "Eggs x4".
+- **Add box:** a "+" button instead of "Add", and one line under it — H/M/L
+  on the left, stores on the right. The open row uses the same line.
+- **Tapping an item doesn't push the list down any more.** The row keeps
+  its height and its H/M/L and stores float over the rows below. If they
+  would land behind the tabs, the page scrolls just enough.
+- **Swipe right uncovers H / M / L** — tap one to move the item. Ticking is
+  the circle only. On a Bought item, picking one brings it back.
+- **Low and Bought start folded away**, and remember whether you last
+  opened them.
+- **Due items go to the top** of their own section (never to another one).
+- **Bought: newest first**, each row says when ("bought 3 days ago").
+  Things ticked before v5.0 have no date and sit at the bottom.
+- **Three tabs: Priority, Stores, Aisles.** Aisles groups the whole list by
+  aisle across every shop; it replaces the "Group by aisle" switch inside
+  Stores. Store and aisle headings are in plain text colour (they were
+  Medium's grey), the whole heading opens them, and the number is what's
+  still to buy.
+- **Lucide icons** for the logo, tabs, arrows and ticks (the tabs were
+  emoji). Free icons; their licence notice is in LICENSE-lucide.txt.
+- **Less space** between the title and the add box.
+
+---
+
 ## v5.0 — 2026-10-16
 
 The app works differently in a few places; the look is the same as 4.3.2.
