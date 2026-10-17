@@ -459,7 +459,12 @@ function rowHtml(item) {
   return '' +
     '<div class="swipe-wrap">' +
       '<div class="swipe-bg">' +
-        '<span class="sb-l">' + (item.done ? '↩ put back' : '✓ bought') + '</span>' +
+        // Swipe right uncovers H / M / L; it stays open for a tap (v5.1).
+        '<span class="sb-l pri-group" data-id="' + item.id + '">' +
+          PRIORITIES.map((p) => '<button class="pri v' + p +
+            (!item.done && item.priority === p ? ' on' : '') +
+            '" data-act="pick" data-value="' + p + '" tabindex="-1">' + PRI_SHORT[p] + '</button>').join('') +
+        '</span>' +
         '<span class="sb-r">delete</span>' +
       '</div>' +
       // The priority is a colour stripe down the left edge rather than a
@@ -704,6 +709,16 @@ function handleClick(event) {
       commitOpenRow();
       update(() => { setBought(item, !item.done); openId = null; });
       maybeCelebrate();
+      break;
+
+    case 'pick':
+      // From the swipe-right picker. On a Bought row it also means "I need
+      // this again", so it comes back into that section.
+      closePicker();
+      update(() => {
+        item.priority = Number(btn.dataset.value);
+        if (item.done) needAgain(item);
+      });
       break;
 
     case 'set-priority':
@@ -1226,18 +1241,42 @@ $('#info-delete').addEventListener('click', () => {
 
 /* ---------------------------------------------------------------
    7. Swipe
-   Swipe a row right to mark it bought, left to delete it (with an
-   Undo bar, so a stray swipe costs nothing). Both actions also have
-   ordinary buttons, so a gesture is never the only way to do something.
+   Swipe a row right to uncover H / M / L and tap one (v5.1 — it used to
+   mark the item bought, which the check circle already does). Swipe left
+   to delete it, with an Undo bar, so a stray swipe costs nothing. Both
+   also have ordinary buttons (H/M/L in the open row, Delete in the i
+   sheet), so a gesture is never the only way to do something.
    --------------------------------------------------------------- */
 
 const SWIPE_TRIGGER = 70;   // how far you must drag before it counts
 let sw = null;
 let justSwiped = false;
+let picking = null;         // the row held open on its H / M / L
+
+function openPicker(row, wrap) {
+  const pick = /** @type {HTMLElement} */ (wrap.querySelector('.sb-l'));
+  wrap.classList.add('sw-right', 'picking');
+  row.style.transform = 'translateX(' + (pick.offsetWidth + 24) + 'px)';
+  picking = { row, wrap };
+}
+
+function closePicker() {
+  if (!picking) return;
+  picking.row.style.transform = '';
+  picking.wrap.classList.remove('sw-right', 'picking');
+  picking = null;
+}
 
 $('#trip-list').addEventListener('pointerdown', (e) => {
   justSwiped = false;
   if (e.pointerType === 'mouse' && e.button !== 0) return;
+  // With a picker open, a touch anywhere but its buttons just closes it —
+  // and the tap that follows does nothing else.
+  if (picking && !e.target.closest('.swipe-bg')) {
+    closePicker();
+    justSwiped = true;
+    return;
+  }
 
   const row = e.target.closest('.row');
   if (!row || row.classList.contains('open')) return;
@@ -1284,8 +1323,7 @@ function endSwipe() {
   if (!item) return;
 
   if (dx >= SWIPE_TRIGGER) {
-    update(() => { setBought(item, !item.done); });
-    maybeCelebrate();
+    openPicker(row, wrap);
   } else if (dx <= -SWIPE_TRIGGER) {
     deleteWithUndo(item);
   }
@@ -1323,6 +1361,11 @@ $('#toast-undo').addEventListener('click', () => {
   const { item, index } = undoable;
   update(() => { state.items.splice(Math.min(index, state.items.length), 0, item); });
   hideUndo();
+});
+
+// ...and a touch outside the list altogether (the add box, the tabs).
+document.addEventListener('pointerdown', (e) => {
+  if (picking && !(/** @type {Element} */ (e.target)).closest('#trip-list')) closePicker();
 });
 
 window.addEventListener('pointerup', endSwipe);

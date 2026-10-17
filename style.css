@@ -225,11 +225,15 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   pointer-events: none;
 }
 .sw-right .swipe-bg, .sw-left .swipe-bg { opacity: 1; }
-.sw-right .swipe-bg { background: #1f7a4d; }
+/* Right uncovers the H / M / L picker on a quiet background: it's a
+   choice, not an action, so no colour until one is lit. */
+.sw-right .swipe-bg { background: color-mix(in srgb, var(--text) 6%, var(--bg)); }
+.swipe-bg .pri { width: 46px; min-height: 40px; }
+/* While held open, its buttons take taps (the panel ignores them otherwise). */
+.picking .swipe-bg { pointer-events: auto; }
 .sw-left  .swipe-bg { background: #a3202f; }
 .sw-right .sb-r, .sw-left .sb-l { visibility: hidden; }
 /* once you've dragged far enough for it to fire, the panel brightens */
-.sw-armed.sw-right .swipe-bg { background: #27a266; }
 .sw-armed.sw-left  .swipe-bg { background: #c62a3b; }
 /* Editing: no check circle, and the row keeps the exact height it had
    closed (set by the script), so nothing under it moves (v5.1). */
