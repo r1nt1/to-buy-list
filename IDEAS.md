@@ -37,6 +37,15 @@ The cloud icon floats alone top right. Replace it with a menu button
 timesBought and lastBought are already recorded), **delete account**.
 Later — not part of v5.1.
 
+## Light / Dark / Auto, then custom looks (idea, 2026-10-17)
+Today the app simply follows the phone's own light or dark setting. Alex
+would like a manual switch with three choices: **Light**, **Dark** and
+**Auto** (follow the phone, the default). It belongs in the settings menu
+above. Later, the same switch could offer **custom looks**: the palettes
+A and B recorded under "Let the user choose the theme" below, and the
+**yellow notepad** design that was left behind (mockups in
+~/Developer/artifacts/to-buy-list-mockups/yellow-pad-v2/).
+
 ## The budget and prices (REMOVED in v5.1, 2026-10-16 — notes kept for if they return)
 Was kept as it was until v5.0. It's for people who count every cent — Alex once
 did. He doesn't type prices so the bar stays hidden, which costs him
