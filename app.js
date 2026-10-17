@@ -1038,6 +1038,16 @@ document.addEventListener('pointerdown', (e) => {
   if (active && wrap.contains(active)) active.blur();
   setTimeout(syncAddMore, 0);
 });
+// iPhone Safari often leaves the box focused when you tap a row or a
+// heading (things that can't take focus themselves), so the line stayed up.
+// A touch anywhere outside the add box, while it's empty, counts as leaving.
+document.addEventListener('pointerdown', (e) => {
+  const wrap = $('.add-wrap');
+  if (wrap.contains(/** @type {Node} */ (e.target)) || $('#add-input').value.trim()) return;
+  const active = /** @type {HTMLElement | null} */ (document.activeElement);
+  if (active && wrap.contains(active)) active.blur();
+  setTimeout(syncAddMore, 0);
+});
 
 $('#add-pri').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-add-pri]');

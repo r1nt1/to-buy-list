@@ -310,7 +310,10 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .row.open .chips:focus-within { outline: none; border-color: var(--accent); }
 .row.open .name-input { font-weight: inherit; }
 .row.open .info-btn { border-color: transparent; background: color-mix(in srgb, var(--text) 7%, transparent); }
-.row.open .done-btn { background: var(--accent); color: var(--on-accent); font-style: normal; font-family: inherit; }
+/* inline-flex centres the tick; as a plain inline drawing it sat on the
+   text baseline, 3px high */
+.row.open .done-btn { display: inline-flex; align-items: center; justify-content: center;
+                      background: var(--accent); color: var(--on-accent); font-style: normal; font-family: inherit; }
 
 .open-head { display: flex; align-items: center; gap: 10px; }
 .name-input {
