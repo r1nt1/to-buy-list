@@ -378,16 +378,13 @@ function renderTrip() {
   focusPending = false;
 }
 
-/* A section heading with two tap targets: the label on the left and the
-   chevron on the right. The space between is deliberately dead,
-   because that gap is how you dismiss an open row — if the whole heading were
-   one button, tapping the blank part would collapse the section instead. */
-function groupHeadHtml({ attr, key, label, count, open, tone = '', whole = false }) {
-  // whole: the entire heading opens and closes it (Stores and Aisles tabs,
-  // where the list is a column of shut headings to pick from).
+/* A section heading. Tapping it anywhere opens or closes the section
+   (v5.1 — it used to be only the label and the chevron, leaving the gap
+   between free for closing an open row; a tap with a row open now only
+   closes the row, wherever it lands). */
+function groupHeadHtml({ attr, key, label, count, open, tone = '' }) {
   return '<div class="group-head' + (open ? '' : ' collapsed') +
-           (tone ? ' ' + tone : '') + '"' +
-           (whole ? ' ' + attr + '="' + esc(key) + '"' : '') + '>' +
+           (tone ? ' ' + tone : '') + '" ' + attr + '="' + esc(key) + '">' +
     '<button class="gh-label" ' + attr + '="' + esc(key) + '">' +
       esc(label) + ' · ' + count + '</button>' +
     '<button class="gh-caret" ' + attr + '="' + esc(key) + '" aria-label="' +
@@ -444,7 +441,7 @@ function byPlaceHtml(items, kind) {
     const isOpen = open.includes(key);
     html += groupHeadHtml({ attr: kind === 'store' ? 'data-store' : 'data-aisle', key, label: key,
                             count: group.filter((i) => !i.done).length, open: isOpen,
-                            tone: 'gh-place', whole: true });
+                            tone: 'gh-place' });
     if (isOpen) html += '<div class="card">' + group.map(rowHtml).join('') + '</div>';
   }
   return html;
@@ -670,6 +667,13 @@ askDlg.addEventListener('cancel', (e) => { e.preventDefault(); answer(false); })
 
 function handleClick(event) {
   if (justSwiped) { justSwiped = false; return; }
+  // With an item open, a tap anywhere else in the list only closes it —
+  // it doesn't also open another row or fold a section.
+  if (openId && !event.target.closest('.open-float')) {
+    commitOpenRow();
+    closeRow();
+    return;
+  }
   const head = event.target.closest('[data-store]');
   if (head) {                                  // collapse / expand a store group
     const store = head.dataset.store;
@@ -834,12 +838,15 @@ $('#trip-list').addEventListener('keydown', (e) => {
   }
 });
 
-// Tapping anywhere outside the open row closes it.
+// Tapping anywhere outside the open item closes it (taps inside the list
+// are handled at the top of handleClick).
 document.addEventListener('click', (e) => {
   if (!openId) return;
   const target = /** @type {Element} */ (e.target);
-  if (target.closest('.row.open') || target.closest('.open-panel') || target.closest('dialog')) return;
-  if (target.closest('[data-act="open"]')) return;   // handled above
+  if (target.closest('.open-float') || target.closest('dialog')) return;
+  // Taps in the list were already dealt with by handleClick — including the
+  // one that just opened this item, whose row has since been redrawn away.
+  if ($('#trip-list').contains(target) || !document.contains(target)) return;
   commitOpenRow();
   closeRow();
 });

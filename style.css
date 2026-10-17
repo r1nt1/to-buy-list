@@ -196,7 +196,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 /* Store and aisle headings are places, not priorities: plain text colour
    (white in dark mode). They used to borrow Medium's grey. */
 .gh-place { color: var(--text); }
-.group-head[data-store], .group-head[data-aisle] { cursor: pointer; }
+.group-head { cursor: pointer; }
 .caret { display: inline-block; transition: transform .15s; }
 .collapsed .caret { transform: rotate(-90deg); }
 
