@@ -1479,7 +1479,9 @@ function undo() {
     if (now === -1) state.items.splice(Math.min(step.index, state.items.length), 0, step.before);
     else state.items[now] = step.before;
   });
-  showUndo(false);
+  // Name the next step back straight away, so when you undo several in a
+  // row you can see what the next tap would undo.
+  showUndo(true);
 }
 
 /* The button: hidden with nothing to undo; otherwise an icon, which for a
