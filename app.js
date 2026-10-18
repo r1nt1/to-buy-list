@@ -1344,7 +1344,7 @@ $('#info-delete').addEventListener('click', () => {
    7. Swipe
    Swipe a row right to uncover H / M / L and tap one (v5.1 — it used to
    mark the item bought, which the check circle already does). Swipe left
-   to delete it — Undo by the cloud brings it back, so a stray swipe costs nothing. Both
+   to delete it — the Undo pop-up brings it back, so a stray swipe costs nothing. Both
    also have ordinary buttons (H/M/L in the open row, Delete in the i
    sheet), so a gesture is never the only way to do something.
    --------------------------------------------------------------- */
@@ -1431,37 +1431,32 @@ function endSwipe() {
 }
 
 /* ---------------- undo ----------------
-   The last few changes — a new priority, ticking something bought (or
-   unticking it), a delete — can be taken back with the Undo button by the
-   cloud (v5.2; it replaces the Undo bar at the bottom). Right after a
-   change the button says what it would undo, "↶ Milk deleted", for a few
-   seconds, then shrinks to a quiet icon that stays while there is anything
-   left to undo. Names, stores and notes aren't included: they're quick to
-   put right by hand. The history lives in memory only, so closing the app
-   starts afresh. */
-const UNDO_STEPS = 20;
-const UNDO_SAY_MS = 4000;
-/** @type {{ id: string, index: number, before: any, name: string, what: string, key?: string }[]} */
-let undoSteps = [];
+   Right after a change — a new priority, ticking something bought (or
+   unticking it), a delete — a small pop-up above the tabs, by the thumb,
+   says what happened and offers Undo: "↶ Milk deleted   Undo". It stays
+   3.5 seconds and undoes that one change only: a new change replaces it,
+   and once it has gone the change is done (Alex, v5.2). Names, stores and
+   notes aren't included: they're quick to put right by hand. */
+const UNDO_SAY_MS = 3500;
+/** @type {{ id: string, index: number, before: any, name: string, what: string, key?: string } | null} */
+let undoStep = null;
 let undoSayTimer = null;
 
 /* Call BEFORE changing the item: it keeps a copy of it as it is now.
-   `key` merges a run of changes into one step — tapping High, then
-   Medium, then Low in one open item undoes back to where it started. */
+   `key` merges a run of changes into one — tapping High, then Medium,
+   then Low in one open item undoes back to where it started. */
 function remember(item, what, key) {
-  const last = undoSteps[undoSteps.length - 1];
-  if (key && last && last.key === key) {
-    last.what = what;
+  if (key && undoStep && undoStep.key === key) {
+    undoStep.what = what;
   } else {
-    undoSteps.push({ id: item.id, index: state.items.indexOf(item),
-                     before: JSON.parse(JSON.stringify(item)), name: item.name, what, key });
-    if (undoSteps.length > UNDO_STEPS) undoSteps.shift();
+    undoStep = { id: item.id, index: state.items.indexOf(item),
+                 before: JSON.parse(JSON.stringify(item)), name: item.name, what, key };
   }
-  showUndo(true);
+  showUndo();
 }
 
 function undo() {
-  const step = undoSteps.pop();
+  const step = undoStep;
   if (!step) return;
   commitOpenRow();
   update(() => {
@@ -1470,30 +1465,26 @@ function undo() {
     if (now === -1) state.items.splice(Math.min(step.index, state.items.length), 0, step.before);
     else state.items[now] = step.before;
   });
-  // Name the next step back straight away, so when you undo several in a
-  // row you can see what the next tap would undo.
-  showUndo(true);
+  hideUndo();
 }
 
-/* The button: hidden with nothing to undo; otherwise an icon, which for a
-   moment after a change also says what it would undo. */
-function showUndo(say) {
-  const btn = $('#undo-btn');
-  const last = undoSteps[undoSteps.length - 1];
-  btn.classList.toggle('hidden', !last);
+/* Shows the pop-up for the latest change, for 3.5 seconds. */
+function showUndo() {
+  if (!undoStep) return;
   clearTimeout(undoSayTimer);
-  btn.classList.remove('saying');
-  if (!last) return;
-  $('#undo-name').textContent = last.name;
-  $('#undo-what').textContent = ' ' + last.what;
-  btn.setAttribute('aria-label', 'Undo: ' + last.name + ' ' + last.what);
-  if (say) {
-    btn.classList.add('saying');
-    $('#undo-said').textContent = last.name + ' ' + last.what + '. Undo is top right.';
-    undoSayTimer = setTimeout(() => btn.classList.remove('saying'), UNDO_SAY_MS);
-  }
+  $('#undo-name').textContent = undoStep.name;
+  $('#undo-what').textContent = ' ' + undoStep.what;
+  $('#undo-pop').setAttribute('aria-label', 'Undo: ' + undoStep.name + ' ' + undoStep.what);
+  $('#undo-said').textContent = undoStep.name + ' ' + undoStep.what + '.';
+  $('#undo-pop').classList.remove('hidden');
+  undoSayTimer = setTimeout(hideUndo, UNDO_SAY_MS);
 }
-$('#undo-btn').addEventListener('click', undo);
+function hideUndo() {
+  clearTimeout(undoSayTimer);
+  undoStep = null;
+  $('#undo-pop').classList.add('hidden');
+}
+$('#undo-pop').addEventListener('click', undo);
 
 /* A swipe left deletes straight away — no question first — because Undo
    brings it back exactly where it was. */

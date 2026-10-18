@@ -512,20 +512,24 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .logo { flex: none; }
 
 /* ---------------- undo ----------------
-   Beside the cloud, the same outlined shape. A quiet icon while there is
-   something to undo; for a few seconds after a change it also says what,
-   "↶ Milk deleted" — the name shortens with … so it never pushes into the
-   title. Hidden when there is nothing to undo. */
-.undo-btn {
-  display: inline-flex; align-items: center; gap: 6px; min-width: 38px; max-width: 100%;
-  min-height: 38px; padding: 0 9px; color: var(--muted); font-size: 15px;
+   A pill above the tab bar, by the thumb, for 3.5 seconds after a change:
+   "↶ Milk deleted   Undo". The name shortens with … if it is long. Out of
+   the way while an item is open (the dock is there). */
+.undo-pop {
+  position: fixed; z-index: 12; left: 50%; transform: translateX(-50%);
+  bottom: calc(max(6px, env(safe-area-inset-bottom) - 12px) + 64px);
+  display: flex; align-items: center; gap: 8px; max-width: calc(100% - 32px);
+  min-height: 48px; padding: 0 6px 0 16px; border-radius: 999px;
+  background: var(--surface); color: var(--text); border: 1px solid var(--line);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.25);   /* one depth style: tight, offset */
+  font-size: 15px;
 }
-.undo-btn svg { flex: none; }
-.undo-say { display: none; min-width: 0; white-space: nowrap; }
-.undo-btn.saying { color: var(--text); border-color: color-mix(in srgb, var(--text) 30%, var(--line)); }
-.undo-btn.saying .undo-say { display: flex; }
+.undo-pop svg { flex: none; color: var(--muted); }
+.undo-text { display: flex; min-width: 0; white-space: nowrap; }
 #undo-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 #undo-what { flex: none; white-space: pre; }
+.undo-act { flex: none; padding: 0 12px; color: var(--accent); font-weight: 700; }
+.item-open .undo-pop { display: none; }
 /* read out by screen readers, never drawn */
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
