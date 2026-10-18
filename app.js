@@ -1266,10 +1266,9 @@ let infoId = null;
 function openInfo(item) {
   infoId = item.id;
   const f = $('#info-form');
-  // Aisles are automatic. The picker is only for the handful the dictionary
-  // doesn't know, so it stays out of the way the rest of the time.
-  const unknownAisle = aisleOf(item) === NO_AISLE;
-  $('#aisle-row').classList.toggle('hidden', !unknownAisle);
+  // The aisle is guessed from the name, and the guess is sometimes wrong
+  // ("filtro de agua" is not a drink), so you can always change it here
+  // (v5.2; it used to show only when the app had no guess at all).
   f.aisle.value = aisleOf(item);
   showRepeat(item.repeatDays);
   f.note.value = item.note || '';
@@ -1323,7 +1322,11 @@ $('#info-form').addEventListener('submit', () => {
   const f = $('#info-form');
   update(() => {
     item.note = f.note.value.trim();
-    item.aisle = f.aisle.value;
+    // An aisle you pick yourself is yours: the guesser never changes it.
+    if (f.aisle.value !== aisleOf(item)) {
+      item.aisle = f.aisle.value;
+      item.aisleChosen = true;
+    }
     item.repeatDays = repeatValue();
   });
 });
