@@ -11,9 +11,7 @@
   --muted:   #6b7280;
   --accent:  #1f9d6f;   /* green: Add, cart bar, ticks */
   --on-accent: #ffffff;
-  /* words on a green button: white on this green is only 3.4:1, so they
-     are dark, as in dark mode (an icon is fine in white) */
-  --on-accent-text: #0b1a14;
+  --on-accent-text: #ffffff;   /* Add / Done — white reads better here (Alex) */
   --p1:      #14181d;   /* priority 1 — darkest stripe: priority is brightness, not hue */
   --p2:      #6b7280;   /* priority 2 */
   --p3:      #b6bcc4;   /* priority 3 — faintest */
@@ -35,6 +33,7 @@
     --muted:   #939ba6;
     --accent:  #5bd9a6;
     --on-accent: #0b1a14;
+    --on-accent-text: #0b1a14;
     --p1:      #e6e9ec;
     --p2:      #8d959e;
     --p3:      #4a5158;
