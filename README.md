@@ -23,14 +23,19 @@ opens fullscreen like an app. Add `?demo=1` to the address to see a sample list
   "Eggs 4" or "Eggs x4".
 - **Bought is the memory.** Newest first, each row says when ("bought 3 days ago").
 - **Aisles work themselves out.** A built-in Spanish/English dictionary of about 1,600
-  words knows *leche* is dairy, typos included. No AI call: works offline, costs nothing.
+  words knows *leche* is dairy, typos included, and reads Spanish names the Spanish way
+  (a *filtro de agua* is a filter). No AI call: works offline, costs nothing. A wrong
+  guess can be changed in the details sheet, and your choice is kept.
 - **Buy it again.** Ask to be reminded every week, month, year… and the item gets a small
   *due* badge when it's time, and moves to the top of its own section — never to
   another one.
-- **Swipes.** Right uncovers H / M / L — tap one. Left deletes, with Undo. Every swipe
-  also has a visible button (H/M/L in the open row, Delete in the details sheet).
-- **Nothing jumps.** Tapping an item opens it at the same height; its controls float
-  over the list below instead of pushing it down.
+- **Swipes.** Right uncovers H / M / L — tap one. Left deletes. Every swipe also has a
+  visible button (H/M/L in the dock, Delete in the details sheet).
+- **Undo.** For a few seconds after a change of priority, a tick or a delete, a pop-up
+  at the bottom offers to undo it.
+- **Editing by the thumb, and nothing jumps.** Tapping an item lifts it where it is;
+  its controls sit in a dock at the bottom of the screen (above the keyboard while you
+  type). Adding a new item uses the same dock.
 - **Cloud backup (optional).** Sign in with your email and a copy is kept in Supabase, so
   a wiped browser or a new phone doesn't lose the list.
 

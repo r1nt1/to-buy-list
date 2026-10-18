@@ -8,6 +8,46 @@ everything else. The running version shows at the bottom of the list.
 
 ---
 
+## v5.2 — 2026-10-17
+
+Editing comes down to your thumb, and Undo covers more.
+
+- **Editing happens in a dock at the bottom.** Tap an item and it lifts
+  where it is, showing just its name (editable, in exactly the same spot)
+  and its "bought …" and note lines. High / Medium / Low, the stores, the
+  details button and a big **Done** sit in a dock at the bottom of the
+  screen, over the tabs. While the keyboard is up, the dock sits just
+  above it.
+- **Adding uses the same dock**, with a big **Add** button. The + next to
+  "Add an item…" is gone and the box runs the full width; the keyboard's
+  Done key still adds too.
+- **Done is a word, not a green tick** — a green tick is what "bought"
+  looks like.
+- **Stores in alphabetical order**, sorted when you tap Done or Add (and
+  once on loading, for items saved before). While you're typing them they
+  stay put, so nothing jumps under your finger. In the dock they're one
+  line that scrolls sideways, so the dock never changes size.
+- **Undo is a pop-up at the bottom**, for 3.5 seconds after a change:
+  "↶ Milk deleted   Undo". It covers a new priority, ticking something
+  bought (or unticking it) and deleting — the last change only. It
+  replaces the Undo bar, which only covered deleting.
+- **Delete in the details sheet no longer asks first.** Undo brings it
+  back, the same as a swipe left.
+- **Aisles: better guesses, and you can always change them.** Spanish
+  names are read the Spanish way — a *filtro de agua* is a filter, not
+  water — longer phrases like *tabla de picar* are found inside longer
+  names, and one typo is forgiven in a phrase. New words for potty
+  training and water filters. The Aisle row in the details sheet now
+  always shows, and an aisle you pick yourself is kept for good. Items
+  whose aisle you didn't pick are guessed again on loading, so old wrong
+  guesses put themselves right.
+- **All section headings in the same text colour** (High, Medium, Low,
+  Bought); the stripe is what tells priorities apart.
+- **Easier to read:** dark letters on a chosen Medium (dark mode) and Low
+  (light mode), a clearer "+ store", a drawn ⓘ instead of a serif "i",
+  and bigger tap areas for H/M/L. The Note example is now just "e.g. the
+  big bag".
+
 ## v5.1 — 2026-10-16
 
 Simpler, and nothing jumps around. Same colours (palette C).
