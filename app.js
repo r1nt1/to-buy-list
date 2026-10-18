@@ -1449,7 +1449,7 @@ function endSwipe() {
    put right by hand. The history lives in memory only, so closing the app
    starts afresh. */
 const UNDO_STEPS = 20;
-const UNDO_SAY_MS = 3500;
+const UNDO_SAY_MS = 4000;
 /** @type {{ id: string, index: number, before: any, name: string, what: string, key?: string }[]} */
 let undoSteps = [];
 let undoSayTimer = null;
