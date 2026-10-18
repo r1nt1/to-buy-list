@@ -15,7 +15,7 @@
      files change, including while testing a version that hasn't shipped
      yet. Leaving it still during a testing session means the phone keeps
      showing the fix you just made as if it never happened. -->
-<link rel="stylesheet" href="style.css?v=20261017181708">
+<link rel="stylesheet" href="style.css?v=20261017192321">
 </head>
 <body>
 
@@ -33,6 +33,16 @@
         <span>To buy list</span>
       </div>
       <div class="topbar-actions">
+        <!-- Undo (v5.2): hidden until there is something to undo. For a few
+             seconds after a change it says what, e.g. "↶ Milk deleted". -->
+        <button class="ghost undo-btn hidden" id="undo-btn" type="button" aria-label="Undo">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>
+          </svg>
+          <span class="undo-say" aria-hidden="true"><span id="undo-name"></span><span id="undo-what"></span></span>
+        </button>
+        <span class="visually-hidden" id="undo-said" role="status" aria-live="polite"></span>
         <button class="ghost cloud-btn" id="cloud-btn" data-state="off"
                 aria-label="Backup off" title="Backup off">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
@@ -87,11 +97,7 @@
   </section>
 </main>
 
-<!-- "Milk deleted · Undo" after a swipe-left delete -->
-<div class="toast hidden" id="toast" role="status" aria-live="polite">
-  <span id="toast-text"></span>
-  <button type="button" id="toast-undo">Undo</button>
-</div>
+
 
 <!-- the bottom bar now switches how the list is arranged -->
 <nav class="tabs">
@@ -240,8 +246,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"
         integrity="sha384-Rj26LVGvoeRVR6+mwQmFfcR3QOBEwT+ZmuCWpuiqeTzJpCs0ER4ITAWGb4Hiy3Ok"
         crossorigin="anonymous"></script>
-<script src="aisles.js?v=20261017181708"></script>
-<script src="sync.js?v=20261017181708"></script>
-<script src="app.js?v=20261017181708"></script>
+<script src="aisles.js?v=20261017192321"></script>
+<script src="sync.js?v=20261017192321"></script>
+<script src="app.js?v=20261017192321"></script>
 </body>
 </html>

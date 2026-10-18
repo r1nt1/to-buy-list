@@ -350,8 +350,10 @@ let focusPending = false;
 // raises the keyboard and scrolls it into view — the row you tapped jumped.
 // Tap the name itself when you want to edit it.
 // The open item floats over the list rather than pushing it down (v5.1).
+let openCount = 0;   // tells one opening of an item from the next, for undo
 function openRow(id) {
   openId = id;
+  openCount++;
   render();
   placeFloat(true);
 }
@@ -763,6 +765,7 @@ function handleClick(event) {
 
     case 'toggle-done':
       commitOpenRow();
+      remember(item, item.done ? 'not bought' : 'bought');
       update(() => { setBought(item, !item.done); openId = null; });
       maybeCelebrate();
       break;
@@ -771,6 +774,9 @@ function handleClick(event) {
       // From the swipe-right picker. On a Bought row it also means "I need
       // this again", so it comes back into that section.
       closePicker();
+      if (item.done || Number(btn.dataset.value) !== item.priority) {
+        remember(item, '→ ' + PRI_LABEL[Number(btn.dataset.value)]);
+      }
       update(() => {
         item.priority = Number(btn.dataset.value);
         if (item.done) needAgain(item);
@@ -778,6 +784,8 @@ function handleClick(event) {
       break;
 
     case 'set-priority':
+      if (Number(btn.dataset.value) === item.priority) break;
+      remember(item, '→ ' + PRI_LABEL[Number(btn.dataset.value)], 'open' + openCount);
       // Change state but do NOT redraw — the row would jump away mid-edit.
       item.priority = Number(btn.dataset.value);
       save();
@@ -1324,9 +1332,10 @@ $('#info-form').addEventListener('submit', () => {
 
 async function confirmDelete(item) {
   const ok = await ask('Delete "' + item.name + '"?',
-                       'It goes for good.',
+                       'Undo, top right, can bring it back.',
                        { yes: 'Delete', danger: true, remember: 'delete' });
   if (!ok) return;
+  remember(item, 'deleted');
   update(() => {
     state.items = state.items.filter((i) => i.id !== item.id);
     openId = null;
@@ -1344,7 +1353,7 @@ $('#info-delete').addEventListener('click', () => {
    7. Swipe
    Swipe a row right to uncover H / M / L and tap one (v5.1 — it used to
    mark the item bought, which the check circle already does). Swipe left
-   to delete it, with an Undo bar, so a stray swipe costs nothing. Both
+   to delete it — Undo by the cloud brings it back, so a stray swipe costs nothing. Both
    also have ordinary buttons (H/M/L in the open row, Delete in the i
    sheet), so a gesture is never the only way to do something.
    --------------------------------------------------------------- */
@@ -1426,43 +1435,81 @@ function endSwipe() {
   if (dx >= SWIPE_TRIGGER) {
     openPicker(row, wrap);
   } else if (dx <= -SWIPE_TRIGGER) {
-    deleteWithUndo(item);
+    deleteItem(item);
   }
 }
 
-/* ---------------- delete, with an Undo bar ----------------
-   A swipe deletes straight away — no question first — and a bar at the
-   bottom offers Undo for a few seconds. Undo puts the item back exactly
-   where it was. A second delete while the bar is up makes the first one
-   final and offers Undo for the new one. */
+/* ---------------- undo ----------------
+   The last few changes — a new priority, ticking something bought (or
+   unticking it), a delete — can be taken back with the Undo button by the
+   cloud (v5.2; it replaces the Undo bar at the bottom). Right after a
+   change the button says what it would undo, "↶ Milk deleted", for a few
+   seconds, then shrinks to a quiet icon that stays while there is anything
+   left to undo. Names, stores and notes aren't included: they're quick to
+   put right by hand. The history lives in memory only, so closing the app
+   starts afresh. */
+const UNDO_STEPS = 20;
+const UNDO_SAY_MS = 3500;
+/** @type {{ id: string, index: number, before: any, name: string, what: string, key?: string }[]} */
+let undoSteps = [];
+let undoSayTimer = null;
 
-const UNDO_MS = 5000;
-let undoable = null;   // { item, index } — the last thing deleted
-let undoTimer = null;
+/* Call BEFORE changing the item: it keeps a copy of it as it is now.
+   `key` merges a run of changes into one step — tapping High, then
+   Medium, then Low in one open item undoes back to where it started. */
+function remember(item, what, key) {
+  const last = undoSteps[undoSteps.length - 1];
+  if (key && last && last.key === key) {
+    last.what = what;
+  } else {
+    undoSteps.push({ id: item.id, index: state.items.indexOf(item),
+                     before: JSON.parse(JSON.stringify(item)), name: item.name, what, key });
+    if (undoSteps.length > UNDO_STEPS) undoSteps.shift();
+  }
+  showUndo(true);
+}
 
-function deleteWithUndo(item) {
+function undo() {
+  const step = undoSteps.pop();
+  if (!step) return;
+  commitOpenRow();
+  update(() => {
+    openId = null;
+    const now = state.items.findIndex((i) => i.id === step.id);
+    if (now === -1) state.items.splice(Math.min(step.index, state.items.length), 0, step.before);
+    else state.items[now] = step.before;
+  });
+  showUndo(false);
+}
+
+/* The button: hidden with nothing to undo; otherwise an icon, which for a
+   moment after a change also says what it would undo. */
+function showUndo(say) {
+  const btn = $('#undo-btn');
+  const last = undoSteps[undoSteps.length - 1];
+  btn.classList.toggle('hidden', !last);
+  clearTimeout(undoSayTimer);
+  btn.classList.remove('saying');
+  if (!last) return;
+  $('#undo-name').textContent = last.name;
+  $('#undo-what').textContent = ' ' + last.what;
+  btn.setAttribute('aria-label', 'Undo: ' + last.name + ' ' + last.what);
+  if (say) {
+    btn.classList.add('saying');
+    $('#undo-said').textContent = last.name + ' ' + last.what + '. Undo is top right.';
+    undoSayTimer = setTimeout(() => btn.classList.remove('saying'), UNDO_SAY_MS);
+  }
+}
+$('#undo-btn').addEventListener('click', undo);
+
+/* A swipe left deletes straight away — no question first — because Undo
+   brings it back exactly where it was. */
+function deleteItem(item) {
   const index = state.items.indexOf(item);
   if (index === -1) return;
+  remember(item, 'deleted');
   update(() => { state.items.splice(index, 1); });
-  undoable = { item, index };
-  $('#toast-text').textContent = item.name + ' deleted';
-  $('#toast').classList.remove('hidden');
-  clearTimeout(undoTimer);
-  undoTimer = setTimeout(hideUndo, UNDO_MS);
 }
-
-function hideUndo() {
-  clearTimeout(undoTimer);
-  undoable = null;
-  $('#toast').classList.add('hidden');
-}
-
-$('#toast-undo').addEventListener('click', () => {
-  if (!undoable) return;
-  const { item, index } = undoable;
-  update(() => { state.items.splice(Math.min(index, state.items.length), 0, item); });
-  hideUndo();
-});
 
 // ...and a touch outside the list altogether (the add box, the tabs).
 document.addEventListener('pointerdown', (e) => {
