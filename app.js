@@ -75,7 +75,7 @@ function normaliseItem(i) {
   // Kept in lowercase — you type faster without the shift key — and shown
   // capitalised by the styling. This also folds "Plaza Vea" and "plaza vea"
   // into one, which used to give two headings in the Stores tab.
-  i.stores = [...new Set(i.stores.map((s) => String(s).trim().toLowerCase()).filter(Boolean))];
+  i.stores = sortStores([...new Set(i.stores.map((s) => String(s).trim().toLowerCase()).filter(Boolean))]);
   delete i.store;
   // Prices and quantities went in v5.1 — deleted, not hidden (Alex's
   // call). Need four? Type "Eggs 4" in the name.
@@ -332,6 +332,13 @@ function addStore(item, raw) {
   return true;
 }
 
+/* An item's stores are kept in alphabetical order (v5.2). While you are
+   editing they stay in the order you typed them, so nothing jumps under
+   your finger; they are sorted when you tap Done or Add. */
+function sortStores(stores) {
+  return stores.sort((a, b) => a.localeCompare(b));
+}
+
 function update(fn) { fn(); save(); render(); }
 
 /* Which row is expanded. While a row is open the list order is frozen,
@@ -348,7 +355,13 @@ function openRow(id) {
   render();
   placeFloat(true);
 }
-function closeRow()  { if (openId === null) return; openId = null; render(); }
+function closeRow() {
+  if (openId === null) return;
+  const item = findItem(openId);
+  if (item) { sortStores(item.stores); save(); }
+  openId = null;
+  render();
+}
 
 /* ---------------------------------------------------------------
    3. Trip view
@@ -976,6 +989,7 @@ function reviveExisting(item, f) {
     needAgain(item);
     if (f.pri !== null)  item.priority = f.pri;
     f.stores.forEach((st) => addStore(item, st));
+    sortStores(item.stores);
   });
 }
 
@@ -1040,7 +1054,7 @@ $('#add-form').addEventListener('submit', async (e) => {
   update(() => {
     state.items.push(newItem(name, {
       priority: f.pri ?? 2,
-      stores: f.stores
+      stores: sortStores(f.stores)
     }));
   });
   // Deliberately does NOT open the new row or scroll to it — you should be
