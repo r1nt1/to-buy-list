@@ -170,7 +170,7 @@ button.danger  { background: transparent; border-color: transparent; color: var(
 .group-head {
   display: flex; align-items: center; gap: 8px;
   margin: 22px 2px 8px; font-size: 13px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .06em;
 }
 /* With nothing due, the first heading sits right under the add box: same
    27px as everywhere else (20 of bar + 7), not its usual 22px section gap. */
@@ -186,13 +186,11 @@ button.danger  { background: transparent; border-color: transparent; color: var(
   flex: none; width: 34px; min-height: 34px; padding: 0; border-radius: 8px;
   background: none; border: none; color: inherit; font-size: 15px;
 }
-.gh1 { color: var(--p1); }
-.gh2 { color: var(--p2); }
-.gh3 { color: var(--p3); }
-/* Store and aisle headings are places, not priorities: plain text colour
-   (white in dark mode). They used to borrow Medium's grey. */
-.gh-place { color: var(--text); }
-.group-head { cursor: pointer; }
+/* Every heading — High, Medium, Low, Bought, the stores and aisles — is
+   in the text colour: they are headings, so they should read. The stripe
+   down the rows is what tells the priorities apart (v5.2, Alex). They
+   used to be the stripe's own grey, which made Low nearly invisible. */
+.group-head { cursor: pointer; color: var(--text); }
 .caret { display: inline-block; transition: transform .15s; }
 .collapsed .caret { transform: rotate(-90deg); }
 
