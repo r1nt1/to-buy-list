@@ -142,7 +142,12 @@ const AISLE_WORDS = {
   'Baby': [
     'baby','bebe','diaper','diapers','panal','panales','wipes','toallitas','formula',
     'leche de formula','baby food','papilla','compota','bottle','biberon','pacifier','chupon',
-    'baby wipes','talco','coche','babero'
+    'baby wipes','talco','coche','babero',
+    // potty training — "escalera para inodoro" is a step for the toilet,
+    // not a ladder
+    'escalera para inodoro','escalera para bano','escalera de bano','reductor de inodoro',
+    'reductor para inodoro','asiento reductor','adaptador de inodoro','bacinica','bacinilla',
+    'pelela','orinal','potty','potty seat','toilet trainer'
   ],
   'Pets': [
     'pet','mascota','mascotas','dog food','comida para perro','cat food','comida para gato',
@@ -196,7 +201,8 @@ const AISLE_WORDS = {
     'peeler','pelador','colander','colador','strainer','measuring cup','taza medidora','bowl',
     'bol','tazon','plate','plato','platos','cup','taza','tazas','glass','vaso','vasos','mug',
     'fork','tenedor','spoon','cuchara','knife cutlery','cubiertos','cutlery','baking tray',
-    'bandeja','molde','tray','can opener','abrelatas','corkscrew','sacacorchos','thermos','termo'
+    'bandeja','molde','tray','can opener','abrelatas','corkscrew','sacacorchos','thermos','termo',
+    'jarra','jarra de agua','pitcher'
   ],
   'Home & Furniture': [
     'furniture','mueble','muebles','table','mesa','chair','silla','sillas','desk','escritorio',
@@ -206,7 +212,10 @@ const AISLE_WORDS = {
     'curtains','cortina','cortinas','clock','reloj de pared','frame','marco','picture frame',
     'cuadro','vase','florero','plant pot','maceta','doormat','felpudo','stool','banco',
     'bench','banca','coat rack','perchero','bed','beds','bed frame','cama','camas',
-    'marco de cama','litera','bunk bed','crib','cuna'
+    'marco de cama','litera','bunk bed','crib','cuna',
+    // a water filter is a home thing, whatever "agua" says
+    'filtro de agua','filtros de agua','water filter','purificador de agua','water purifier',
+    'repuesto de filtro','cartucho de filtro'
   ],
   'Bedding & Bath': [
     'mattress','colchon','pillow','almohada','almohadas','pillowcase','funda','sheets','sabanas',
@@ -287,7 +296,8 @@ const AISLE_WORDS = {
     'yoga mat','mat','colchoneta','jump rope','soga','treadmill','trotadora','faja',
     'water bottle','tomatodo','botella','backpack','mochila','sleeping bag','saco de dormir',
     'flashlight','linterna','binoculars','binoculares','goggles','antiparras','fins','aletas',
-    'surfboard','tabla','wetsuit','running shoes','protein','proteina'
+    // not "tabla" alone: that is just as often a chopping board
+    'surfboard','tabla de surf','wetsuit','running shoes','protein','proteina'
   ]
 };
 
@@ -356,30 +366,63 @@ function lookupFuzzy(word) {
   return best;
 }
 
-/* Best guess for a name, or null if it genuinely doesn't know. Tries the
-   whole name first ("olive oil" beats "oil"), then the longest words in it,
-   so "aceite de oliva" finds "aceite" and "de" is never consulted. */
+/* A whole phrase, allowing one slip — "escalera para unodoro" is still the
+   potty step. Only long phrases (10+ letters), so short ones can't drift
+   into each other. */
+function lookupFuzzyPhrase(run) {
+  if (run.length < 10) return null;
+  const limit = run.length < 16 ? 1 : 2;
+  let best = null, bestD = 99;
+  for (const [known, aisle] of AISLE_LOOKUP) {
+    if (!known.includes(' ') || Math.abs(known.length - run.length) > limit) continue;
+    const d = editDistance(run, known);
+    if (d > 0 && d <= limit && d < bestD) { best = aisle; bestD = d; }
+  }
+  return best;
+}
+
+/* In Spanish the thing itself comes first and "de" / "para" describe it:
+   a "filtro de agua" is a filter, not water; "aceite de oliva" is oil. */
+const LINK_WORDS = new Set(['de', 'del', 'para', 'con', 'sin', 'en']);
+
+/* Best guess for a name, or null if it genuinely doesn't know.
+   1. Every run of two or more words, longest first — the whole name, then
+      "tabla de picar" inside "tabla de picar bambu".
+   2. The same runs with one slip.
+   3. Single words: the ones before the first "de" / "para" first (the
+      thing itself), longest first; then the rest.
+   4. Single words with one slip, in the same order. (v5.2 — it used to
+      try only pairs of words, then the longest word, so "agua" decided
+      that a water filter was a drink.) */
 /* exported guessAisle */   // used by app.js
 function guessAisle(name) {
   const text = normalise(name);
   if (!text) return null;
-
-  const whole = lookupOne(text);
-  if (whole) return whole;
-
   const words = text.split(' ');
-  // two-word runs, e.g. "papel higienico" inside "papel higienico doble hoja"
-  for (let i = 0; i < words.length - 1; i++) {
-    const pair = lookupOne(words[i] + ' ' + words[i + 1]);
-    if (pair) return pair;
+
+  const runs = [];
+  for (let len = words.length; len >= 2; len--) {
+    for (let i = 0; i + len <= words.length; i++) runs.push(words.slice(i, i + len).join(' '));
   }
-  const byLength = [...words].sort((a, b) => b.length - a.length);
-  for (const w of byLength) {
+  for (const run of runs) {
+    const hit = lookupOne(run);
+    if (hit) return hit;
+  }
+  for (const run of runs) {
+    const hit = lookupFuzzyPhrase(run);
+    if (hit) return hit;
+  }
+
+  const link = words.findIndex((w) => LINK_WORDS.has(w));
+  const longestFirst = (ws) => [...ws].sort((a, b) => b.length - a.length);
+  const singles = link > 0
+    ? [...longestFirst(words.slice(0, link)), ...longestFirst(words.slice(link + 1))]
+    : longestFirst(words);
+  for (const w of singles) {
     const hit = lookupOne(w);
     if (hit) return hit;
   }
-  // Nothing exact — allow a single typo before giving up.
-  for (const w of byLength) {
+  for (const w of singles) {
     const hit = lookupFuzzy(w);
     if (hit) return hit;
   }

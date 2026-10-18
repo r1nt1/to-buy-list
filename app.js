@@ -82,11 +82,11 @@ function normaliseItem(i) {
   delete i.price;
   delete i.qty;
   if (typeof i.repeatDays !== 'number' || !(i.repeatDays > 0)) i.repeatDays = null;
-  // Guessed once, then stored — so whatever you set by hand is never
-  // silently overwritten by the dictionary later on.
-  if (typeof i.aisle !== 'string' || !AISLES.includes(i.aisle)) {
-    i.aisle = guessAisle(i.name) || NO_AISLE;
-  }
+  // The aisle is guessed from the name again on every load, so a better
+  // dictionary puts old wrong guesses right too (v5.2). One you picked
+  // yourself in the i sheet (aisleChosen) is never touched.
+  if (typeof i.aisle !== 'string' || !AISLES.includes(i.aisle)) i.aisle = NO_AISLE;
+  if (!i.aisleChosen) i.aisle = guessAisle(i.name) || i.aisle;
   return i;
 }
 
@@ -843,9 +843,8 @@ function applyField(item, input) {
   const v = input.value;
   if (input.dataset.field === 'name') {
     item.name = v.trim() || item.name;
-    // Correcting a typo should fix the aisle too — but only when the app
-    // never managed to work one out. An aisle you chose is never overruled.
-    if (item.aisle === NO_AISLE) item.aisle = guessAisle(item.name) || NO_AISLE;
+    // A new name gets a new guess — unless you picked the aisle yourself.
+    if (!item.aisleChosen) item.aisle = guessAisle(item.name) || NO_AISLE;
   }
   // A chip box appends rather than replaces, and empties itself.
   if (input.dataset.field === 'store-add') {
