@@ -1330,23 +1330,14 @@ $('#info-form').addEventListener('submit', () => {
 
 
 
-async function confirmDelete(item) {
-  const ok = await ask('Delete "' + item.name + '"?',
-                       'Undo, top right, can bring it back.',
-                       { yes: 'Delete', danger: true, remember: 'delete' });
-  if (!ok) return;
-  remember(item, 'deleted');
-  update(() => {
-    state.items = state.items.filter((i) => i.id !== item.id);
-    openId = null;
-  });
-}
-
+/* Delete in the details sheet goes straight away, like a swipe left —
+   no "Are you sure?" (removed in v5.2): Undo brings it back. */
 $('#info-delete').addEventListener('click', () => {
   const item = findItem(infoId);
   if (!item) return;
   info.close();
-  confirmDelete(item);
+  openId = null;
+  deleteItem(item);
 });
 
 /* ---------------------------------------------------------------
